@@ -163,114 +163,15 @@ struct Tetromino {
     }
   }
 
-  // returns false if the piece hasn't hit the bottom of the board,
-  // true if it has.
-
-  struct CollisionInfo {
-    bool left = false,
-		 		 right = false,
-				 bottom = false,
-				 block = false;
-  };
-
-  CollisionInfo resolveCollision() {
-
-    CollisionInfo info = {false, false, false, false};
-
+  // returns true if there was a collision, false otherwise
+  bool resolveCollision() {
     for (const auto idx : getIndices()) {
-      if (idx.y >= 20) {
-        info.bottom = true;
-      }
-      if (idx.x < 0) {
-        info.left = true;
-      }
-      if (idx.x >= 10) {
-        info.right = true;
-      }
-
-
-      if (gBoard.collides(idx)) {
-				info.block = true;
+      if (idx.y >= 20 || idx.x < 0 || idx.x >= 10 || gBoard.collides(idx)) {
+        pos = last_pos;
+        return true;
       }
     }
-
-    // if we hit the bottom, we've not resolved the Y collision
-    bool resolved_y = !info.bottom;
-
-    // resolve collisions with the floor
-    while (!resolved_y) {
-      pos.y -= 1;
-
-      resolved_y = true;
-      for (const auto idx : getIndices()) {
-        if (idx.y >= 20) {
-          resolved_y = false;
-          break;
-        }
-      }
-    }
-
-    // if we've hit either of the walls, we need to do a horizontal collision
-    // resolution.
-    bool resolved_x = !(info.left || info.right);
-    
-    while (!resolved_x) {
-      if (info.left) {
-        pos.x += 1;
-      } else {
-        pos.x -= 1;
-      }
-
-      resolved_x = true;
-      for (const auto idx : getIndices()) {
-        if (idx.x < 0 || idx.x >= 10) {
-          resolved_x = false;
-          break;
-        }
-      }
-    }
-    return info;
-  }
-
-  bool move(Direction dir) {
-    // this float increments each time gravity is applied
-    // and gets set back to zero when it exceeds one.
-    // this is to get sub-frame velocity in a grid
-    static float budge = 0.0;
-
-    last_pos = pos;
-
-    clean();
-
-    if (dir == Direction::Left) {
-      pos.x--;
-    } else if (dir == Direction::Right) {
-      pos.x++;
-    }
-
-    if (dir == Direction::Down) {
-      gPlayerGravity = 0.25f;
-    }
-
-    // apply downward force.
-    budge += gGravity + gPlayerGravity;
-    gPlayerGravity = 0.0f;
-    auto floored = std::floor(budge);
-    if (floored > 0) {
-      pos.y += 1;
-      budge = 0;
-    }
-
-    auto collision = resolveCollision();
-    
-    // now we are completely in bounds, we draw our cells.
-    for (const auto &idx : getIndices()) {
-      auto &cell = gBoard[idx.x, idx.y];
-      cell.empty = false;
-      cell.color = color;
-    }
-    
-    return collision.bottom;
+    return false;
   }
 
   ShapeIndices getIndices() const {
@@ -307,24 +208,37 @@ void processGameLogic() {
     gTetromino = new Tetromino();
   }
 
-  auto hit_bottom = false;
+  static float budge = 0.0;
+  gTetromino->clean();
 
-  bool moved = false;
-  if (IsKeyDown(KEY_LEFT) && !hit_bottom) {
-    hit_bottom = gTetromino->move(Direction::Left);
-    moved = true;
+  if (IsKeyDown(KEY_LEFT)) {
+    gTetromino->last_pos = gTetromino->pos;
+    gTetromino->pos.x--;
+    gTetromino->resolveCollision();
   }
-  if (IsKeyDown(KEY_RIGHT) && !hit_bottom) {
-    hit_bottom = gTetromino->move(Direction::Right);
-    moved = true;
+  if (IsKeyDown(KEY_RIGHT)) {
+    gTetromino->last_pos = gTetromino->pos;
+    gTetromino->pos.x++;
+    gTetromino->resolveCollision();
   }
-  if (IsKeyDown(KEY_DOWN) && !hit_bottom) {
-    hit_bottom = gTetromino->move(Direction::Down);
-    moved = true;
+  if (IsKeyDown(KEY_DOWN)) {
+    gPlayerGravity = 0.25f;
+  }
+  
+  gTetromino->last_pos = gTetromino->pos;
+  budge += gGravity + gPlayerGravity;
+  gPlayerGravity = 0.0f;
+  auto floored = std::floor(budge);
+  if (floored > 0) {
+    gTetromino->pos.y += 1;
+    budge = 0;
   }
 
-  if (!moved) {
-    hit_bottom = gTetromino->move(Direction::None);
+  auto hit_bottom = gTetromino->resolveCollision();
+  for (const auto &idx : gTetromino->getIndices()) {
+    auto &cell = gBoard[idx.x, idx.y];
+    cell.empty = false;
+    cell.color = gTetromino->color;
   }
 
   if (hit_bottom) {
