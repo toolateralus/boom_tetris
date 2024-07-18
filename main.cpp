@@ -95,11 +95,6 @@ struct Board {
     int x = pos.x;
     int y = pos.y;
     if (y < 0 || y >= 20 || x < 0 || x >= 10) {
-      // out of bounds. this should never happen
-      // throw?
-      printf("\e[31mout of bounds access into rows & columns in 'collides', x: "
-             "%d, y: %d\e[0m\n",
-             x, y);
       return false;
     }
     if (!rows[y][x].empty) {
