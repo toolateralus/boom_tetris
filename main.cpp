@@ -157,18 +157,20 @@ struct Board {
 Board gBoard = {};
 
 // the shape of a tetromino, a group of cells.
-enum struct Shape { L, J, Z, S, I, T };
+enum struct Shape { L, J, Z, S, I, T, Square };
 enum struct Orientation { Up, Right, Down, Left };
 
 
 // a static map of the coordinates of each shape in local space.
 const std::unordered_map<Shape, std::vector<Vec2>> gShapePatterns = {
-    {Shape::L, {{0, -1}, {0, 0}, {0, 1}, {1, 1}}},
-    {Shape::J, {{0, -1}, {0, 0}, {0, 1}, {-1, 1}}},
-    {Shape::Z, {{0, -1}, {0, 0}, {1, 0}, {1, 1}}},
-    {Shape::S, {{0, -1}, {0, 0}, {-1, 0}, {-1, 1}}},
-    {Shape::I, {{0, -1}, {0, 0}, {0, 1}, {0, 2}}},
-    {Shape::T, {{-1, 1}, {0, 0}, {0, 1}, {0, 2}}}};
+  {Shape::L,      {{ 0,-1}, { 0, 0}, { 0, 1}, { 1, 1}}},
+  {Shape::J,      {{ 0,-1}, { 0, 0}, { 0, 1}, {-1, 1}}},
+  {Shape::Z,      {{ 0,-1}, { 0, 0}, { 1, 0}, { 1, 1}}},
+  {Shape::S,      {{ 0,-1}, { 0, 0}, {-1, 0}, {-1, 1}}},
+  {Shape::I,      {{ 0,-1}, { 0, 0}, { 0, 1}, { 0, 2}}},
+  {Shape::T,      {{-1, 1}, { 0, 0}, { 0, 1}, { 0, 2}}},
+  {Shape::Square, {{ 0, 0}, { 0, 1}, { 1, 0}, { 1, 1}}},
+};
 
 // a group of cells the user is currently in control of.
 struct Tetromino {
@@ -227,7 +229,9 @@ struct Tetromino {
     case Shape::T:
       max_oris = 4;
       break;
-    // TODO: Add squares!!
+    case Shape::Square:
+      max_oris = 1;
+      break;
     }
     return Orientation((ori + 1) % max_oris);
   }
@@ -254,7 +258,9 @@ struct Tetromino {
     case Shape::T:
       max_oris = 4;
       break;
-    // TODO: Add squares!!
+    case Shape::Square:
+      max_oris = 1;
+      break;
     }
     return Orientation((ori - 1 + max_oris) % max_oris);
   }
@@ -286,7 +292,7 @@ struct Tetromino {
     last_pos = pos;
   }
   Tetromino() {
-    int num_shapes = (int)Shape::T + 1;
+    int num_shapes = (int)Shape::Square + 1;
     shape = Shape(rand() % num_shapes);
     color = (size_t)std::min((int)shape, 4);
     pos = {5, 0};
