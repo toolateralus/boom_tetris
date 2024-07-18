@@ -134,7 +134,7 @@ Board gBoard = {};
 enum struct Shape { L, J, Z, S, I, T } shape;
 
 // a static map of the coordinates of each shape in local space.
-const std::unordered_map<Shape, std::vector<std::pair<int, int>>>
+const std::unordered_map<Shape, std::vector<Vec2>>
     gShapePatterns = {{Shape::L, {{0, 0}, {0, 1}, {0, 2}, {1, 2}}},
                       {Shape::J, {{1, 0}, {1, 1}, {1, 2}, {0, 2}}},
                       {Shape::Z, {{0, 0}, {0, 1}, {1, 1}, {1, 2}}},
@@ -188,12 +188,9 @@ struct Tetromino {
         info.right = true;
       }
 
-      // this is not sophisticated enough.
-      // one problem is: this throws errors when out of bounds.
-      // the second issue, is that we can depenetrate upwards on a side
-      // collision.
+
       if (gBoard.collides(idx)) {
-				info.bottom = true;
+				info.block = true;
       }
     }
 
