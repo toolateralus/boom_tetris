@@ -1,0 +1,16 @@
+[
+  {
+    "arguments": [
+      "/usr/bin/clang++",
+      "-std=c++2b",
+      "-g",
+      "-c",
+      "-o",
+      "objs/main.o",
+      "main.cpp"
+    ],
+    "directory": "/home/josh/source/c++/boom_tetris",
+    "file": "/home/josh/source/c++/boom_tetris/main.cpp",
+    "output": "/home/josh/source/c++/boom_tetris/objs/main.o"
+  }
+]
