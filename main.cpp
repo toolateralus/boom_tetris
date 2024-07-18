@@ -247,13 +247,13 @@ struct Tetromino {
     }
     return indices;
   }
-
-  static Tetromino spawn(size_t x, size_t y) {
+  
+	Tetromino () {
     int num_shapes = (int)Shape::T + 1;
-    Shape rand_shape = Shape(rand() % num_shapes);
-    auto color = (size_t)std::min((int)rand_shape, 4);
-    return Tetromino{.color = color, .pos = {x, y}, .shape = rand_shape};
-  }
+    shape = Shape(rand() % num_shapes);
+    color = (size_t)std::min((int)shape, 4);
+		pos = {5, 0};
+	}
 };
 
 Tetromino *gTetromino = nullptr;
@@ -261,7 +261,7 @@ Tetromino *gTetromino = nullptr;
 void processGameLogic() {
 
   if (gTetromino == nullptr) {
-    gTetromino = new Tetromino(Tetromino::spawn(5, 0));
+    gTetromino = new Tetromino();
   }
 
   // DEBUG BUTTON: restart current piece.
@@ -270,7 +270,7 @@ void processGameLogic() {
       gTetromino->clean();
       delete gTetromino;
     }
-    gTetromino = new Tetromino(Tetromino::spawn(5, 0));
+    gTetromino = new Tetromino();
   }
 
   auto hit_bottom = false;
