@@ -155,16 +155,15 @@ Board gBoard = {};
 enum struct Shape { L, J, Z, S, I, T, Square };
 enum struct Orientation { Up, Right, Down, Left };
 
-
 // a static map of the coordinates of each shape in local space.
 const std::unordered_map<Shape, std::vector<Vec2>> gShapePatterns = {
-  {Shape::L,      {{ 0,-1}, { 0, 0}, { 0, 1}, { 1, 1}}},
-  {Shape::J,      {{ 0,-1}, { 0, 0}, { 0, 1}, {-1, 1}}},
-  {Shape::Z,      {{ 0,-1}, { 0, 0}, { 1, 0}, { 1, 1}}},
-  {Shape::S,      {{ 0,-1}, { 0, 0}, {-1, 0}, {-1, 1}}},
-  {Shape::I,      {{ 0,-1}, { 0, 0}, { 0, 1}, { 0, 2}}},
-  {Shape::T,      {{-1, 0}, { 0, 0}, { 1, 0}, { 0, 1}}},
-  {Shape::Square, {{ 0, 0}, { 0, 1}, { 1, 0}, { 1, 1}}},
+    {Shape::L, {{0, -1}, {0, 0}, {0, 1}, {1, 1}}},
+    {Shape::J, {{0, -1}, {0, 0}, {0, 1}, {-1, 1}}},
+    {Shape::Z, {{0, -1}, {0, 0}, {1, 0}, {1, 1}}},
+    {Shape::S, {{0, -1}, {0, 0}, {-1, 0}, {-1, 1}}},
+    {Shape::I, {{0, -1}, {0, 0}, {0, 1}, {0, 2}}},
+    {Shape::T, {{-1, 0}, {0, 0}, {1, 0}, {0, 1}}},
+    {Shape::Square, {{0, 0}, {0, 1}, {1, 0}, {1, 1}}},
 };
 
 // a group of cells the user is currently in control of.
@@ -276,7 +275,7 @@ struct Tetromino {
   ShapeIndices getIndices() const {
     ShapeIndices indices;
     auto pattern = gShapePatterns.at(shape);
-    for (const auto& idx : pattern) {
+    for (const auto &idx : pattern) {
       const auto rotated = rotate(idx);
       indices.push_back({pos.x + rotated.x, pos.y + rotated.y});
     }
@@ -301,7 +300,6 @@ struct HorizontalInput {
   bool left, right;
 };
 
-
 HorizontalInput DAS() {
   static float dasDelay = 0.2f;
   static float arrDelay = 0.05f;
@@ -309,17 +307,17 @@ HorizontalInput DAS() {
   static float arrTimer = 0.0f;
   static bool leftKeyPressed = false;
   static bool rightKeyPressed = false;
-	
-	bool moveLeft = false, moveRight = false;
-  
+
+  bool moveLeft = false, moveRight = false;
+
   if (IsKeyDown(KEY_LEFT)) {
     if (!leftKeyPressed) {
       leftKeyPressed = true;
       dasTimer = dasDelay;
-			moveLeft = true;
+      moveLeft = true;
     } else if (dasTimer <= 0) {
       if (arrTimer <= 0) {
-				moveLeft = true;
+        moveLeft = true;
         arrTimer = arrDelay;
       } else {
         arrTimer -= GetFrameTime();
@@ -335,11 +333,11 @@ HorizontalInput DAS() {
     if (!rightKeyPressed) {
       rightKeyPressed = true;
       dasTimer = dasDelay;
-			moveRight = true;
+      moveRight = true;
     } else if (dasTimer <= 0) {
       if (arrTimer <= 0) {
         arrTimer = arrDelay;
-				moveRight = true;
+        moveRight = true;
       } else {
         arrTimer -= GetFrameTime();
       }
@@ -372,9 +370,9 @@ void processGameLogic() {
 
   static float budge = 0.0;
   gTetromino->clean();
-  
-	auto horizontal = DAS();
-	
+
+  auto horizontal = DAS();
+
   if (IsKeyPressed(KEY_Z)) {
     gTetromino->saveState();
     gTetromino->orientation = gTetromino->getPreviousOrientation();
@@ -398,7 +396,7 @@ void processGameLogic() {
   if (IsKeyDown(KEY_DOWN)) {
     gPlayerGravity = 0.25f;
   }
-  
+
   gTetromino->saveState();
   budge += gGravity + gPlayerGravity;
   gPlayerGravity = 0.0f;
