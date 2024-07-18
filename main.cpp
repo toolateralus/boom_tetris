@@ -82,32 +82,33 @@ struct Board {
         "invalid indices into Board: (x=" + std::to_string(x) +
         ", y=" + std::to_string(y) + ")");
   }
-  
+
   auto begin() { return columns.begin(); }
   auto end() { return columns.end(); }
-  
+
   template <typename... Args> auto &emplace_back(Args &&...args) {
     return columns.emplace_back(args...);
   }
-  
-	bool collides(ShapeIndices indices) {
-  for (const auto& idx : indices) {
-    int x = idx.x;
-    int y = idx.y;
-    
-		// out of bounds. this should never happen
-		if (y < 0 || y >= 20 || x < 0 || x >= 10) {
-			printf("%s, x: %d, y: %d", "\e[33; out of bounds access into rows & columns in 'collides'", x, y);
-			continue;
-		}
-		
-    if (columns[y][x].empty) {
+
+  // We need more information that just whether it collided or not: we need to
+  // know what side we hit so we can depenetrate in the opposite direction.
+  bool collides(Vec2 pos) {
+    int x = pos.x;
+    int y = pos.y;
+    if (y < 0 || y >= 20 || x < 0 || x >= 10) {
+      // out of bounds. this should never happen
+      // throw?
+      printf("\e[31mout of bounds access into rows & columns in 'collides', x: "
+             "%d, y: %d\e[0m\n",
+             x, y);
+      return false;
+    }
+    if (!columns[y][x].empty) {
       return true;
     }
+    return false;
   }
-  return false;
-}
-	
+
   void draw() {
     static auto halfScreen = GetScreenWidth() / 2;
     static auto boardStart = halfScreen - (UNIT * 10 / 2);
@@ -141,11 +142,10 @@ const std::unordered_map<Shape, std::vector<std::pair<int, int>>>
                       {Shape::I, {{0, 0}, {0, 1}, {0, 2}, {0, 3}}},
                       {Shape::T, {{0, 1}, {1, 0}, {1, 1}, {1, 2}}}};
 
-
-
 // a group of cells the user is currently in control of.
 struct Tetromino {
   size_t color = 0;
+  Vec2 last_pos;
   Vec2 pos;
   Shape shape;
 
@@ -165,30 +165,45 @@ struct Tetromino {
 
   // returns false if the piece hasn't hit the bottom of the board,
   // true if it has.
-  bool resolveCollision() {
-    bool hitBottom = false;
-    bool hitWallLeft = false;
-    bool hitWallRight = false;
+
+  struct CollisionInfo {
+    bool left = false,
+		 		 right = false,
+				 bottom = false,
+				 block = false;
+  };
+
+  CollisionInfo resolveCollision() {
+
+    CollisionInfo info = {false, false, false, false};
 
     for (const auto idx : getIndices()) {
       if (idx.y >= 20) {
-        hitBottom = true;
+        info.bottom = true;
       }
       if (idx.x < 0) {
-        hitWallLeft = true;
+        info.left = true;
       }
       if (idx.x >= 10) {
-        hitWallRight = true;
+        info.right = true;
+      }
+
+      // this is not sophisticated enough.
+      // one problem is: this throws errors when out of bounds.
+      // the second issue, is that we can depenetrate upwards on a side
+      // collision.
+      if (gBoard.collides(idx)) {
+				info.bottom = true;
       }
     }
 
     // if we hit the bottom, we've not resolved the Y collision
-    bool resolved_y = !hitBottom;
+    bool resolved_y = !info.bottom;
 
     // resolve collisions with the floor
     while (!resolved_y) {
       pos.y -= 1;
-      
+
       resolved_y = true;
       for (const auto idx : getIndices()) {
         if (idx.y >= 20) {
@@ -200,10 +215,10 @@ struct Tetromino {
 
     // if we've hit either of the walls, we need to do a horizontal collision
     // resolution.
-    bool resolved_x = !(hitWallLeft || hitWallRight);
-
+    bool resolved_x = !(info.left || info.right);
+    
     while (!resolved_x) {
-      if (hitWallLeft) {
+      if (info.left) {
         pos.x += 1;
       } else {
         pos.x -= 1;
@@ -217,47 +232,48 @@ struct Tetromino {
         }
       }
     }
-    return hitBottom;
+    return info;
   }
 
   bool move(Direction dir) {
-		// this float increments each time gravity is applied
-		// and gets set back to zero when it exceeds one.
-		// this is to get sub-frame velocity in a grid
+    // this float increments each time gravity is applied
+    // and gets set back to zero when it exceeds one.
+    // this is to get sub-frame velocity in a grid
     static float budge = 0.0;
 
+    last_pos = pos;
+
     clean();
-    
-		if (dir == Direction::Left) {
-			pos.x--;
-		} else if (dir == Direction::Right) {
+
+    if (dir == Direction::Left) {
+      pos.x--;
+    } else if (dir == Direction::Right) {
       pos.x++;
-		}
-		
+    }
+
     if (dir == Direction::Down) {
       gPlayerGravity = 0.25f;
-		}
-    
-		// apply downward force.
-		budge += gGravity + gPlayerGravity;
-		gPlayerGravity = 0.0f;
-		auto floored = std::floor(budge);
-		if (floored > 0) {
-			pos.y += 1;
-			budge = 0;
-		}
-    
+    }
 
-    bool hitBottom = resolveCollision();
+    // apply downward force.
+    budge += gGravity + gPlayerGravity;
+    gPlayerGravity = 0.0f;
+    auto floored = std::floor(budge);
+    if (floored > 0) {
+      pos.y += 1;
+      budge = 0;
+    }
 
+    auto collision = resolveCollision();
+    
     // now we are completely in bounds, we draw our cells.
     for (const auto &idx : getIndices()) {
       auto &cell = gBoard[idx.x, idx.y];
       cell.empty = false;
       cell.color = color;
     }
-
-    return hitBottom;
+    
+    return collision.bottom;
   }
 
   ShapeIndices getIndices() const {
@@ -268,13 +284,13 @@ struct Tetromino {
     }
     return indices;
   }
-  
-	Tetromino () {
+
+  Tetromino() {
     int num_shapes = (int)Shape::T + 1;
     shape = Shape(rand() % num_shapes);
     color = (size_t)std::min((int)shape, 4);
-		pos = {5, 0};
-	}
+    pos = {5, 0};
+  }
 };
 
 Tetromino *gTetromino = nullptr;
@@ -296,13 +312,21 @@ void processGameLogic() {
 
   auto hit_bottom = false;
 
-  if (IsKeyDown(KEY_LEFT)) {
+  bool moved = false;
+  if (IsKeyDown(KEY_LEFT) && !hit_bottom) {
     hit_bottom = gTetromino->move(Direction::Left);
-  } else if (IsKeyDown(KEY_RIGHT)) {
+    moved = true;
+  }
+  if (IsKeyDown(KEY_RIGHT) && !hit_bottom) {
     hit_bottom = gTetromino->move(Direction::Right);
-  } else if (IsKeyDown(KEY_DOWN)) {
+    moved = true;
+  }
+  if (IsKeyDown(KEY_DOWN) && !hit_bottom) {
     hit_bottom = gTetromino->move(Direction::Down);
-  } else {
+    moved = true;
+  }
+
+  if (!moved) {
     hit_bottom = gTetromino->move(Direction::None);
   }
 
