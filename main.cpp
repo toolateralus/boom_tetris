@@ -135,12 +135,12 @@ enum struct Shape { L, J, Z, S, I, T } shape;
 
 // a static map of the coordinates of each shape in local space.
 const std::unordered_map<Shape, std::vector<Vec2>>
-    gShapePatterns = {{Shape::L, {{0, 0}, {0, 1}, {0, 2}, {1, 2}}},
-                      {Shape::J, {{1, 0}, {1, 1}, {1, 2}, {0, 2}}},
-                      {Shape::Z, {{0, 0}, {0, 1}, {1, 1}, {1, 2}}},
-                      {Shape::S, {{1, 0}, {1, 1}, {0, 1}, {0, 2}}},
-                      {Shape::I, {{0, 0}, {0, 1}, {0, 2}, {0, 3}}},
-                      {Shape::T, {{0, 1}, {1, 0}, {1, 1}, {1, 2}}}};
+    gShapePatterns = {{Shape::L, {{ 0,-1}, { 0, 0}, { 0, 1}, { 1, 1}}},
+                      {Shape::J, {{ 0,-1}, { 0, 0}, { 0, 1}, {-1, 1}}},
+                      {Shape::Z, {{ 0,-1}, { 0, 0}, { 1, 0}, { 1, 1}}},
+                      {Shape::S, {{ 0,-1}, { 0, 0}, {-1, 0}, {-1, 1}}},
+                      {Shape::I, {{ 0,-1}, { 0, 0}, { 0, 1}, { 0, 2}}},
+                      {Shape::T, {{-1, 1}, { 0, 0}, { 0, 1}, { 0, 2}}}};
 
 // a group of cells the user is currently in control of.
 struct Tetromino {
@@ -236,6 +236,9 @@ void processGameLogic() {
 
   auto hit_bottom = gTetromino->resolveCollision();
   for (const auto &idx : gTetromino->getIndices()) {
+    if (idx.x < 0 || idx.x >= 10 || idx.y < 0 || idx.y >= 20) {
+      continue;
+    }
     auto &cell = gBoard[idx.x, idx.y];
     cell.empty = false;
     cell.color = gTetromino->color;
