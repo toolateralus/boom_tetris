@@ -292,7 +292,7 @@ void processGameLogic() {
 }
 int main(int argc, char *argv[]) {
 
-  InitWindow(800, 600, "boom taetris");
+  InitWindow(800, 650, "boom taetris");
   gTexture = LoadTexture("res/block.png");
   SetTargetFPS(30);
 
