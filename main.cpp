@@ -115,7 +115,7 @@ const std::unordered_map<Shape, std::vector<std::pair<int, int>>>
 
 // an integer Vector2
 struct Vec2 {
-  size_t x, y;
+  int x, y;
 };
 
 // a way to key into the grid to update a tetromino.
