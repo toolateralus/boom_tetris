@@ -70,10 +70,10 @@ struct Cell {
 };
 
 struct Board {
-  std::vector<std::vector<Cell>> columns;
+  std::vector<std::vector<Cell>> rows;
   Cell &operator[](int x, int y) {
-    if (columns.size() > y) {
-      auto &row = columns[y];
+    if (rows.size() > y) {
+      auto &row = rows[y];
       if (row.size() > x) {
         return row[x];
       }
@@ -83,11 +83,11 @@ struct Board {
         ", y=" + std::to_string(y) + ")");
   }
 
-  auto begin() { return columns.begin(); }
-  auto end() { return columns.end(); }
+  auto begin() { return rows.begin(); }
+  auto end() { return rows.end(); }
 
   template <typename... Args> auto &emplace_back(Args &&...args) {
-    return columns.emplace_back(args...);
+    return rows.emplace_back(args...);
   }
 
   // We need more information that just whether it collided or not: we need to
@@ -103,7 +103,7 @@ struct Board {
              x, y);
       return false;
     }
-    if (!columns[y][x].empty) {
+    if (!rows[y][x].empty) {
       return true;
     }
     return false;
@@ -113,7 +113,7 @@ struct Board {
     static auto halfScreen = GetScreenWidth() / 2;
     static auto boardStart = halfScreen - (UNIT * 10 / 2);
     size_t x = 0, y = 0;
-    for (const auto &row : columns) {
+    for (const auto &row : rows) {
       for (const auto &cell : row) {
         auto color = BLACK;
         if (!cell.empty) {
@@ -124,6 +124,33 @@ struct Board {
       }
       y += UNIT;
       x = 0;
+    }
+  }
+
+  void checkLines() {
+    std::vector<size_t> linesToBurn = {};
+    size_t i = 0;
+    for (const auto &row : rows) {
+      bool full = true;
+      for (const auto &cell : row) {
+        if (cell.empty) {
+          full = false;
+          break;
+        }
+      }
+      if (full) {
+        linesToBurn.push_back(i);
+      }
+      ++i;
+    }
+
+    for (auto idx : linesToBurn) {
+      for (size_t j = idx; j > 0; --j) {
+        rows[j] = rows[j - 1];
+      }
+      for (auto &cell : rows[0]) {
+        cell.empty = true;
+      }
     }
   }
 };
@@ -333,6 +360,8 @@ void processGameLogic() {
   if (hit_bottom) {
     delete gTetromino;
     gTetromino = nullptr;
+
+    gBoard.checkLines();
   }
 }
 int main(int argc, char *argv[]) {
