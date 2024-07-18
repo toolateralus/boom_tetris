@@ -158,7 +158,9 @@ struct Board {
 Board gBoard = {};
 
 // the shape of a tetromino, a group of cells.
-enum struct Shape { L, J, Z, S, I, T } shape;
+enum struct Shape { L, J, Z, S, I, T };
+enum struct Orientation { Up, Right, Down, Left };
+
 
 // a static map of the coordinates of each shape in local space.
 const std::unordered_map<Shape, std::vector<Vec2>> gShapePatterns = {
@@ -173,8 +175,10 @@ const std::unordered_map<Shape, std::vector<Vec2>> gShapePatterns = {
 struct Tetromino {
   size_t color = 0;
   Vec2 last_pos;
+  Orientation last_ori;
   Vec2 pos;
   Shape shape;
+  Orientation orientation = Orientation::Up;
 
   // discard old data. more specifically, write empty to all the cells that we
   // currently exist in, so that we can safely move into new cells.
@@ -195,21 +199,93 @@ struct Tetromino {
     for (const auto idx : getIndices()) {
       if (idx.y >= 20 || idx.x < 0 || idx.x >= 10 || gBoard.collides(idx)) {
         pos = last_pos;
+        orientation = last_ori;
         return true;
       }
     }
     return false;
   }
 
+  Orientation getNextOrientation() const {
+    auto ori = int(orientation);
+    auto max_oris = 0;
+    switch (shape) {
+    case Shape::L:
+      max_oris = 4;
+      break;
+    case Shape::J:
+      max_oris = 4;
+      break;
+    case Shape::Z:
+      max_oris = 2;
+      break;
+    case Shape::S:
+      max_oris = 2;
+      break;
+    case Shape::I:
+      max_oris = 2;
+      break;
+    case Shape::T:
+      max_oris = 4;
+      break;
+    // TODO: Add squares!!
+    }
+    return Orientation((ori + 1) % max_oris);
+  }
+
+  Orientation getPreviousOrientation() const {
+    auto ori = int(orientation);
+    auto max_oris = 0;
+    switch (shape) {
+    case Shape::L:
+      max_oris = 4;
+      break;
+    case Shape::J:
+      max_oris = 4;
+      break;
+    case Shape::Z:
+      max_oris = 2;
+      break;
+    case Shape::S:
+      max_oris = 2;
+      break;
+    case Shape::I:
+      max_oris = 2;
+      break;
+    case Shape::T:
+      max_oris = 4;
+      break;
+    // TODO: Add squares!!
+    }
+    return Orientation((ori - 1 + max_oris) % max_oris);
+  }
+
+  Vec2 rotate(Vec2 input) const {
+    switch (orientation) {
+    case Orientation::Up:
+      return input;
+    case Orientation::Left:
+      return {-input.y, input.x};
+    case Orientation::Down:
+      return {-input.x, -input.y};
+    case Orientation::Right:
+      return {input.y, -input.x};
+    }
+  }
+
   ShapeIndices getIndices() const {
     ShapeIndices indices;
     auto pattern = gShapePatterns.at(shape);
-    for (const auto &[dx, dy] : pattern) {
-      indices.push_back({pos.x + dx, pos.y + dy});
+    for (const auto& idx : pattern) {
+      const auto rotated = rotate(idx);
+      indices.push_back({pos.x + rotated.x, pos.y + rotated.y});
     }
     return indices;
   }
-
+  void saveState() {
+    last_ori = orientation;
+    last_pos = pos;
+  }
   Tetromino() {
     int num_shapes = (int)Shape::T + 1;
     shape = Shape(rand() % num_shapes);
@@ -299,21 +375,31 @@ void processGameLogic() {
   
 	auto horizontal = DAS();
 	
+  if (IsKeyPressed(KEY_Z)) {
+    gTetromino->saveState();
+    gTetromino->orientation = gTetromino->getPreviousOrientation();
+    gTetromino->resolveCollision();
+  }
+  if (IsKeyPressed(KEY_X)) {
+    gTetromino->saveState();
+    gTetromino->orientation = gTetromino->getNextOrientation();
+    gTetromino->resolveCollision();
+  }
   if (horizontal.left) {
-    gTetromino->last_pos = gTetromino->pos;
+    gTetromino->saveState();
     gTetromino->pos.x--;
     gTetromino->resolveCollision();
   }
   if (horizontal.right) {
-    gTetromino->last_pos = gTetromino->pos;
+    gTetromino->saveState();
     gTetromino->pos.x++;
     gTetromino->resolveCollision();
   }
   if (IsKeyDown(KEY_DOWN)) {
     gPlayerGravity = 0.25f;
   }
-
-  gTetromino->last_pos = gTetromino->pos;
+  
+  gTetromino->saveState();
   budge += gGravity + gPlayerGravity;
   gPlayerGravity = 0.0f;
   auto floored = std::floor(budge);
