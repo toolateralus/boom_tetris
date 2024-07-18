@@ -1,5 +1,7 @@
 #include "raylib.h"
+
 #include <algorithm>
+
 #include <cmath>
 #include <cstdlib>
 #include <stdexcept>
@@ -40,6 +42,14 @@
 const std::vector<std::vector<Color>> gPalette = {
     {BLUE, LIME, YELLOW, ORANGE, RED}};
 
+// an integer Vector2
+struct Vec2 {
+  int x, y;
+};
+
+// a way to key into the grid to update a tetromino.
+using ShapeIndices = std::vector<Vec2>;
+
 // the block texture, used and tinted for every block.
 Texture2D gTexture;
 
@@ -60,31 +70,49 @@ struct Cell {
 };
 
 struct Board {
-  std::vector<std::vector<Cell>> array;
+  std::vector<std::vector<Cell>> columns;
   Cell &operator[](int x, int y) {
-    if (array.size() > y) {
-      auto &inner = array[y];
-      if (inner.size() > x) {
-        return inner[x];
+    if (columns.size() > y) {
+      auto &row = columns[y];
+      if (row.size() > x) {
+        return row[x];
       }
     }
     throw std::runtime_error(
         "invalid indices into Board: (x=" + std::to_string(x) +
         ", y=" + std::to_string(y) + ")");
   }
-
-  auto begin() { return array.begin(); }
-  auto end() { return array.end(); }
-
+  
+  auto begin() { return columns.begin(); }
+  auto end() { return columns.end(); }
+  
   template <typename... Args> auto &emplace_back(Args &&...args) {
-    return array.emplace_back(args...);
+    return columns.emplace_back(args...);
   }
-
+  
+	bool collides(ShapeIndices indices) {
+  for (const auto& idx : indices) {
+    int x = idx.x;
+    int y = idx.y;
+    
+		// out of bounds. this should never happen
+		if (y < 0 || y >= 20 || x < 0 || x >= 10) {
+			printf("%s, x: %d, y: %d", "\e[33; out of bounds access into rows & columns in 'collides'", x, y);
+			continue;
+		}
+		
+    if (columns[y][x].empty) {
+      return true;
+    }
+  }
+  return false;
+}
+	
   void draw() {
     static auto halfScreen = GetScreenWidth() / 2;
     static auto boardStart = halfScreen - (UNIT * 10 / 2);
     size_t x = 0, y = 0;
-    for (const auto &row : array) {
+    for (const auto &row : columns) {
       for (const auto &cell : row) {
         auto color = BLACK;
         if (!cell.empty) {
@@ -113,13 +141,7 @@ const std::unordered_map<Shape, std::vector<std::pair<int, int>>>
                       {Shape::I, {{0, 0}, {0, 1}, {0, 2}, {0, 3}}},
                       {Shape::T, {{0, 1}, {1, 0}, {1, 1}, {1, 2}}}};
 
-// an integer Vector2
-struct Vec2 {
-  int x, y;
-};
 
-// a way to key into the grid to update a tetromino.
-using ShapeIndices = std::vector<Vec2>;
 
 // a group of cells the user is currently in control of.
 struct Tetromino {
@@ -205,27 +227,26 @@ struct Tetromino {
     static float budge = 0.0;
 
     clean();
-
-    switch (dir) {
-    case Direction::Left:
-      pos.x--;
-      break;
-    case Direction::Right:
+    
+		if (dir == Direction::Left) {
+			pos.x--;
+		} else if (dir == Direction::Right) {
       pos.x++;
-      break;
-    case Direction::Down:
+		}
+		
+    if (dir == Direction::Down) {
       gPlayerGravity = 0.25f;
-    case Direction::None:
-      budge += gGravity + gPlayerGravity;
-      gPlayerGravity = 0.0f;
-      auto floored = std::floor(budge);
-      if (floored > 0) {
-        pos.y += 1;
-        budge = 0;
-      }
-      
-      break;
-    }
+		}
+    
+		// apply downward force.
+		budge += gGravity + gPlayerGravity;
+		gPlayerGravity = 0.0f;
+		auto floored = std::floor(budge);
+		if (floored > 0) {
+			pos.y += 1;
+			budge = 0;
+		}
+    
 
     bool hitBottom = resolveCollision();
 
