@@ -40,15 +40,21 @@ struct PixelSize {
   float width, height;
 };
 
+struct Margin {
+  int top, left, bottom, right;
+};
+
 // this object is passed to each element to tell it
 // exactly where and how it should draw.
 struct LayoutState {
   PixelPosition position;
   PixelSize size;
-};
-
-struct Margin {
-  int top, left, bottom, right;
+  void applyMargin(Margin margin) {
+    size.width -= margin.left + margin.right;
+    size.height -= margin.top + margin.bottom;
+    position.x += margin.left;
+    position.y += margin.top;
+  }
 };
 
 struct Element {
