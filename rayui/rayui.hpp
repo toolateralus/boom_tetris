@@ -1,4 +1,6 @@
 #pragma once
+
+#include <functional>
 #include <memory>
 #include <raylib.h>
 #include <vector>
@@ -110,7 +112,7 @@ struct Label: Element {
 struct Button : Element {
   char *text = (char*)"";
   size_t fontSize;
-  using ClickedCallback = void (*)();
+  using ClickedCallback = std::function<void()>;
   ClickedCallback onClicked = nullptr;
   
   Button(Position position, Size size, char* text = (char*)"", ClickedCallback onClicked = nullptr, Style style = {BLACK, WHITE, WHITE, 0},
