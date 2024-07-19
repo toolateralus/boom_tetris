@@ -63,16 +63,16 @@ struct Cell {
 struct Board {
   std::array<std::array<Cell, boardWidth>, boardHeight> rows = {};
 
-  Cell &operator[](int x, int y);
-
-  Cell &get_cell(int x, int y) { return (*this)[x, y]; }
-
-  auto begin() { return rows.begin(); }
-  auto end() { return rows.end(); }
+  Cell &operator[](int x, int y) noexcept;
+  
+  Cell &get_cell(int x, int y) noexcept { return (*this)[x, y]; }
+  
+  auto begin() noexcept { return rows.begin(); }
+  auto end() noexcept { return rows.end(); }
 
   // We need more information that just whether it collided or not: we need to
   // know what side we hit so we can depenetrate in the opposite direction.
-  bool collides(Vec2 pos);
+  bool collides(Vec2 pos) noexcept;
 };
 
 // a group of cells the user is currently in control of.
@@ -101,10 +101,10 @@ struct Game {
 
   // the play grid.
   Board board;
-
+  
   // the upcoming shape & color of the next tetromino.
-  Shape nextShape = (Shape)-1;
-  int nextColor = -1;
+  Shape nextShape;
+  int nextColor;
 
   // the piece the player is in control of.
   std::unique_ptr<Tetromino> tetromino;
@@ -122,7 +122,7 @@ struct Game {
 
   // unit size of a cell on the grid, in pixels. based on resolution
   int blockSize = 32;
-
+  
   // the block texture, used and tinted for every block.
   Texture2D blockTexture;
   // an index into the current pallette, based on level.
@@ -141,13 +141,12 @@ struct Game {
   void processGameLogic();
   void drawUi();
   void draw();
-  std::vector<size_t> checkLines();
   
+  std::vector<size_t> checkLines();
   size_t clearLines(std::vector<size_t> &linesToClear);
   void adjustScoreAndLevel(size_t linesCleared);
-
   void saveTetromino();
-
+  
   HorizontalInput delayedAutoShift();
   void cleanTetromino(std::unique_ptr<Tetromino> &tetromino);
   bool resolveCollision(std::unique_ptr<Tetromino> &tetromino);

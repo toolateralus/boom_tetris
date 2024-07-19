@@ -2,8 +2,8 @@
 #include <cmath>
 #include <functional>
 #include <raylib.h>
-#include <stdexcept>
 #include <string>
+#include <utility>
 
 void Game::saveTetromino() { tetromino->saveState(); }
 
@@ -43,12 +43,16 @@ void Game::processGameLogic() {
     setNextShapeAndColor();
     
     tetromino->saveState();
+    
+    // game-over condition. currently, this is premature sometimes.
     if (resolveCollision(tetromino)) {
       inMenu = true;
       return;
     }
   }
-
+  
+  
+  // used to increment until >= 1 so we can have sub-frame velocity for the tetromino.
   static float budge = 0.0;
   
   cleanTetromino(tetromino);
@@ -238,7 +242,7 @@ bool Game::resolveCollision(std::unique_ptr<Tetromino> &tetromino) {
   return false;
 }
 
-bool Board::collides(Vec2 pos) {
+bool Board::collides(Vec2 pos) noexcept {
   int x = pos.x;
   int y = pos.y;
   if (y < 0 || y >= boardHeight || x < 0 || x >= boardWidth) {
@@ -269,10 +273,14 @@ HorizontalInput Game::delayedAutoShift() {
   static float arrTimer = 0.0f;
   static bool leftKeyPressed = false;
   static bool rightKeyPressed = false;
-
+  
   bool moveLeft = false, moveRight = false;
-
-  if (IsKeyDown(KEY_LEFT)) {
+  
+  
+  bool leftDown = IsKeyDown(KEY_LEFT);
+  bool rightDown = IsKeyDown(KEY_RIGHT);
+  
+  if (leftDown && !rightDown) {
     if (!leftKeyPressed) {
       leftKeyPressed = true;
       dasTimer = dasDelay;
@@ -290,8 +298,8 @@ HorizontalInput Game::delayedAutoShift() {
   } else {
     leftKeyPressed = false;
   }
-
-  if (IsKeyDown(KEY_RIGHT)) {
+  
+  if (rightDown && !leftDown) {
     if (!rightKeyPressed) {
       rightKeyPressed = true;
       dasTimer = dasDelay;
@@ -315,16 +323,15 @@ HorizontalInput Game::delayedAutoShift() {
   return HorizontalInput(moveLeft, moveRight);
 }
 
-Cell &Board::operator[](int x, int y) {
+Cell &Board::operator[](int x, int y) noexcept {
   if (rows.size() > y) {
     auto &row = rows[y];
     if (row.size() > x) {
       return row[x];
     }
   }
-  throw std::runtime_error(
-      "invalid indices into Board: (x=" + std::to_string(x) +
-      ", y=" + std::to_string(y) + ")");
+  // we are always bounds checked before calling this function.
+  std::unreachable();
 }
 
 ShapeIndices Game::getIndices(std::unique_ptr<Tetromino> &tetromino) const {
