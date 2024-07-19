@@ -74,14 +74,15 @@ struct Element {
 // a container for a group of elements: a grid.
 struct Grid : Element {
   template <typename T, typename... Args> 
-  void emplace_element(Args &&...args) {
-    auto element = std::make_unique<T>(args...);
-    elements.push_back(std::move(element));
+  std::shared_ptr<T> emplace_element(Args &&...args) {
+    auto element = std::make_shared<T>(args...);
+    elements.push_back(element);
+    return element;
   }
   Grid(Position pos, Size size) : Element(pos, size) {}
   Grid() : Element() {}
   
-  std::vector<std::unique_ptr<Element>> elements;
+  std::vector<std::shared_ptr<Element>> elements;
 
   void draw(LayoutState &state) override;
 
