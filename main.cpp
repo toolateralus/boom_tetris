@@ -62,6 +62,12 @@ void processGameLogic(Board &gBoard, Game &game) {
   
   if (game.gTetromino == nullptr) {
     game.gTetromino = new Tetromino(game);
+    game.gTetromino->saveState();
+    if (game.gTetromino->resolveCollision(game, gBoard)) {
+      printf("game done\n");
+      game.inMenu = true;
+      return;
+    }
   }
   
   // DEBUG BUTTON: restart current piece.
@@ -174,6 +180,7 @@ int main(int argc, char *argv[]) {
 	game.inMenu = true;
   while (!WindowShouldClose()) {
     BeginDrawing();
+	
 		if (!game.inMenu) {
 			game.inMenu = drawMenu(game);
 			EndDrawing();
