@@ -398,23 +398,23 @@ void Tetromino::saveState() {
   prev_position = position;
 }
 void Game::adjustScoreAndLevel(size_t linesCleared) {
-  auto level = this->level + 1;
+  auto score_level = this->level + 1;
   if (linesCleared == 1) {
-    score += 40 * level;
+    score += 40 * score_level;
   } else if (linesCleared == 2) {
-    score += 100 * level;
+    score += 100 * score_level;
   } else if (linesCleared == 3) {
-    score += 300 * level;
+    score += 300 * score_level;
   } else if (linesCleared == 4) {
-    score += 1200 * level;
+    score += 1200 * score_level;
   }
-
+  
   linesClearedThisLevel += linesCleared;
-
+  
   if (linesClearedThisLevel >= 10) {
-    level += 1;
+    level++;
     printf("\033[1;32madvanced level: to %ld\033[0m\n", level);
-    if (level < gravityLevels.size()) {
+    if (score_level < gravityLevels.size()) {
       gravity = gravityLevels[level];
     }
     linesClearedThisLevel = 0;
