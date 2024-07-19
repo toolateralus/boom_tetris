@@ -128,6 +128,7 @@ struct Board {
   }
 
   void draw() {
+		auto blockTxSourceRect = Rectangle{0, 0, (float)gTexture.width, (float)gTexture.height};
     auto screen_width = GetScreenWidth();
     auto screen_height = GetScreenHeight();
     gBlockSize = std::min(screen_height / 20, screen_width / 26);
@@ -146,13 +147,11 @@ struct Board {
     auto nextBlockAreaCenterX = rightStart + gBlockSize * 2;
     auto nextBlockAreaCenterY = gBlockSize * 2;
     for (const auto& block : gShapePatterns.at(*gNextShape)) {
-      DrawRectangle(
-        nextBlockAreaCenterX + block.x * gBlockSize,
-        nextBlockAreaCenterY + block.y * gBlockSize,
-        gBlockSize,
-        gBlockSize,
-        gPalette[gCurrentPaletteIdx][*gNextColor]
-      );
+      auto color = gPalette[gCurrentPaletteIdx][*gNextColor];
+      auto destX = nextBlockAreaCenterX + block.x * gBlockSize;
+      auto destY = nextBlockAreaCenterY + block.y * gBlockSize;
+      auto destRect = Rectangle{(float)destX, (float)destY, (float)gBlockSize, (float)gBlockSize};
+      DrawTexturePro(gTexture, blockTxSourceRect, destRect, {0,0}, 0, color);
     }
     // draw board
     auto boardStart = halfScreen - (gBlockSize * 10 / 2);
@@ -162,10 +161,9 @@ struct Board {
         auto color = BLACK;
         if (!cell.empty) {
           color = gPalette[gCurrentPaletteIdx][cell.color];
-					auto sourceRect = Rectangle{0, 0, (float)gTexture.width, (float)gTexture.height};
 					auto dx = x + boardStart;
 					auto destRect = Rectangle{(float)dx, (float)y, (float)gBlockSize, (float)gBlockSize};
-					DrawTexturePro(gTexture, sourceRect, destRect, {0,0}, 0, color);
+					DrawTexturePro(gTexture, blockTxSourceRect, destRect, {0,0}, 0, color);
         } else {
 					DrawRectangle(x + boardStart, y, gBlockSize, gBlockSize, color);
 				}
