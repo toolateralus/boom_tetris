@@ -413,7 +413,7 @@ void Game::adjustScoreAndLevel(size_t linesCleared) {
 
   if (linesClearedThisLevel >= 10) {
     level += 1;
-    printf("advanced level: to %ld", level);
+    printf("\033[1;32madvanced level: to %ld\033[0m\n", level);
     if (level < gravityLevels.size()) {
       gravity = gravityLevels[level];
     }
