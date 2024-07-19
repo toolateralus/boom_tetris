@@ -127,8 +127,14 @@ struct Board {
         auto color = BLACK;
         if (!cell.empty) {
           color = gPalette[gCurrentPaletteIdx][cell.color];
-        }
-        DrawRectangle(x + boardStart, y, gBlockSize, gBlockSize, color);
+					auto sourceRect = Rectangle{0, 0, (float)gTexture.width, (float)gTexture.height};
+					auto dx = x + boardStart;
+					auto destRect = Rectangle{(float)dx, (float)y, (float)gBlockSize, (float)gBlockSize};
+					DrawTexturePro(gTexture, sourceRect, destRect, {0,0}, 0, color);
+        } else {
+					DrawRectangle(x + boardStart, y, gBlockSize, gBlockSize, color);
+				}
+				
         x += gBlockSize;
       }
       y += gBlockSize;
@@ -346,9 +352,6 @@ struct Tetromino {
   }
 };
 
-
-
-
 Tetromino *gTetromino = nullptr;
 
 struct HorizontalInput {
@@ -478,6 +481,34 @@ void processGameLogic() {
     gBoard.checkLines();
   }
 }
+
+
+int drawMenu() {
+	ClearBackground(BLACK);
+	static Texture2D texture = LoadTexture("res/title.png");
+	
+	auto source = Rectangle {0,0, (float)texture.width, (float)texture.height};
+	auto dest = Rectangle {0, 0, (float)GetScreenWidth(), (float)GetScreenHeight()};
+	DrawTexturePro(texture, source, dest, {0,0}, 0, WHITE);
+	
+	auto x = GetScreenWidth() / 5, y = GetScreenHeight() / 2;
+	DrawRectangle(0, y - 15, GetScreenWidth(), 60, BLACK);
+	DrawText("Press a number 0-9 to start at that level.", x, y, 24, WHITE);
+	for (int i = KEY_KP_0; i < KEY_KP_9; ++i) {
+		if (IsKeyPressed(i)) {
+			gLevel = i - KEY_KP_0;
+			return true;	
+		}
+	}
+	for (int i = KEY_ZERO; i < KEY_NINE + 1; ++i) {
+		if (IsKeyPressed(i)) {
+			gLevel = i - KEY_ZERO;
+			return true;	
+		}
+	}
+	return false;	
+}
+
 int main(int argc, char *argv[]) {
 	gNextShape = new Shape;
 	gNextColor = new size_t;
@@ -495,9 +526,17 @@ int main(int argc, char *argv[]) {
       n.emplace_back();
     }
   }
-
+  
+	bool menu_exited = false;
   while (!WindowShouldClose()) {
     BeginDrawing();
+		
+		if (!menu_exited) {
+			menu_exited = drawMenu();
+			EndDrawing();
+			continue;
+		}
+		
     ClearBackground(BG_COLOR);
     processGameLogic();
     gBoard.draw();
