@@ -1,6 +1,8 @@
 COMPILER := clang++
-COMPILER_FLAGS := -std=c++2b -Oz -flto -ffunction-sections -fdata-sections 
-LD_FLAGS := -lraylib -lm -s
+
+## uncomment these optimizations for release.
+COMPILER_FLAGS := -std=c++2b -g # -flto -ffunction-sections -fdata-sections 
+LD_FLAGS := -lraylib -lm # -s
 OBJ_DIR := objs
 BIN_DIR := bin
 

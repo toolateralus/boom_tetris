@@ -50,6 +50,7 @@ int main(int argc, char *argv[]) {
       EndDrawing();
       continue;
     }
+		
     ClearBackground(BG_COLOR);
     game.processGameLogic();
     game.drawUi();

@@ -64,20 +64,37 @@ void Game::processGameLogic() {
     fun();
     return resolveCollision(tetromino);
   };
-
-  if (IsKeyPressed(KEY_Z)) {
+  
+  bool turnLeft = IsKeyPressed(KEY_Z);
+  bool turnRight = IsKeyPressed(KEY_X) || IsKeyPressed(KEY_UP);
+  
+  bool moveDown = IsKeyDown(KEY_DOWN);
+  
+  if (auto gpad = FindGamepad(); gpad != -1) {
+    // z or A (xbox controller)
+    turnLeft = turnLeft || IsGamepadButtonPressed(gpad, GAMEPAD_BUTTON_RIGHT_FACE_DOWN);
+    // x or B (xbox controller)
+    turnRight = turnRight || IsGamepadButtonPressed(gpad, GAMEPAD_BUTTON_RIGHT_FACE_RIGHT);
+    // down arrow or dpad down
+    moveDown = moveDown || IsGamepadButtonPressed(gpad, GAMEPAD_BUTTON_LEFT_FACE_DOWN);
+  }
+  
+  if (turnLeft) {
     executeMovement([&]() { tetromino->spinLeft(); });
   }
-  if (IsKeyPressed(KEY_X) || IsKeyPressed(KEY_UP)) {
+  
+  if (turnRight) {
     executeMovement([&] { tetromino->spinRight(); });
   }
+  
   if (horizontal.left) {
     executeMovement([&] { tetromino->position.x--; });
   }
   if (horizontal.right) {
     executeMovement([&] { tetromino->position.x++; });
   }
-  if (IsKeyDown(KEY_DOWN)) {
+  
+  if (moveDown) {
     playerGravity = 0.25f;
   }
   
@@ -276,9 +293,14 @@ HorizontalInput Game::delayedAutoShift() {
   
   bool moveLeft = false, moveRight = false;
   
-  
+  auto gamepad = FindGamepad();
   bool leftDown = IsKeyDown(KEY_LEFT);
   bool rightDown = IsKeyDown(KEY_RIGHT);
+  
+  if (gamepad != -1) {
+    leftDown = leftDown || IsGamepadButtonDown(gamepad, GAMEPAD_BUTTON_LEFT_FACE_LEFT);
+    rightDown = rightDown || IsGamepadButtonDown(gamepad, GAMEPAD_BUTTON_LEFT_FACE_RIGHT);
+  }
   
   if (leftDown && !rightDown) {
     if (!leftKeyPressed) {

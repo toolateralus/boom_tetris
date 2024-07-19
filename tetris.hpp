@@ -98,7 +98,15 @@ struct Tetromino {
 };
 
 struct Game {
-
+  
+  int FindGamepad() const {
+    for (int i = 0; i < 5; ++i) {
+      if (IsGamepadAvailable(i)) 
+        return i;
+    }
+    return -1;
+  }
+  
   // the play grid.
   Board board;
   
