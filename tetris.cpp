@@ -178,25 +178,27 @@ void Game::draw() {
 }
 
 void Game::drawUi() {
-  auto blockTxSourceRect =
+  // constants
+  constexpr auto uiWidth = 26;
+  constexpr auto uiHeight = (int)boardHeight;
+  constexpr auto halfUiWidth = uiWidth / 2;
+  constexpr auto halfBoardWidth = boardWidth / 2;
+
+  const auto blockTxSourceRect =
       Rectangle{0, 0, (float)blockTexture.width, (float)blockTexture.height};
-  auto screen_width = GetScreenWidth();
-  auto screen_height = GetScreenHeight();
-  blockSize = std::min(screen_height / (int)boardHeight, screen_width / 26);
-  auto halfScreen = screen_width / 2;
-  auto leftStart = halfScreen - blockSize * 13;
-  auto rightStart = halfScreen + blockSize * 5;
-  
-  DrawRectangle(leftStart, 0, blockSize * 26, blockSize * boardHeight, DARKGRAY);
-  
+  const auto screenWidth = GetScreenWidth();
+  const auto screenHeight = GetScreenHeight();
+  blockSize = std::min(screenHeight / uiHeight, screenWidth / uiWidth);
+  const auto halfScreen = screenWidth / 2;
+  const auto leftStart = halfScreen - blockSize * halfUiWidth;
+  const auto rightStart = halfScreen + blockSize * halfBoardWidth;
+
   // draw left side
   DrawText("Score:", leftStart + blockSize, 0, blockSize, WHITE);
-  
   DrawText(std::to_string(score).c_str(), leftStart + blockSize, blockSize,
            blockSize, WHITE);
            
   DrawText("Level:", leftStart + blockSize, blockSize * 2, blockSize, WHITE);
-  
   DrawText(std::to_string(level).c_str(), leftStart + blockSize,
            blockSize * 3, blockSize, WHITE);
            
