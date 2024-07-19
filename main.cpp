@@ -17,16 +17,16 @@ int drawMenu(Game &game) {
 	for (int i = KEY_KP_0; i < KEY_KP_9; ++i) {
 		if (IsKeyPressed(i)) {
 			game.level = i - KEY_KP_0;
-			return true;	
+			return false;	
 		}
 	}
 	for (int i = KEY_ZERO; i < KEY_NINE + 1; ++i) {
 		if (IsKeyPressed(i)) {
 			game.level = i - KEY_ZERO;
-			return true;	
+			return false;	
 		}
 	}
-	return false;	
+	return true;	
 }
 
 int main(int argc, char *argv[]) {
@@ -47,7 +47,7 @@ int main(int argc, char *argv[]) {
   while (!WindowShouldClose()) {
     BeginDrawing();
 	
-		if (!game.inMenu) {
+		if (game.inMenu) {
 			game.inMenu = drawMenu(game);
 			EndDrawing();
 			continue;
