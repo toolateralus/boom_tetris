@@ -49,11 +49,11 @@ size_t *gNextColor = nullptr;
 
 // a static map of the coordinates of each shape in local space.
 const std::unordered_map<Shape, std::vector<Vec2>> gShapePatterns = {
-    {Shape::L, {{0, -1}, {0, 0}, {0, 1}, {1, 1}}},
-    {Shape::J, {{0, -1}, {0, 0}, {0, 1}, {-1, 1}}},
-    {Shape::Z, {{0, -1}, {0, 0}, {1, 0}, {1, 1}}},
-    {Shape::S, {{0, -1}, {0, 0}, {-1, 0}, {-1, 1}}},
-    {Shape::I, {{0, -1}, {0, 0}, {0, 1}, {0, 2}}},
+    {Shape::L, {{-1, 1}, {-1, 0}, {0, 0}, {1, 0}}},
+    {Shape::J, {{-1, 0}, {0, 0}, {1, 0}, {1, 1}}},
+    {Shape::Z, {{-1, 0}, {0, 0}, {0, 1}, {1, 1}}},
+    {Shape::S, {{-1, 1}, {0, 1}, {0, 0}, {1, 0}}},
+    {Shape::I, {{-1, 0}, {0, 0}, {1, 0}, {2, 0}}},
     {Shape::T, {{-1, 0}, {0, 0}, {1, 0}, {0, 1}}},
     {Shape::Square, {{0, 0}, {0, 1}, {1, 0}, {1, 1}}},
 };
@@ -146,6 +146,12 @@ struct Board {
     DrawRectangle(rightStart + gBlockSize, gBlockSize, gBlockSize * 4, gBlockSize * 4, BLACK);
     auto nextBlockAreaCenterX = rightStart + gBlockSize * 2;
     auto nextBlockAreaCenterY = gBlockSize * 2;
+    if (*gNextShape != Shape::I && *gNextShape != Shape::Square) {
+      nextBlockAreaCenterX += gBlockSize / 2;
+    }
+    if (*gNextShape == Shape::I) {
+      nextBlockAreaCenterY += gBlockSize / 2;
+    }
     for (const auto& block : gShapePatterns.at(*gNextShape)) {
       auto color = gPalette[gCurrentPaletteIdx][*gNextColor];
       auto destX = nextBlockAreaCenterX + block.x * gBlockSize;
