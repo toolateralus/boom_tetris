@@ -49,6 +49,10 @@ struct LayoutState {
   PixelSize size;
 };
 
+struct Margin {
+  int top, left, bottom, right;
+};
+
 struct Element {
   Element(Position position, Size size,
           LayoutKind layoutKind = LayoutKind::None, Style style = {BLACK, WHITE})
@@ -59,6 +63,7 @@ struct Element {
   LayoutKind layoutKind = LayoutKind::None;
   Position position = {0,0};
   Size size = {1,1};
+  Margin margin = {0,0,0,0};
   virtual void draw(LayoutState &state) = 0;
 };
 
