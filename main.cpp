@@ -104,8 +104,11 @@ struct Board {
   }
 
   void draw() {
-    gBlockSize = std::min(GetScreenHeight() / 20, GetScreenWidth() / 10);
-    auto halfScreen = GetScreenWidth() / 2;
+    auto screen_width = GetScreenWidth();
+    auto screen_height = GetScreenHeight();
+    gBlockSize = std::min(screen_height / 20, screen_width / 26);
+    DrawRectangle(0, 0, screen_width, screen_height, DARKBLUE);
+    auto halfScreen = screen_width / 2;
     auto boardStart = halfScreen - (gBlockSize * 10 / 2);
     size_t x = 0, y = 0;
     for (const auto &row : rows) {
