@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <memory>
+#include <rayui/rayui.hpp>
 #include <stdio.h>
 #include <unistd.h>
 #include <unordered_map>
@@ -16,6 +17,8 @@
 
 constexpr size_t boardWidth = 10;
 constexpr size_t boardHeight = 20;
+
+using namespace rayui;
 
 // the direction of user input.
 enum struct Direction { None, Left, Right, Down };
@@ -100,6 +103,16 @@ struct Tetromino {
   }
 };
 
+struct Game;
+struct BoardCell : Element {
+  Game& game;
+  Rectangle blockTxSourceRect;
+  Cell& cell;
+  virtual void draw(rayui::LayoutState &state) override;
+  BoardCell(Position position, Game& game, Cell& cell, Rectangle blockTxSourceRect)
+      : Element(position, {1,1}), game(game), cell(cell), blockTxSourceRect(blockTxSourceRect) {}
+};
+
 struct Game {
   
   int FindGamepad() const {
@@ -162,5 +175,20 @@ struct Game {
   void cleanTetromino(std::unique_ptr<Tetromino> &tetromino);
   bool resolveCollision(std::unique_ptr<Tetromino> &tetromino);
   ShapeIndices getIndices(std::unique_ptr<Tetromino> &tetromino) const;
+  rayui::Grid getBoardGrid() {
+    rayui::Grid grid;
+    grid.subdivisions = {10, 20};
+    const auto blockTxSourceRect =
+        Rectangle{0, 0, (float)blockTexture.width, (float)blockTexture.height};
+    int y = 0;
+    for (const auto& row : board.rows) {
+      int x = 0;
+      for (const auto& cell : row) {
+        grid.emplace_element<BoardCell>(Position{x, y}, *this, cell, blockTxSourceRect);
+        x++;
+      }
+      y++;
+    }
+    return grid;
+  }
 };
-

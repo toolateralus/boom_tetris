@@ -463,3 +463,15 @@ size_t Game::clearLines(std::vector<size_t> &linesToClear) {
   }
   return linesToClear.size();
 }
+void BoardCell::draw(rayui::LayoutState &state) {
+  if (!cell.empty) {
+    auto color = game.palette[game.paletteIdx][cell.color];
+    auto destRect = Rectangle{state.position.x, state.position.y, state.size.width,
+                              state.size.height};
+    DrawTexturePro(game.blockTexture, blockTxSourceRect, destRect, {0, 0}, 0,
+                    color);
+  } else {
+    DrawRectangle(state.position.x, state.position.y, state.size.width,
+                              state.size.height, BLACK);
+  }
+};
