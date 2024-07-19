@@ -59,7 +59,7 @@ size_t gCurrentPaletteIdx = 0;
 enum struct Direction { None, Left, Right, Down };
 
 // at which rate are we moving the tetromino down?
-float gGravity = 0.25f;
+float gGravity = 0.15f;
 float gPlayerGravity = 0.0f;
 
 // a grid cell.
@@ -300,7 +300,7 @@ struct HorizontalInput {
   bool left, right;
 };
 
-HorizontalInput DAS() {
+HorizontalInput DelayedAutoShift() {
   static float dasDelay = 0.2f;
   static float arrDelay = 0.05f;
   static float dasTimer = 0.0f;
@@ -371,7 +371,7 @@ void processGameLogic() {
   static float budge = 0.0;
   gTetromino->clean();
 
-  auto horizontal = DAS();
+  auto horizontal = DelayedAutoShift();
 
   if (IsKeyPressed(KEY_Z)) {
     gTetromino->saveState();
