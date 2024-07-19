@@ -5,10 +5,9 @@
 using namespace rayui;
 
 int main(int argc, char *argv[]) {
-
-  Grid grid;
-  grid.subdivisions = {16, 16};
-
+  
+  Grid grid = Grid{{16, 16}};
+  
   auto r0 =
       grid.emplace_element<Rect>(Position{0, 0}, Size{2, 2}, Style{GREEN, RED},
                                  LayoutKind::None, Margin{10, 10, 10, 10});

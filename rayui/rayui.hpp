@@ -80,7 +80,7 @@ struct Grid : Element {
     return element;
   }
   Grid(Position pos, Size size) : Element(pos, size) {}
-  Grid() : Element() {}
+  Grid(Size subdivisions = {1,1}) : Element(), subdivisions(subdivisions) {}
   
   std::vector<std::shared_ptr<Element>> elements;
 
