@@ -1,138 +1,7 @@
 #include "tetris.hpp"
-#include <cmath>
 
-void Game::saveTetromino() {
-  gTetromino->saveState(); 
-} 
 
-HorizontalInput DelayedAutoShift() {
-  static float dasDelay = 0.2f;
-  static float arrDelay = 0.05f;
-  static float dasTimer = 0.0f;
-  static float arrTimer = 0.0f;
-  static bool leftKeyPressed = false;
-  static bool rightKeyPressed = false;
 
-  bool moveLeft = false, moveRight = false;
-
-  if (IsKeyDown(KEY_LEFT)) {
-    if (!leftKeyPressed) {
-      leftKeyPressed = true;
-      dasTimer = dasDelay;
-      moveLeft = true;
-    } else if (dasTimer <= 0) {
-      if (arrTimer <= 0) {
-        moveLeft = true;
-        arrTimer = arrDelay;
-      } else {
-        arrTimer -= GetFrameTime();
-      }
-    } else {
-      dasTimer -= GetFrameTime();
-    }
-  } else {
-    leftKeyPressed = false;
-  }
-
-  if (IsKeyDown(KEY_RIGHT)) {
-    if (!rightKeyPressed) {
-      rightKeyPressed = true;
-      dasTimer = dasDelay;
-      moveRight = true;
-    } else if (dasTimer <= 0) {
-      if (arrTimer <= 0) {
-        arrTimer = arrDelay;
-        moveRight = true;
-      } else {
-        arrTimer -= GetFrameTime();
-      }
-    } else {
-      dasTimer -= GetFrameTime();
-    }
-  } else {
-    rightKeyPressed = false;
-  }
-  if (!IsKeyDown(KEY_LEFT) && !IsKeyDown(KEY_RIGHT)) {
-    arrTimer = 0;
-  }
-  return HorizontalInput(moveLeft, moveRight);
-}
-
-void processGameLogic(Board &gBoard, Game &game) {
-  
-  if (game.gTetromino == nullptr) {
-    game.gTetromino = new Tetromino(game);
-    game.gTetromino->saveState();
-    if (game.gTetromino->resolveCollision(game, gBoard)) {
-      printf("game done\n");
-      game.inMenu = true;
-      return;
-    }
-  }
-  
-  // DEBUG BUTTON: restart current piece.
-  if (IsKeyPressed(KEY_R)) {
-    if (game.gTetromino) {
-      game.gTetromino->clean(game, gBoard);
-      delete game.gTetromino;
-    }
-    game.gTetromino = new Tetromino(game);
-  }
-  
-  static float budge = 0.0;
-  game.gTetromino->clean(game, gBoard);
-
-  auto horizontal = DelayedAutoShift();
-
-  if (IsKeyPressed(KEY_Z)) {
-    game.gTetromino->saveState();
-    game.gTetromino->orientation = game.gTetromino->getPreviousOrientation();
-    game.gTetromino->resolveCollision(game, gBoard);
-  }
-  if (IsKeyPressed(KEY_X) || IsKeyPressed(KEY_UP)) {
-    game.gTetromino->saveState();
-    game.gTetromino->orientation = game.gTetromino->getNextOrientation();
-    game.gTetromino->resolveCollision(game, gBoard);
-  }
-  if (horizontal.left) {
-    game.gTetromino->saveState();
-    game.gTetromino->pos.x--;
-    game.gTetromino->resolveCollision(game, gBoard);
-  }
-  if (horizontal.right) {
-    game.gTetromino->saveState();
-    game.gTetromino->pos.x++;
-    game.gTetromino->resolveCollision(game, gBoard);
-  }
-  if (IsKeyDown(KEY_DOWN)) {
-    game.playerGravity = 0.25f;
-  }
-
-  game.gTetromino->saveState();
-  budge += game.gravity + game.playerGravity;
-  game.playerGravity = 0.0f;
-  auto floored = std::floor(budge);
-  if (floored > 0) {
-    game.gTetromino->pos.y += 1;
-    budge = 0;
-  }
-
-  auto hit_bottom = game.gTetromino->resolveCollision(game, gBoard);
-  for (const auto &idx : game.gTetromino->getIndices(game)) {
-    if (idx.x < 0 || idx.x >= 10 || idx.y < 0 || idx.y >= 20) {
-      continue;
-    }
-    auto &cell = gBoard[idx.x, idx.y];
-    cell.empty = false;
-    cell.color = game.gTetromino->color;
-  }
-
-  if (hit_bottom) {
-    delete game.gTetromino;
-    game.gTetromino = nullptr;
-    gBoard.checkLines(game);
-  }
-}
 
 int drawMenu(Game &game) {
 	ClearBackground(BLACK);
@@ -161,7 +30,6 @@ int drawMenu(Game &game) {
 }
 
 int main(int argc, char *argv[]) {
-  Board board;
   Game game = {};
   
 	game.gNextShape = new Shape;
@@ -175,8 +43,6 @@ int main(int argc, char *argv[]) {
   game.blockTexture = LoadTexture("res/block.png");
   SetTargetFPS(30);
   
-  board.reset();
-  
 	game.inMenu = true;
   while (!WindowShouldClose()) {
     BeginDrawing();
@@ -187,8 +53,9 @@ int main(int argc, char *argv[]) {
 			continue;
 		}
     ClearBackground(BG_COLOR);
-    processGameLogic(board, game);
-    board.draw(game);
+    game.processGameLogic();
+    game.drawUi();
+    game.draw();
     EndDrawing();
   }
 
