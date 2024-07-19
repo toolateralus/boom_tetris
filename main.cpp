@@ -432,11 +432,17 @@ HorizontalInput DelayedAutoShift() {
   }
   return HorizontalInput(moveLeft, moveRight);
 }
-
+bool gGameDone = false;
 void processGameLogic() {
 
   if (gTetromino == nullptr) {
     gTetromino = new Tetromino();
+    gTetromino->saveState();
+    if (gTetromino->resolveCollision()) {
+      printf("game done\n");
+      gGameDone = true;
+      return;
+    }
   }
 
   // DEBUG BUTTON: restart current piece.
@@ -447,7 +453,6 @@ void processGameLogic() {
     }
     gTetromino = new Tetromino();
   }
-
   static float budge = 0.0;
   gTetromino->clean();
 
@@ -553,7 +558,10 @@ int main(int argc, char *argv[]) {
 	bool menu_exited = false;
   while (!WindowShouldClose()) {
     BeginDrawing();
-		
+		if (gGameDone) {
+      gGameDone = false;
+      menu_exited = false;
+    }
 		if (!menu_exited) {
 			menu_exited = drawMenu();
 			EndDrawing();
