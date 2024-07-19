@@ -62,14 +62,15 @@ int main(int argc, char *argv[]) {
       continue;
     }
     
-    gamepadLogger(game);
-
+    //gamepadLogger(game);
+    
     ClearBackground(BG_COLOR);
     game.processGameLogic();
     game.drawUi();
     game.draw();
     EndDrawing();
   }
-
+  
+	
   return 0;
 }

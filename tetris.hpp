@@ -4,6 +4,7 @@
 #include <ctime>
 #include <memory>
 #include <stdio.h>
+#include <unistd.h>
 #include <unordered_map>
 #include <vector>
 #pragma once
@@ -48,7 +49,7 @@ struct Vec2 {
 using ShapeIndices = std::vector<Vec2>;
 
 #define BG_COLOR GetColor(0x12121212)
-// a basic color palette. only one palette item right now.
+
 struct HorizontalInput {
   HorizontalInput(bool left, bool right) : left(left), right(right) {}
   bool left, right;
@@ -74,6 +75,8 @@ struct Board {
   // know what side we hit so we can depenetrate in the opposite direction.
   bool collides(Vec2 pos) noexcept;
 };
+
+
 
 // a group of cells the user is currently in control of.
 struct Tetromino {
@@ -160,3 +163,4 @@ struct Game {
   bool resolveCollision(std::unique_ptr<Tetromino> &tetromino);
   ShapeIndices getIndices(std::unique_ptr<Tetromino> &tetromino) const;
 };
+
