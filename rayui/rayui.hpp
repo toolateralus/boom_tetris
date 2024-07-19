@@ -1,5 +1,4 @@
 #pragma once
-#include <cstdint>
 #include <memory>
 #include <raylib.h>
 #include <vector>
@@ -15,15 +14,14 @@ struct Size {
 
 struct Style {
   Style(Color bg, Color fg): background(bg), foreground(fg) {}
+  Style(Color bg, Color fg, Color border, int borderSize): background(bg), foreground(fg), borderColor(border), borderSize(borderSize) {}
   virtual ~Style() {}
   Color background = BLACK;
   Color foreground = WHITE;
+  Color borderColor = {0,0,0,0};
+  int borderSize = 0;
 };
 
-struct BorederedStyle : Style {
-  Color borderColor;
-  int borderSize;
-};
 
 // What other kinds of layout-kind might we want?
 enum struct LayoutKind {
@@ -101,5 +99,33 @@ struct Label: Element {
     DrawText(text, state.position.x, state.position.y, fontSize, style.foreground);
   }
 };
+
+struct Button : Element {
+  char *text = (char*)"";
+  size_t fontSize;
+  void (*onClicked)() = nullptr;
+  
+  Button(Position position, Size size, Style style = {BLACK, WHITE, WHITE, 0},
+         LayoutKind layoutKind = LayoutKind::None)
+      : Element(position, size, layoutKind, style) {}
+  
+  void draw(LayoutState &state) override {
+    bool isMouseOver = CheckCollisionPointRec(GetMousePosition(), { state.position.x, state.position.y, state.size.width, state.size.height });
+    if (isMouseOver && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+      if (onClicked) {
+        onClicked();
+      }
+    }
+    
+    if (isMouseOver) {
+      DrawRectangle(state.position.x, state.position.y, state.size.width, state.size.height, style.background);
+      DrawText(text, state.position.x, state.position.y, fontSize, style.foreground);
+    } else {
+      DrawRectangleLines(state.position.x, state.position.y, state.size.width, state.size.height, style.borderColor);
+      DrawText(text, state.position.x, state.position.y, fontSize, style.foreground);
+    }
+  }
+};
+
 
 } // end namespace rayui

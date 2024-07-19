@@ -1,4 +1,5 @@
 #include "rayui.hpp"
+#include <cstdio>
 #include <raylib.h>
 
 using namespace rayui;
@@ -12,6 +13,13 @@ int main(int argc, char *argv[]) {
 	grid.elements.back()->margin = {10,10,10,10};
 	grid.emplace_element<Rect>(Position{2, 0}, Size{2, 2}, Style {GREEN, RED}, LayoutKind::None);
 	grid.elements.back()->margin = {10,10,10,10};
+	
+	grid.emplace_element<Button>(Position{10, 10}, Size{2, 2});
+	auto *button = dynamic_cast<Button*>(grid.elements[2].get());
+	button->text = (char*)"Click me";
+	button->onClicked = [](){
+		printf("I am a button that was clicked.\n");
+	};
 	
 	
 	InitWindow(0, 0, "ui test");
