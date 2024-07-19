@@ -35,7 +35,7 @@
 //   }
 // }
 
-#define UNIT 32
+int gBlockSize = 32;
 #define BG_COLOR GetColor(0x12121212)
 // a basic color palette. only one palette item right now.
 const std::vector<std::vector<Color>> gPalette = {
@@ -104,8 +104,9 @@ struct Board {
   }
 
   void draw() {
-    static auto halfScreen = GetScreenWidth() / 2;
-    static auto boardStart = halfScreen - (UNIT * 10 / 2);
+    gBlockSize = std::min(GetScreenHeight() / 20, GetScreenWidth() / 10);
+    auto halfScreen = GetScreenWidth() / 2;
+    auto boardStart = halfScreen - (gBlockSize * 10 / 2);
     size_t x = 0, y = 0;
     for (const auto &row : rows) {
       for (const auto &cell : row) {
@@ -113,10 +114,10 @@ struct Board {
         if (!cell.empty) {
           color = gPalette[gCurrentPaletteIdx][cell.color];
         }
-        DrawRectangle(x + boardStart, y, UNIT, UNIT, color);
-        x += UNIT;
+        DrawRectangle(x + boardStart, y, gBlockSize, gBlockSize, color);
+        x += gBlockSize;
       }
-      y += UNIT;
+      y += gBlockSize;
       x = 0;
     }
   }
@@ -425,7 +426,8 @@ void processGameLogic() {
 }
 int main(int argc, char *argv[]) {
 
-  InitWindow(800, 650, "boom taetris");
+  InitWindow(800, 600, "boom taetris");
+  SetWindowState(FLAG_WINDOW_RESIZABLE);
   gTexture = LoadTexture("res/block.png");
   SetTargetFPS(30);
 
