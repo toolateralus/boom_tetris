@@ -4,6 +4,7 @@
 
 #include <cmath>
 #include <cstdlib>
+#include <ctime>
 #include <stdexcept>
 #include <stdio.h>
 #include <string>
@@ -61,6 +62,10 @@ enum struct Direction { None, Left, Right, Down };
 // at which rate are we moving the tetromino down?
 float gGravity = 0.15f;
 float gPlayerGravity = 0.0f;
+
+size_t gLevel = 0;
+size_t gScore = 0;
+size_t gLinesClearedThisLevel = 0;
 
 // a grid cell.
 struct Cell {
@@ -121,6 +126,12 @@ struct Board {
     }
   }
 
+  const std::vector<float> gGravityLevels = {
+      1.0 / 48, 1.0 / 43, 1.0 / 38, 1.0 / 33, 1.0 / 28,
+      1.0 / 23, 1.0 / 18, 1.0 / 13, 1.0 / 8,  1.0 / 6,
+      1.0 / 6,  1.0 / 6,  1.0 / 6,  1.0 / 5,  1.0 / 5,
+  };
+
   void checkLines() {
     std::vector<size_t> linesToBurn = {};
     size_t i = 0;
@@ -145,6 +156,27 @@ struct Board {
       for (auto &cell : rows[0]) {
         cell.empty = true;
       }
+    }
+
+    // todo: add more scoring, for soft & hard drops.
+    auto level = gLevel + 1;
+    if (linesToBurn.size() == 1) {
+      gScore += 40 * level;
+    } else if (linesToBurn.size() == 2) {
+      gScore += 100 * level;
+    } else if (linesToBurn.size() == 3) {
+      gScore += 300 * level;
+    } else if (linesToBurn.size() == 4) {
+      gScore += 1200 * level;
+    }
+
+    gLinesClearedThisLevel += linesToBurn.size();
+    if (gLinesClearedThisLevel >= 10) {
+      gLevel++;
+			if (gLevel < gGravityLevels.size()) {
+      	gGravity += gGravityLevels[gLevel];
+			}
+			gLinesClearedThisLevel = 0;
     }
   }
 };
@@ -419,11 +451,12 @@ void processGameLogic() {
   if (hit_bottom) {
     delete gTetromino;
     gTetromino = nullptr;
-
     gBoard.checkLines();
   }
 }
 int main(int argc, char *argv[]) {
+
+  srand(time(0));
 
   InitWindow(800, 650, "boom taetris");
   gTexture = LoadTexture("res/block.png");
