@@ -67,6 +67,7 @@ size_t gLevel = 0;
 size_t gScore = 0;
 size_t gLinesClearedThisLevel = 0;
 
+
 // a grid cell.
 struct Cell {
   size_t color = 0;
@@ -191,6 +192,9 @@ Board gBoard = {};
 enum struct Shape { L, J, Z, S, I, T, Square };
 enum struct Orientation { Up, Right, Down, Left };
 
+Shape *gNextShape = nullptr;
+size_t *gNextColor = nullptr;
+
 // a static map of the coordinates of each shape in local space.
 const std::unordered_map<Shape, std::vector<Vec2>> gShapePatterns = {
     {Shape::L, {{0, -1}, {0, 0}, {0, 1}, {1, 1}}},
@@ -201,6 +205,14 @@ const std::unordered_map<Shape, std::vector<Vec2>> gShapePatterns = {
     {Shape::T, {{-1, 0}, {0, 0}, {1, 0}, {0, 1}}},
     {Shape::Square, {{0, 0}, {0, 1}, {1, 0}, {1, 1}}},
 };
+
+
+void setNextShapeAndColor() {
+	int num_shapes = (int)Shape::Square + 1;
+	auto shape = Shape(rand() % num_shapes);
+	*gNextShape = shape;
+	*gNextColor = (size_t)std::min((int)shape, 4);
+}
 
 // a group of cells the user is currently in control of.
 struct Tetromino {
@@ -322,12 +334,15 @@ struct Tetromino {
     last_pos = pos;
   }
   Tetromino() {
-    int num_shapes = (int)Shape::Square + 1;
-    shape = Shape(rand() % num_shapes);
-    color = (size_t)std::min((int)shape, 4);
+		shape = *gNextShape;
+		color = *gNextColor;
+		setNextShapeAndColor();
     pos = {5, 0};
   }
 };
+
+
+
 
 Tetromino *gTetromino = nullptr;
 
@@ -459,7 +474,10 @@ void processGameLogic() {
   }
 }
 int main(int argc, char *argv[]) {
-
+	gNextShape = new Shape;
+	gNextColor = new size_t;
+	setNextShapeAndColor();
+	
   InitWindow(800, 600, "boom taetris");
   SetWindowState(FLAG_WINDOW_RESIZABLE);
   gTexture = LoadTexture("res/block.png");
