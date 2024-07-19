@@ -3,9 +3,11 @@
 
 int main(int argc, char *argv[]) {
 	
-	rayui::Grid grid({0,0}, {0,0}, 16, 16, 0.0, 0.0, 1.0, 1.0);
+	rayui::Grid grid;
+	grid.subdivisions = {16, 16};
 	
-	grid.emplace_element<rayui::Rect>(rayui::Position{0, 0}, rayui::Size{2, 2}, rayui::Style {GREEN, RED}, rayui::LayoutKind::StretchHorizontal);
+	grid.emplace_element<rayui::Rect>(rayui::Position{0, 0}, rayui::Size{2, 2}, rayui::Style {GREEN, RED}, rayui::LayoutKind::None);
+	grid.emplace_element<rayui::Rect>(rayui::Position{2, 0}, rayui::Size{2, 2}, rayui::Style {GREEN, RED}, rayui::LayoutKind::None);
 	
 	InitWindow(0, 0, "ui test");
 	
@@ -32,8 +34,8 @@ int main(int argc, char *argv[]) {
 			element->layoutKind = (rayui::LayoutKind)(((int)element->layoutKind + 1) % ((int)rayui::LayoutKind::StretchVertical + 1));
 		}
 		
-		
-		grid.draw();
+		rayui::LayoutState state({0,0}, {(float)GetScreenWidth(), (float)GetScreenHeight()});
+		grid.draw(state);
 		EndDrawing();
 	}
 	

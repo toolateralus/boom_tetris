@@ -6,11 +6,11 @@
 
 namespace rayui {
 struct Position {
-  uint16_t x, y;
+  int x, y;
 };
 
 struct Size {
-  uint16_t width, height;
+  int width, height;
 };
 
 struct Style {
@@ -22,7 +22,7 @@ struct Style {
 
 struct BorederedStyle : Style {
   Color borderColor;
-  uint16_t borderSize;
+  int borderSize;
 };
 
 // What other kinds of layout-kind might we want?
@@ -53,12 +53,12 @@ struct Element {
   Element(Position position, Size size,
           LayoutKind layoutKind = LayoutKind::None, Style style = {BLACK, WHITE})
       : style(style), position(position), size(size), layoutKind(layoutKind) {}
-
+  Element() {}
   virtual ~Element() {}
   Style style = {BLACK, WHITE};
   LayoutKind layoutKind = LayoutKind::None;
-  Position position;
-  Size size;
+  Position position = {0,0};
+  Size size = {1,1};
   virtual void draw(LayoutState &state) = 0;
 };
 
@@ -69,35 +69,14 @@ struct Grid : Element {
     auto element = std::make_unique<T>(args...);
     elements.push_back(std::move(element));
   }
+  Grid(Position pos, Size size) : Element(pos, size) {}
+  Grid() : Element() {}
   
-  // pixel position of the top-left of the grid.
-  PixelPosition origin;
-  // pixel size of the grid.
-  PixelSize size;
-
   std::vector<std::unique_ptr<Element>> elements;
 
-  void computePixelSpace();
-  
-  // draw from this element as root.
-  void draw() {
-    auto state = LayoutState { origin, size };
-    this->draw(state);
-  }
-  
   void draw(LayoutState &state) override;
 
-  // percentage based values used to compute pixel origin and size.
-  const float origin_x, origin_y, size_x, size_y;
-
-  const int subdivisions_x, subdivisions_y;
-
-  // origin_x and origin_y are 0.0 to 1.0 values specifying at what percentage
-  // of the screen will the grid begin.
-  // size_x and size_y are 0.0 to 1.0 values specifying how much of the screen
-  // this grid should take up.
-  Grid(Position position, Size size, int subdivisions_x, int subdivisions_y, float origin_x,
-            float origin_y, float size_x, float size_y);
+  Size subdivisions = {1, 1};
 };
 
 struct Rect : Element {
