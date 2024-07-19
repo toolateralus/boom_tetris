@@ -30,7 +30,7 @@ Game::Game() {
   board = Board();
   setNextShapeAndColor();
   blockTexture = LoadTexture("res/block.png");
-  inMenu = true;
+  inMenu = true; 
 }
 
 void Game::processGameLogic() {
@@ -77,7 +77,8 @@ void Game::processGameLogic() {
     playerGravity = 0.25f;
   }
   
-  auto hit_bottom = executeMovement([&] {
+  // check if this piece hit the floor, or another piece.  
+  auto landed = executeMovement([&] {
     budge += gravity + playerGravity;
     playerGravity = 0.0f;
     auto floored = std::floor(budge);
@@ -95,10 +96,15 @@ void Game::processGameLogic() {
     cell.empty = false;
     cell.color = tetromino->color;
   }
-
-  if (hit_bottom) {
+  
+  // if we landed, we leave the cells where they are and spawn a new piece.
+  // also check for line clears and tetrises.
+  if (landed) {
     tetromino.reset(nullptr);
-    checkLines();
+    
+    auto linesToClear = checkLines();
+    auto linesCleared = clearLines(linesToClear);
+    adjustScoreAndLevel(linesCleared);
   }
 }
 
@@ -107,6 +113,7 @@ void Game::setNextShapeAndColor() {
   auto shape = Shape(rand() % num_shapes);
   nextShape = shape;
   nextColor = (size_t)std::min((int)shape, 4);
+  
 }
 
 void Game::cleanTetromino(std::unique_ptr<Tetromino> &tetromino) {
@@ -121,7 +128,7 @@ void Game::cleanTetromino(std::unique_ptr<Tetromino> &tetromino) {
   }
 }
 
-void Game::checkLines() {
+std::vector<size_t> Game::checkLines() {
   std::vector<size_t> linesToBurn = {};
   size_t i = 0;
   for (const auto &row : board.rows) {
@@ -137,35 +144,8 @@ void Game::checkLines() {
     }
     ++i;
   }
-
-  for (auto idx : linesToBurn) {
-    for (size_t j = idx; j > 0; --j) {
-      board.rows[j] = board.rows[j - 1];
-    }
-    for (auto &cell : board.rows[0]) {
-      cell.empty = true;
-    }
-  }
-
-  auto level = this->level + 1;
-  if (linesToBurn.size() == 1) {
-    score += 40 * level;
-  } else if (linesToBurn.size() == 2) {
-    score += 100 * level;
-  } else if (linesToBurn.size() == 3) {
-    score += 300 * level;
-  } else if (linesToBurn.size() == 4) {
-    score += 1200 * level;
-  }
-
-  linesClearedThisLevel += linesToBurn.size();
-  if (linesClearedThisLevel >= 10) {
-    level++;
-    if (level < gravityLevels.size()) {
-      gravity += gravityLevels[level];
-    }
-    linesClearedThisLevel = 0;
-  }
+  
+  return linesToBurn;
 }
 
 void Game::draw() {
@@ -206,18 +186,26 @@ void Game::drawUi() {
   auto halfScreen = screen_width / 2;
   auto leftStart = halfScreen - blockSize * 13;
   auto rightStart = halfScreen + blockSize * 5;
+  
   DrawRectangle(leftStart, 0, blockSize * 26, blockSize * 20, DARKGRAY);
+  
   // draw left side
   DrawText("Score:", leftStart + blockSize, 0, blockSize, WHITE);
+  
   DrawText(std::to_string(score).c_str(), leftStart + blockSize, blockSize,
            blockSize, WHITE);
+           
   DrawText("Level:", leftStart + blockSize, blockSize * 2, blockSize, WHITE);
+  
   DrawText(std::to_string(level).c_str(), leftStart + blockSize,
            blockSize * 3, blockSize, WHITE);
+           
   // draw right side
   DrawText("Next:", rightStart + blockSize, 0, blockSize, WHITE);
+  
   DrawRectangle(rightStart + blockSize, blockSize, blockSize * 4,
                 blockSize * 4, BLACK);
+                
   auto nextBlockAreaCenterX = rightStart + blockSize * 2;
   auto nextBlockAreaCenterY = blockSize * 2;
   if (nextShape != Shape::I && nextShape != Shape::Square) {
@@ -226,6 +214,7 @@ void Game::drawUi() {
   if (nextShape == Shape::I) {
     nextBlockAreaCenterY += blockSize / 2;
   }
+  
   for (const auto &block : shapePatterns.at(nextShape)) {
     auto color = palette[paletteIdx][nextColor];
     auto destX = nextBlockAreaCenterX + block.x * blockSize;
@@ -259,14 +248,11 @@ bool Board::collides(Vec2 pos) {
   return false;
 }
 
-
-
 Game::~Game() { UnloadTexture(blockTexture); }
 
 void Game::reset() {
   score = 0;
-  // this is always set by the main menu, so we don't have to reset it.
-  // level = 0;
+  gravity =  gravityLevels[level];
   linesClearedThisLevel = 0;
   board = {}; // reset the grid state.
   gravity = 0.1f;
@@ -410,4 +396,38 @@ void Tetromino::spinLeft() {
 void Tetromino::saveState() {
   prev_orientation = orientation;
   prev_position = position;
+}
+void Game::adjustScoreAndLevel(size_t linesCleared) {
+  auto level = this->level + 1;
+  if (linesCleared == 1) {
+    score += 40 * level;
+  } else if (linesCleared == 2) {
+    score += 100 * level;
+  } else if (linesCleared == 3) {
+    score += 300 * level;
+  } else if (linesCleared == 4) {
+    score += 1200 * level;
+  }
+
+  linesClearedThisLevel += linesCleared;
+
+  if (linesClearedThisLevel >= 10) {
+    level += 1;
+    printf("advanced level: to %ld", level);
+    if (level < gravityLevels.size()) {
+      gravity = gravityLevels[level];
+    }
+    linesClearedThisLevel = 0;
+  }
+}
+size_t Game::clearLines(std::vector<size_t> &linesToClear) {
+  for (auto idx : linesToClear) {
+    for (size_t j = idx; j > 0; --j) {
+      board.rows[j] = board.rows[j - 1];
+    }
+    for (auto &cell : board.rows[0]) {
+      cell.empty = true;
+    }
+  }
+  return linesToClear.size();
 }

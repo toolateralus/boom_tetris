@@ -9,9 +9,9 @@
 #pragma once
 
 // an integer Vector2
+#include <array>
 #include <cstddef>
 #include <vector>
-#include <array>
 
 // the direction of user input.
 enum struct Direction { None, Left, Right, Down };
@@ -22,11 +22,11 @@ enum struct Orientation { Up, Right, Down, Left };
 
 struct Vec2 {
   int x, y;
-  
+
   Vec2 operator+(const Vec2 &other) const {
     return {this->x + other.x, this->y + other.y};
   }
-  
+
   Vec2 rotated(Orientation orientation) const {
     switch (orientation) {
     case Orientation::Up:
@@ -51,7 +51,6 @@ struct HorizontalInput {
   bool left, right;
 };
 
-
 // a grid cell.
 struct Cell {
   size_t color = 0;
@@ -60,13 +59,11 @@ struct Cell {
 
 struct Board {
   std::array<std::array<Cell, 10>, 20> rows = {};
-  
+
   Cell &operator[](int x, int y);
-  
-  Cell &get_cell(int x, int y) {
-    return (*this)[x,y];
-  }
-  
+
+  Cell &get_cell(int x, int y) { return (*this)[x, y]; }
+
   auto begin() { return rows.begin(); }
   auto end() { return rows.end(); }
 
@@ -83,12 +80,12 @@ struct Tetromino {
   Vec2 position;
   Shape shape;
   Orientation orientation = Orientation::Up;
-  
+
   // currently exist in, so that we can safely move into new cells.
   void spinRight();
   void spinLeft();
   void saveState();
-  
+
   Tetromino() = delete;
   Tetromino(Shape &shape, size_t color) {
     this->shape = shape;
@@ -98,38 +95,37 @@ struct Tetromino {
 };
 
 struct Game {
-  
-  
+
   // the play grid.
   Board board;
-  
+
   // the upcoming shape & color of the next tetromino.
   Shape nextShape = (Shape)-1;
   int nextColor = -1;
-  
+
   // the piece the player is in control of.
   std::unique_ptr<Tetromino> tetromino;
-  
+
   void reset();
-  
+
   Game();
   ~Game();
-  
+
   // TODO: make this more like classic tetris.
   static std::vector<float> gravityLevels;
   static std::unordered_map<Shape, std::vector<Vec2>> shapePatterns;
   // colors for each level[shape]
   static std::vector<std::vector<Color>> palette;
-  
+
   // unit size of a cell on the grid, in pixels. based on resolution
   int blockSize = 32;
-  
+
   // the block texture, used and tinted for every block.
   Texture2D blockTexture;
   // an index into the current pallette, based on level.
   size_t paletteIdx = 0;
   // at which rate are we moving the tetromino down?
-  float gravity = 0.15f;
+  float gravity = 0.0f;
   // extra gravity for when the player is holding down.
   float playerGravity = 0.0f;
   size_t level = 0;
@@ -137,18 +133,20 @@ struct Game {
   size_t linesClearedThisLevel = 0;
   // are we in the main menu?
   bool inMenu = true;
-  
+
   void setNextShapeAndColor();
   void processGameLogic();
   void drawUi();
   void draw();
-  void checkLines();
-  void saveTetromino();
+  std::vector<size_t> checkLines();
   
+  size_t clearLines(std::vector<size_t> &linesToClear);
+  void adjustScoreAndLevel(size_t linesCleared);
+
+  void saveTetromino();
+
   HorizontalInput delayedAutoShift();
   void cleanTetromino(std::unique_ptr<Tetromino> &tetromino);
   bool resolveCollision(std::unique_ptr<Tetromino> &tetromino);
   ShapeIndices getIndices(std::unique_ptr<Tetromino> &tetromino) const;
 };
-
-
