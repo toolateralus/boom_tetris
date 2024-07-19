@@ -11,7 +11,7 @@
 // an integer Vector2
 #include <cstddef>
 #include <vector>
-
+#include <array>
 
 // the direction of user input.
 enum struct Direction { None, Left, Right, Down };
@@ -51,49 +51,6 @@ struct HorizontalInput {
   bool left, right;
 };
 
-struct Tetromino;
-struct Board;
-struct Game {
-  static std::vector<float> gGravityLevels;
-  
-  std::unique_ptr<Board> board;
-  Shape nextShape = (Shape)-1;
-  int nextColor = -1;
-  
-  std::unique_ptr<Tetromino> tetromino;
-  
-  void reset();
-
-  Game();
-  ~Game();
-
-  static std::unordered_map<Shape, std::vector<Vec2>> gShapePatterns;
-
-  int gBlockSize = 32;
-  static std::vector<std::vector<Color>> palette;
-  // the block texture, used and tinted for every block.
-  Texture2D blockTexture;
-  // an index into the current pallette, based on level.
-  size_t paletteIdx = 0;
-  // at which rate are we moving the tetromino down?
-  float gravity = 0.15f;
-  float playerGravity = 0.0f;
-  size_t level = 0;
-  size_t score = 0;
-  size_t linesClearedThisLevel = 0;
-  bool inMenu = true;
-  
-  void setNextShapeAndColor();
-  void processGameLogic();
-  void drawUi();
-  void draw();
-  void checkLines();
-  void saveTetromino();
-  void cleanTetromino(std::unique_ptr<Tetromino> &tetromino);
-  bool resolveCollision(std::unique_ptr<Tetromino> &tetromino);
-  HorizontalInput delayedAutoShift();
-  ShapeIndices getIndices(std::unique_ptr<Tetromino> &tetromino) const;
-};
 
 // a grid cell.
 struct Cell {
@@ -102,7 +59,8 @@ struct Cell {
 };
 
 struct Board {
-  std::vector<std::vector<Cell>> rows;
+  std::array<std::array<Cell, 10>, 20> rows = {};
+  
   Cell &operator[](int x, int y);
   
   Cell &get_cell(int x, int y) {
@@ -111,21 +69,18 @@ struct Board {
   
   auto begin() { return rows.begin(); }
   auto end() { return rows.end(); }
-  template <typename... Args> auto &emplace_back(Args &&...args) {
-    return rows.emplace_back(args...);
-  }
+
   // We need more information that just whether it collided or not: we need to
   // know what side we hit so we can depenetrate in the opposite direction.
   bool collides(Vec2 pos);
-  void reset();
 };
 
 // a group of cells the user is currently in control of.
 struct Tetromino {
   size_t color = 0;
-  Vec2 last_pos;
-  Orientation last_ori;
-  Vec2 pos;
+  Vec2 prev_position;
+  Orientation prev_orientation;
+  Vec2 position;
   Shape shape;
   Orientation orientation = Orientation::Up;
   
@@ -138,7 +93,62 @@ struct Tetromino {
   Tetromino(Shape &shape, size_t color) {
     this->shape = shape;
     this->color = color;
-    pos = {5, 0};
+    position = {5, 0};
   }
 };
+
+struct Game {
+  
+  
+  // the play grid.
+  Board board;
+  
+  // the upcoming shape & color of the next tetromino.
+  Shape nextShape = (Shape)-1;
+  int nextColor = -1;
+  
+  // the piece the player is in control of.
+  std::unique_ptr<Tetromino> tetromino;
+  
+  void reset();
+  
+  Game();
+  ~Game();
+  
+  // TODO: make this more like classic tetris.
+  static std::vector<float> gravityLevels;
+  static std::unordered_map<Shape, std::vector<Vec2>> shapePatterns;
+  // colors for each level[shape]
+  static std::vector<std::vector<Color>> palette;
+  
+  // unit size of a cell on the grid, in pixels. based on resolution
+  int blockSize = 32;
+  
+  // the block texture, used and tinted for every block.
+  Texture2D blockTexture;
+  // an index into the current pallette, based on level.
+  size_t paletteIdx = 0;
+  // at which rate are we moving the tetromino down?
+  float gravity = 0.15f;
+  // extra gravity for when the player is holding down.
+  float playerGravity = 0.0f;
+  size_t level = 0;
+  size_t score = 0;
+  size_t linesClearedThisLevel = 0;
+  // are we in the main menu?
+  bool inMenu = true;
+  
+  void setNextShapeAndColor();
+  void processGameLogic();
+  void drawUi();
+  void draw();
+  void checkLines();
+  void saveTetromino();
+  
+  HorizontalInput delayedAutoShift();
+  void cleanTetromino(std::unique_ptr<Tetromino> &tetromino);
+  bool resolveCollision(std::unique_ptr<Tetromino> &tetromino);
+  ShapeIndices getIndices(std::unique_ptr<Tetromino> &tetromino) const;
+};
+
 

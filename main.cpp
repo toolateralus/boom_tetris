@@ -43,9 +43,9 @@ int main(int argc, char *argv[]) {
 		if (game.inMenu) {
 			game.inMenu = drawMenu(game);
       
+			// if we've exited the menu, reset the game state, for when we game over and re-enter the game.
       if (!game.inMenu) {
 				game.reset();
-        game.inMenu = false;
       }
       
 			EndDrawing();
