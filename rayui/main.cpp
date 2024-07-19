@@ -9,6 +9,7 @@ int main(int argc, char *argv[]) {
 	grid.emplace_element<rayui::Rect>(rayui::Position{0, 0}, rayui::Size{2, 2}, rayui::Style {GREEN, RED}, rayui::LayoutKind::None);
 	grid.emplace_element<rayui::Rect>(rayui::Position{2, 0}, rayui::Size{2, 2}, rayui::Style {GREEN, RED}, rayui::LayoutKind::None);
 	
+	
 	InitWindow(0, 0, "ui test");
 	
 	auto &element = grid.elements[0];

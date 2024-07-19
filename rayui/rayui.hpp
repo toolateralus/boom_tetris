@@ -88,11 +88,13 @@ struct Rect : Element {
 };
 
 struct Label: Element {
-  Label(Position position, Size size, LayoutKind layoutKind = {}, Style style = {BLACK, WHITE}) : Element(position, size, layoutKind, style) {
-    
+  size_t fontSize = 12;
+  char *text;
+  Label(Position pos, Size size) : Element(pos, size) {}
+  void draw(LayoutState &state) override {
+    DrawRectangle(state.position.x, state.position.y, state.size.width, state.size.height, style.background);
+    DrawText(text, state.position.x, state.position.y, fontSize, style.foreground);
   }
-    
-  
 };
 
 } // end namespace rayui
