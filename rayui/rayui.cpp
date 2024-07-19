@@ -4,18 +4,13 @@
 using namespace rayui;
 
 void Grid::draw(LayoutState &state) {
-  // apply margin to state
-  state.size.width -= margin.left + margin.right;
-  state.size.height -= margin.top + margin.bottom;
-  state.position.x += margin.left;
-  state.position.y += margin.top;
-
   // Calculate the size of each cell in the grid
   float cellWidth = state.size.width / subdivisions.width;
   float cellHeight = state.size.height / subdivisions.height;
 
   for (const auto &element : elements) {
     LayoutState elementState;
+    elementState.applyMargin(element->margin);
     // keep element in bounds of grid
     auto maxElementX = subdivisions.width - std::max(element->size.width, 1);
     auto maxElementY = subdivisions.height - std::max(element->size.height, 1);
@@ -51,12 +46,6 @@ void Grid::draw(LayoutState &state) {
 }
 
 void rayui::Rect::draw(LayoutState &state) {
-  // apply margin to state
-  state.size.width -= margin.left + margin.right;
-  state.size.height -= margin.top + margin.bottom;
-  state.position.x += margin.left;
-  state.position.y += margin.top;
-  
   DrawRectangle(state.position.x, state.position.y, state.size.width,
                 state.size.height, style.background);
 }
