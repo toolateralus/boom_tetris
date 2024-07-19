@@ -1,5 +1,8 @@
 #include "tetris.hpp"
+#include <cstring>
+#include <functional>
 #include <raylib.h>
+#include <string>
 
 #include "rayui.hpp"
 
@@ -34,73 +37,21 @@ void gamepadLogger(Game &game) {
 void setupMenuButtons(Game &game) {
   auto pos = Position{2,12};
   auto size = Size{2,2};
-  
-  auto zero = std::function<void()>([&game](){
-    game.level = 0;
-    game.inMenu = false;
-  });
-  auto one = std::function<void()>([&game](){
-    game.level = 1;
-    game.inMenu = false;
-  });
-  auto two = std::function<void()>([&game](){
-    game.level = 2;
-    game.inMenu = false;
-  });
-  auto three = std::function<void()>([&game](){
-    game.level = 3;
-    game.inMenu = false;
-  });
-  auto four = std::function<void()>([&game](){
-    game.level = 4;
-    game.inMenu = false;
-  });
-  auto five = std::function<void()>([&game](){
-    game.level = 5;
-    game.inMenu = false;
-  });
-  auto six = std::function<void()>([&game](){
-    game.level = 6;
-    game.inMenu = false;
-  });
-  auto seven = std::function<void()>([&game](){
-    game.level = 7;
-    game.inMenu = false;
-  });
-  auto eight = std::function<void()>([&game](){
-    game.level = 8;
-    game.inMenu = false;
-  });
-  auto nine = std::function<void()>([&game](){
-    game.level = 9;
-    game.inMenu = false;
-  });
   grid.emplace_element<Rect>(Position{0, 11}, Size{1,4}, Style{GetColor(0x2b2b2baa), WHITE},LayoutKind::StretchHorizontal);
-  grid.emplace_element<Button>(pos, size, (char*)"0", zero);
-  pos.x += size.width;
-  grid.emplace_element<Button>(pos, size, (char*)"1", one);
-  pos.x += size.width;
-  grid.emplace_element<Button>(pos, size, (char*)"2", two);
-  pos.x += size.width;
-  grid.emplace_element<Button>(pos, size, (char*)"3", three);
-  pos.x += size.width;
-  grid.emplace_element<Button>(pos, size, (char*)"4", four);
-  pos.x += size.width;
-  grid.emplace_element<Button>(pos, size, (char*)"5", five);
-  pos.x += size.width;
-  grid.emplace_element<Button>(pos, size, (char*)"6", six);
-  pos.x += size.width;
-  grid.emplace_element<Button>(pos, size, (char*)"7", seven);
-  pos.x += size.width;
-  grid.emplace_element<Button>(pos, size, (char*)"8", eight);
-  pos.x += size.width;
-  grid.emplace_element<Button>(pos, size, (char*)"9", nine);
+  for (int i = 0; i <= 9; ++i) {
+    auto callback = std::function<void()>([&game, i]() {
+      game.level = i;
+      game.inMenu = false;
+    });
+    auto str = std::to_string(i);
+    char* owned_c_str = new char[str.length() + 1];
+    memcpy(owned_c_str, str.c_str(), str.length() + 1);
+    grid.emplace_element<Button>(pos, size, owned_c_str, callback);
+    pos.x += size.width;
+  }
 }
 
 int main(int argc, char *argv[]) {
-  
-  
-  
   srand(time(0));
   InitWindow(800, 600, "boom taetris");
   SetWindowState(FLAG_WINDOW_RESIZABLE);
