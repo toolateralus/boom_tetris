@@ -1,5 +1,5 @@
 COMPILER := clang++
-COMPILER_FLAGS := -std=c++2b -g
+COMPILER_FLAGS := -std=c++2b -O3
 LD_FLAGS := -lraylib -lm
 OBJ_DIR := objs
 BIN_DIR := bin

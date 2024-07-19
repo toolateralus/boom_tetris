@@ -13,6 +13,9 @@
 #include <cstddef>
 #include <vector>
 
+constexpr size_t boardWidth = 10;
+constexpr size_t boardHeight = 20;
+
 // the direction of user input.
 enum struct Direction { None, Left, Right, Down };
 // the shape of a tetromino, a group of cells.
@@ -58,7 +61,7 @@ struct Cell {
 };
 
 struct Board {
-  std::array<std::array<Cell, 10>, 20> rows = {};
+  std::array<std::array<Cell, boardWidth>, boardHeight> rows = {};
 
   Cell &operator[](int x, int y);
 

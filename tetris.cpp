@@ -89,7 +89,7 @@ void Game::processGameLogic() {
   });
 
   for (const auto &idx : getIndices(tetromino)) {
-    if (idx.x < 0 || idx.x >= 10 || idx.y < 0 || idx.y >= 20) {
+    if (idx.x < 0 || idx.x >= boardWidth || idx.y < 0 || idx.y >= boardHeight) {
       continue;
     }
     auto &cell = board.get_cell(idx.x, idx.y);
@@ -119,7 +119,7 @@ void Game::setNextShapeAndColor() {
 void Game::cleanTetromino(std::unique_ptr<Tetromino> &tetromino) {
   auto indices = getIndices(tetromino);
   for (const auto &idx : indices) {
-    if (idx.y < 0 || idx.y >= 20 || idx.x < 0 || idx.x >= 10) {
+    if (idx.y < 0 || idx.y >= boardHeight || idx.x < 0 || idx.x >= boardWidth) {
       continue;
     }
     auto &cell = board.get_cell(idx.x, idx.y);
@@ -151,7 +151,7 @@ std::vector<size_t> Game::checkLines() {
 void Game::draw() {
   auto screen_width = GetScreenWidth();
   auto halfScreen = screen_width / 2;
-  auto boardStart = halfScreen - (blockSize * 10 / 2);
+  auto boardStart = halfScreen - (blockSize * boardWidth / 2);
   auto blockTxSourceRect =
       Rectangle{0, 0, (float)blockTexture.width, (float)blockTexture.height};
   size_t x = 0, y = 0;
@@ -182,12 +182,12 @@ void Game::drawUi() {
       Rectangle{0, 0, (float)blockTexture.width, (float)blockTexture.height};
   auto screen_width = GetScreenWidth();
   auto screen_height = GetScreenHeight();
-  blockSize = std::min(screen_height / 20, screen_width / 26);
+  blockSize = std::min(screen_height / (int)boardHeight, screen_width / 26);
   auto halfScreen = screen_width / 2;
   auto leftStart = halfScreen - blockSize * 13;
   auto rightStart = halfScreen + blockSize * 5;
   
-  DrawRectangle(leftStart, 0, blockSize * 26, blockSize * 20, DARKGRAY);
+  DrawRectangle(leftStart, 0, blockSize * 26, blockSize * boardHeight, DARKGRAY);
   
   // draw left side
   DrawText("Score:", leftStart + blockSize, 0, blockSize, WHITE);
@@ -227,7 +227,7 @@ void Game::drawUi() {
 
 bool Game::resolveCollision(std::unique_ptr<Tetromino> &tetromino) {
   for (const auto idx : getIndices(tetromino)) {
-    if (idx.y >= 20 || idx.x < 0 || idx.x >= 10 || board.collides(idx)) {
+    if (idx.y >= boardHeight || idx.x < 0 || idx.x >= boardWidth || board.collides(idx)) {
       tetromino->position = tetromino->prev_position;
       tetromino->orientation = tetromino->prev_orientation;
       return true;
@@ -239,7 +239,7 @@ bool Game::resolveCollision(std::unique_ptr<Tetromino> &tetromino) {
 bool Board::collides(Vec2 pos) {
   int x = pos.x;
   int y = pos.y;
-  if (y < 0 || y >= 20 || x < 0 || x >= 10) {
+  if (y < 0 || y >= boardHeight || x < 0 || x >= boardWidth) {
     return false;
   }
   if (!rows[y][x].empty) {
@@ -399,19 +399,20 @@ void Tetromino::saveState() {
 }
 void Game::adjustScoreAndLevel(size_t linesCleared) {
   auto score_level = this->level + 1;
+  
   if (linesCleared == 1) {
     score += 40 * score_level;
   } else if (linesCleared == 2) {
-    score += 100 * score_level;
+    score += boardWidth * score_level;
   } else if (linesCleared == 3) {
     score += 300 * score_level;
   } else if (linesCleared == 4) {
-    score += 1200 * score_level;
+    score += boardHeight * score_level;
   }
   
   linesClearedThisLevel += linesCleared;
   
-  if (linesClearedThisLevel >= 10) {
+  if (linesClearedThisLevel >= boardWidth) {
     level++;
     printf("\033[1;32madvanced level: to %ld\033[0m\n", level);
     if (score_level < gravityLevels.size()) {
