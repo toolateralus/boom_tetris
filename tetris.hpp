@@ -32,31 +32,23 @@ struct HorizontalInput {
 struct Tetromino;
 struct Board;
 struct Game {
-  const std::vector<float> gGravityLevels = {
-      1.0 / 48, 1.0 / 43, 1.0 / 38, 1.0 / 33, 1.0 / 28,
-      1.0 / 23, 1.0 / 18, 1.0 / 13, 1.0 / 8,  1.0 / 6,
-      1.0 / 6,  1.0 / 6,  1.0 / 6,  1.0 / 5,  1.0 / 5,
-  };
+  static std::vector<float> gGravityLevels;
   
   Board *board;
-  Shape *gNextShape = nullptr;
-  size_t *gNextColor = nullptr;
+  Shape nextShape = (Shape)-1;
+  int nextColor = -1;
+  
   Tetromino *gTetromino = nullptr;
 
-  Game();
+  void reset();
 
-  const std::unordered_map<Shape, std::vector<Vec2>> gShapePatterns = {
-      {Shape::L, {{-1, 1}, {-1, 0}, {0, 0}, {1, 0}}},
-      {Shape::J, {{-1, 0}, {0, 0}, {1, 0}, {1, 1}}},
-      {Shape::Z, {{-1, 0}, {0, 0}, {0, 1}, {1, 1}}},
-      {Shape::S, {{-1, 1}, {0, 1}, {0, 0}, {1, 0}}},
-      {Shape::I, {{-1, 0}, {0, 0}, {1, 0}, {2, 0}}},
-      {Shape::T, {{-1, 0}, {0, 0}, {1, 0}, {0, 1}}},
-      {Shape::Square, {{0, 0}, {0, 1}, {1, 0}, {1, 1}}},
-  };
+  Game();
+  ~Game();
+
+  static std::unordered_map<Shape, std::vector<Vec2>> gShapePatterns;
 
   int gBlockSize = 32;
-  const std::vector<std::vector<Color>> palette = {
+   std::vector<std::vector<Color>> palette = {
       {BLUE, LIME, YELLOW, ORANGE, RED}};
   // the block texture, used and tinted for every block.
   Texture2D blockTexture;
@@ -76,10 +68,10 @@ struct Game {
   void draw();
   void checkLines();
   void saveTetromino();
-  void cleanTetromino(Tetromino &tetromino);
-  bool resolveCollision(Tetromino &tetromino);
+  void cleanTetromino(Tetromino *tetromino);
+  bool resolveCollision(Tetromino *tetromino);
   HorizontalInput delayedAutoShift();
-  ShapeIndices getIndices(Tetromino &tetromino) const;
+  ShapeIndices getIndices(Tetromino *tetromino) const;
 };
 
 // a grid cell.
@@ -183,10 +175,11 @@ struct Tetromino {
     last_ori = orientation;
     last_pos = pos;
   }
-  Tetromino(Game &game) {
-    shape = *game.gNextShape;
-    color = *game.gNextColor;
-    game.setNextShapeAndColor();
+  
+  Tetromino() = delete;
+  Tetromino(Shape &shape, size_t color) {
+    this->shape = shape;
+    this->color = color;
     pos = {5, 0};
   }
 };

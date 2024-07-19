@@ -5,15 +5,40 @@
 
 void Game::saveTetromino() { gTetromino->saveState(); }
 
+std::vector<float> Game::gGravityLevels  = {
+      1.0 / 48, 1.0 / 43, 1.0 / 38, 1.0 / 33, 1.0 / 28,
+      1.0 / 23, 1.0 / 18, 1.0 / 13, 1.0 / 8,  1.0 / 6,
+      1.0 / 6,  1.0 / 6,  1.0 / 6,  1.0 / 5,  1.0 / 5,
+};
+
+std::unordered_map<Shape, std::vector<Vec2>> Game::gShapePatterns = {
+      {Shape::L, {{-1, 1}, {-1, 0}, {0, 0}, {1, 0}}},
+      {Shape::J, {{-1, 0}, {0, 0}, {1, 0}, {1, 1}}},
+      {Shape::Z, {{-1, 0}, {0, 0}, {0, 1}, {1, 1}}},
+      {Shape::S, {{-1, 1}, {0, 1}, {0, 0}, {1, 0}}},
+      {Shape::I, {{-1, 0}, {0, 0}, {1, 0}, {2, 0}}},
+      {Shape::T, {{-1, 0}, {0, 0}, {1, 0}, {0, 1}}},
+      {Shape::Square, {{0, 0}, {0, 1}, {1, 0}, {1, 1}}},
+  };
+
 Game::Game() {
   board = new Board();
   board->reset();
+	setNextShapeAndColor();
+  blockTexture = LoadTexture("res/block.png");
+  inMenu = true;
 }
 void Game::processGameLogic() {
   if (gTetromino == nullptr) {
-    gTetromino = new Tetromino(*this);
+    
+    auto shape = nextShape;
+    auto color = nextColor;
+    gTetromino = new Tetromino(shape, color);
+    
+    setNextShapeAndColor();
+    
     gTetromino->saveState();
-    if (resolveCollision(*gTetromino)) {
+    if (resolveCollision(gTetromino)) {
       printf("game done\n");
       inMenu = true;
       return;
@@ -21,29 +46,29 @@ void Game::processGameLogic() {
   }
   
   static float budge = 0.0;
-  cleanTetromino(*gTetromino);
+  cleanTetromino(gTetromino);
   
   auto horizontal = delayedAutoShift();
   
   if (IsKeyPressed(KEY_Z)) {
     gTetromino->saveState();
     gTetromino->orientation = gTetromino->getPreviousOrientation();
-    resolveCollision(*gTetromino);
+    resolveCollision(gTetromino);
   }
   if (IsKeyPressed(KEY_X) || IsKeyPressed(KEY_UP)) {
     gTetromino->saveState();
     gTetromino->orientation = gTetromino->getNextOrientation();
-    resolveCollision(*gTetromino);
+    resolveCollision(gTetromino);
   }
   if (horizontal.left) {
     gTetromino->saveState();
     gTetromino->pos.x--;
-    resolveCollision(*gTetromino);
+    resolveCollision(gTetromino);
   }
   if (horizontal.right) {
     gTetromino->saveState();
     gTetromino->pos.x++;
-    resolveCollision(*gTetromino);
+    resolveCollision(gTetromino);
   }
   if (IsKeyDown(KEY_DOWN)) {
     playerGravity = 0.25f;
@@ -58,8 +83,8 @@ void Game::processGameLogic() {
     budge = 0;
   }
   
-  auto hit_bottom = resolveCollision(*gTetromino);
-  for (const auto &idx : getIndices(*gTetromino)) {
+  auto hit_bottom = resolveCollision(gTetromino);
+  for (const auto &idx : getIndices(gTetromino)) {
     if (idx.x < 0 || idx.x >= 10 || idx.y < 0 || idx.y >= 20) {
       continue;
     }
@@ -77,10 +102,10 @@ void Game::processGameLogic() {
 void Game::setNextShapeAndColor() {
   static int num_shapes = (int)Shape::Square + 1;
   auto shape = Shape(rand() % num_shapes);
-  *gNextShape = shape;
-  *gNextColor = (size_t)std::min((int)shape, 4);
+  nextShape = shape;
+  nextColor = (size_t)std::min((int)shape, 4);
 }
-void Game::cleanTetromino(Tetromino &tetromino) {
+void Game::cleanTetromino(Tetromino *tetromino) {
     auto indices = getIndices(tetromino);
     for (const auto &idx : indices) {
       if (idx.y < 0 || idx.y >= 20 || idx.x < 0 || idx.x >= 10) {
@@ -188,14 +213,14 @@ void Game::drawUi() {
                 gBlockSize * 4, BLACK);
   auto nextBlockAreaCenterX = rightStart + gBlockSize * 2;
   auto nextBlockAreaCenterY = gBlockSize * 2;
-  if (*gNextShape != Shape::I && *gNextShape != Shape::Square) {
+  if (nextShape != Shape::I && nextShape != Shape::Square) {
     nextBlockAreaCenterX += gBlockSize / 2;
   }
-  if (*gNextShape == Shape::I) {
+  if (nextShape == Shape::I) {
     nextBlockAreaCenterY += gBlockSize / 2;
   }
-  for (const auto &block : gShapePatterns.at(*gNextShape)) {
-    auto color = palette[paletteIdx][*gNextColor];
+  for (const auto &block : gShapePatterns.at(nextShape)) {
+    auto color = palette[paletteIdx][nextColor];
     auto destX = nextBlockAreaCenterX + block.x * gBlockSize;
     auto destY = nextBlockAreaCenterY + block.y * gBlockSize;
     auto destRect = Rectangle{(float)destX, (float)destY, (float)gBlockSize,
@@ -203,11 +228,11 @@ void Game::drawUi() {
     DrawTexturePro(blockTexture, blockTxSourceRect, destRect, {0, 0}, 0, color);
   }
 }
-bool Game::resolveCollision(Tetromino &tetromino) {
+bool Game::resolveCollision(Tetromino *tetromino) {
   for (const auto idx : getIndices(tetromino)) {
     if (idx.y >= 20 || idx.x < 0 || idx.x >= 10 || board->collides(idx)) {
-      tetromino.pos = tetromino.last_pos;
-      tetromino.orientation = tetromino.last_ori;
+      tetromino->pos = tetromino->last_pos;
+      tetromino->orientation = tetromino->last_ori;
       return true;
     }
   }
@@ -297,13 +322,27 @@ void Board::reset() {
     }
   }
 }
-ShapeIndices Game::getIndices(Tetromino &tetromino) const {
+ShapeIndices Game::getIndices(Tetromino *tetromino) const {
   ShapeIndices indices;
-  auto pattern = gShapePatterns.at(tetromino.shape);
+  auto pattern = gShapePatterns.at(tetromino->shape);
   for (const auto &idx : pattern) {
-    const auto rotated = tetromino.rotate(idx);
+    const auto rotated = tetromino->rotate(idx);
     indices.push_back(
-        {tetromino.pos.x + rotated.x, tetromino.pos.y + rotated.y});
+        {tetromino->pos.x + rotated.x, tetromino->pos.y + rotated.y});
   }
   return indices;
+}
+
+Game::~Game() {
+  delete board;
+  delete gTetromino;
+}
+void Game::reset() {
+  score = 0;
+  level = 0;
+  linesClearedThisLevel = 0;
+  board->reset();
+  gravity = 0.1f;
+  gTetromino = nullptr;
+  setNextShapeAndColor();
 }

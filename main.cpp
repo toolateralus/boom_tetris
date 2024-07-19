@@ -30,25 +30,24 @@ int drawMenu(Game &game) {
 }
 
 int main(int argc, char *argv[]) {
-  Game game = {};
   
-	game.gNextShape = new Shape;
-	game.gNextColor = new size_t;
-	game.setNextShapeAndColor();
-	
   srand(time(0));
-  
   InitWindow(800, 600, "boom taetris");
   SetWindowState(FLAG_WINDOW_RESIZABLE);
-  game.blockTexture = LoadTexture("res/block.png");
   SetTargetFPS(30);
   
-	game.inMenu = true;
+  Game game = Game();
   while (!WindowShouldClose()) {
     BeginDrawing();
 	
 		if (game.inMenu) {
 			game.inMenu = drawMenu(game);
+      
+      if (!game.inMenu) {
+				game.reset();
+        game.inMenu = false;
+      }
+      
 			EndDrawing();
 			continue;
 		}
