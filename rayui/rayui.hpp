@@ -59,8 +59,8 @@ struct LayoutState {
 
 struct Element {
   Element(Position position, Size size,
-          LayoutKind layoutKind = LayoutKind::None, Style style = {BLACK, WHITE})
-      : style(style), position(position), size(size), layoutKind(layoutKind) {}
+          LayoutKind layoutKind = LayoutKind::None, Style style = {BLACK, WHITE}, Margin margin = {})
+      : style(style), position(position), size(size), layoutKind(layoutKind), margin(margin) {}
   Element() {}
   virtual ~Element() {}
   Style style = {BLACK, WHITE};
@@ -80,7 +80,7 @@ struct Grid : Element {
     return element;
   }
   Grid(Position pos, Size size) : Element(pos, size) {}
-  Grid() : Element() {}
+  Grid(Size subdivisions = {1,1}) : Element(), subdivisions(subdivisions) {}
   
   std::vector<std::shared_ptr<Element>> elements;
 
@@ -91,8 +91,8 @@ struct Grid : Element {
 
 struct Rect : Element {
   Rect(Position position, Size size, Style style = {BLACK, WHITE},
-       LayoutKind layoutKind = LayoutKind::None)
-      : Element(position, size, layoutKind, style) {}
+       LayoutKind layoutKind = LayoutKind::None, Margin margin = {})
+      : Element(position, size, layoutKind, style, margin) {}
 
   void draw(LayoutState &state) override;
 };
@@ -110,11 +110,12 @@ struct Label: Element {
 struct Button : Element {
   char *text = (char*)"";
   size_t fontSize;
-  void (*onClicked)() = nullptr;
+  using ClickedCallback = void (*)();
+  ClickedCallback onClicked = nullptr;
   
-  Button(Position position, Size size, Style style = {BLACK, WHITE, WHITE, 0},
+  Button(Position position, Size size, char* text = (char*)"", ClickedCallback onClicked = nullptr, Style style = {BLACK, WHITE, WHITE, 0},
          LayoutKind layoutKind = LayoutKind::None)
-      : Element(position, size, layoutKind, style) {}
+      : Element(position, size, layoutKind, style), text(text), onClicked(onClicked) {}
   
   void draw(LayoutState &state) override {
     bool isMouseOver = CheckCollisionPointRec(GetMousePosition(), { state.position.x, state.position.y, state.size.width, state.size.height });
