@@ -1,36 +1,9 @@
 #include "tetris.hpp"
 #include <cmath>
 
-// void draw() const {
-//   for (int x = 0; x < size.x; ++x) {
-//     for (int y = 0; y < size.y; ++y) {
-// 			// source position on texture to sample from.
-//       Rectangle sourceRec = {0.0f, 0.0f, (float)gTexture.width,
-//                              (float)gTexture.height};
-
-// 			// global position
-// 			Vector2 globalPos {position.x + (x * UNIT), position.y +
-// (y * UNIT)};
-
-// 			// Where on the screen to draw this
-//       Rectangle destRec{globalPos.x, globalPos.y,
-//                         UNIT, UNIT};
-
-// 			DrawRectangle(globalPos.x, globalPos.y, size.x * UNIT,
-// size.y * UNIT, gPalette[gCurrentPalette][color + 1]);
-
-// 			// texture, source, dest, origin, rotation, tint
-//       DrawTexturePro(gTexture, sourceRec, destRec, {0,0}, rotation,
-//                      gPalette[gCurrentPalette][color]);
-//     }
-//   }
-// }
-
-
-Board gBoard;
-Game game = {};
-
-
+void Game::saveTetromino() {
+  gTetromino->saveState(); 
+} 
 
 HorizontalInput DelayedAutoShift() {
   static float dasDelay = 0.2f;
@@ -85,8 +58,8 @@ HorizontalInput DelayedAutoShift() {
   return HorizontalInput(moveLeft, moveRight);
 }
 
-void processGameLogic() {
-
+void processGameLogic(Board &gBoard, Game &game) {
+  
   if (game.gTetromino == nullptr) {
     game.gTetromino = new Tetromino(game);
   }
@@ -155,8 +128,7 @@ void processGameLogic() {
   }
 }
 
-
-int drawMenu() {
+int drawMenu(Game &game) {
 	ClearBackground(BLACK);
 	static Texture2D texture = LoadTexture("res/title.png");
 	
@@ -183,9 +155,12 @@ int drawMenu() {
 }
 
 int main(int argc, char *argv[]) {
+  Board board;
+  Game game = {};
+  
 	game.gNextShape = new Shape;
 	game.gNextColor = new size_t;
-	setNextShapeAndColor(game);
+	game.setNextShapeAndColor();
 	
   srand(time(0));
   
@@ -194,27 +169,19 @@ int main(int argc, char *argv[]) {
   game.blockTexture = LoadTexture("res/block.png");
   SetTargetFPS(30);
   
-  // initialze board grid.
-  for (int y = 0; y < 20; ++y) {
-    auto &n = gBoard.emplace_back();
-    for (int x = 0; x < 10; ++x) {
-      n.emplace_back();
-    }
-  }
+  board.reset();
   
 	game.inMenu = true;
   while (!WindowShouldClose()) {
     BeginDrawing();
-		
 		if (!game.inMenu) {
-			game.inMenu = drawMenu();
+			game.inMenu = drawMenu(game);
 			EndDrawing();
 			continue;
 		}
-		
     ClearBackground(BG_COLOR);
-    processGameLogic();
-    gBoard.draw(game);
+    processGameLogic(board, game);
+    board.draw(game);
     EndDrawing();
   }
 

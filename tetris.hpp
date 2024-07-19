@@ -58,14 +58,21 @@ struct Game {
   size_t score = 0;
   size_t linesClearedThisLevel = 0;
   bool inMenu = true;  
+  
+  void setNextShapeAndColor() {
+    static int num_shapes = (int)Shape::Square + 1;
+    auto shape = Shape(rand() % num_shapes);
+    *gNextShape = shape;
+    *gNextColor = (size_t)std::min((int)shape, 4);
+  }
+  
+  
+  void saveTetromino();
 };
 
-static void setNextShapeAndColor(Game &game) {
-	int num_shapes = (int)Shape::Square + 1;
-	auto shape = Shape(rand() % num_shapes);
-	*game.gNextShape = shape;
-	*game.gNextColor = (size_t)std::min((int)shape, 4);
-}
+
+
+
 
 // a way to key into the grid to update a tetromino.
 using ShapeIndices = std::vector<Vec2>;
@@ -215,6 +222,17 @@ struct Board {
 			game.linesClearedThisLevel = 0;
     }
   }
+  
+  void reset() {
+    rows.clear();
+    // initialze board grid.
+    for (int y = 0; y < 20; ++y) {
+      auto &n = emplace_back();
+      for (int x = 0; x < 10; ++x) {
+        n.emplace_back();
+      }
+    }
+  }
 };
 
 // a group of cells the user is currently in control of.
@@ -280,7 +298,9 @@ struct Tetromino {
     }
     return Orientation((ori + 1) % max_oris);
   }
+  
 
+  
   Orientation getPreviousOrientation() const {
     auto ori = int(orientation);
     auto max_oris = 0;
@@ -339,10 +359,12 @@ struct Tetromino {
   Tetromino(Game &game) {
 		shape = *game.gNextShape;
 		color = *game.gNextColor;
-		setNextShapeAndColor(game);
+		game.setNextShapeAndColor();
     pos = {5, 0};
   }
 };
+
+
 
 struct HorizontalInput {
   HorizontalInput(bool left, bool right) : left(left), right(right) {}
