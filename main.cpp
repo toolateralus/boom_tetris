@@ -1,4 +1,5 @@
 #include "tetris.hpp"
+#include <raylib.h>
 
 int drawMenu(Game &game) {
   ClearBackground(BLACK);
@@ -27,6 +28,16 @@ int drawMenu(Game &game) {
   return true;
 }
 
+// TODO: figure out why, even though we get a valid gamepad 0, we never can query buttons properly.
+void gamepadLogger(Game &game) {
+  auto gamepad = game.FindGamepad();
+  system("clear");
+  printf("gamepad: %d:\n", gamepad);
+  for (int i = GAMEPAD_BUTTON_LEFT_FACE_UP; i <= GAMEPAD_BUTTON_RIGHT_THUMB;
+       ++i) {
+    printf("is_down: %d\n", IsGamepadButtonDown(gamepad, i));
+  }
+}
 int main(int argc, char *argv[]) {
 
   srand(time(0));
@@ -46,11 +57,13 @@ int main(int argc, char *argv[]) {
       if (!game.inMenu) {
         game.reset();
       }
-
+      
       EndDrawing();
       continue;
     }
-		
+    
+    gamepadLogger(game);
+
     ClearBackground(BG_COLOR);
     game.processGameLogic();
     game.drawUi();
