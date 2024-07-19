@@ -1,6 +1,6 @@
 COMPILER := clang++
-COMPILER_FLAGS := -std=c++2b -O3
-LD_FLAGS := -lraylib -lm
+COMPILER_FLAGS := -std=c++2b -Oz -flto -ffunction-sections -fdata-sections 
+LD_FLAGS := -lraylib -lm -s
 OBJ_DIR := objs
 BIN_DIR := bin
 

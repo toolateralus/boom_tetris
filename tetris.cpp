@@ -50,7 +50,7 @@ void Game::processGameLogic() {
   }
 
   static float budge = 0.0;
-
+  
   cleanTetromino(tetromino);
 
   auto horizontal = delayedAutoShift();
@@ -403,11 +403,11 @@ void Game::adjustScoreAndLevel(size_t linesCleared) {
   if (linesCleared == 1) {
     score += 40 * score_level;
   } else if (linesCleared == 2) {
-    score += boardWidth * score_level;
+    score += 100 * score_level;
   } else if (linesCleared == 3) {
     score += 300 * score_level;
   } else if (linesCleared == 4) {
-    score += boardHeight * score_level;
+    score += 1200 * score_level;
   }
   
   linesClearedThisLevel += linesCleared;
