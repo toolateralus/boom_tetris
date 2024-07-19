@@ -36,16 +36,34 @@
 //   }
 // }
 
+// an integer Vector2
+struct Vec2 {
+  int x, y;
+};
+// the shape of a tetromino, a group of cells.
+enum struct Shape { L, J, Z, S, I, T, Square };
+enum struct Orientation { Up, Right, Down, Left };
+
+Shape *gNextShape = nullptr;
+size_t *gNextColor = nullptr;
+
+// a static map of the coordinates of each shape in local space.
+const std::unordered_map<Shape, std::vector<Vec2>> gShapePatterns = {
+    {Shape::L, {{0, -1}, {0, 0}, {0, 1}, {1, 1}}},
+    {Shape::J, {{0, -1}, {0, 0}, {0, 1}, {-1, 1}}},
+    {Shape::Z, {{0, -1}, {0, 0}, {1, 0}, {1, 1}}},
+    {Shape::S, {{0, -1}, {0, 0}, {-1, 0}, {-1, 1}}},
+    {Shape::I, {{0, -1}, {0, 0}, {0, 1}, {0, 2}}},
+    {Shape::T, {{-1, 0}, {0, 0}, {1, 0}, {0, 1}}},
+    {Shape::Square, {{0, 0}, {0, 1}, {1, 0}, {1, 1}}},
+};
+
 int gBlockSize = 32;
 #define BG_COLOR GetColor(0x12121212)
 // a basic color palette. only one palette item right now.
 const std::vector<std::vector<Color>> gPalette = {
     {BLUE, LIME, YELLOW, ORANGE, RED}};
 
-// an integer Vector2
-struct Vec2 {
-  int x, y;
-};
 
 // a way to key into the grid to update a tetromino.
 using ShapeIndices = std::vector<Vec2>;
@@ -114,12 +132,29 @@ struct Board {
     auto screen_height = GetScreenHeight();
     gBlockSize = std::min(screen_height / 20, screen_width / 26);
     auto halfScreen = screen_width / 2;
-    auto left = halfScreen - gBlockSize * 13;
-    DrawRectangle(left, 0, gBlockSize * 26, gBlockSize * 20, DARKGRAY);
-    DrawText("Score:", left, 0, gBlockSize, WHITE);
-    DrawText(std::to_string(gScore).c_str(), left, gBlockSize, gBlockSize, WHITE);
-    DrawText("Level:", left, gBlockSize * 2, gBlockSize, WHITE);
-    DrawText(std::to_string(gLevel).c_str(), left, gBlockSize * 3, gBlockSize, WHITE);
+    auto leftStart = halfScreen - gBlockSize * 13;
+    auto rightStart = halfScreen + gBlockSize * 5;
+    DrawRectangle(leftStart, 0, gBlockSize * 26, gBlockSize * 20, DARKGRAY);
+    // draw left side
+    DrawText("Score:", leftStart + gBlockSize, 0, gBlockSize, WHITE);
+    DrawText(std::to_string(gScore).c_str(), leftStart + gBlockSize, gBlockSize, gBlockSize, WHITE);
+    DrawText("Level:", leftStart + gBlockSize, gBlockSize * 2, gBlockSize, WHITE);
+    DrawText(std::to_string(gLevel).c_str(), leftStart + gBlockSize, gBlockSize * 3, gBlockSize, WHITE);
+    // draw right side
+    DrawText("Next:", rightStart + gBlockSize, 0, gBlockSize, WHITE);
+    DrawRectangle(rightStart + gBlockSize, gBlockSize, gBlockSize * 4, gBlockSize * 4, BLACK);
+    auto nextBlockAreaCenterX = rightStart + gBlockSize * 2;
+    auto nextBlockAreaCenterY = gBlockSize * 2;
+    for (const auto& block : gShapePatterns.at(*gNextShape)) {
+      DrawRectangle(
+        nextBlockAreaCenterX + block.x * gBlockSize,
+        nextBlockAreaCenterY + block.y * gBlockSize,
+        gBlockSize,
+        gBlockSize,
+        gPalette[gCurrentPaletteIdx][*gNextColor]
+      );
+    }
+    // draw board
     auto boardStart = halfScreen - (gBlockSize * 10 / 2);
     size_t x = 0, y = 0;
     for (const auto &row : rows) {
@@ -192,24 +227,6 @@ struct Board {
 };
 
 Board gBoard = {};
-
-// the shape of a tetromino, a group of cells.
-enum struct Shape { L, J, Z, S, I, T, Square };
-enum struct Orientation { Up, Right, Down, Left };
-
-Shape *gNextShape = nullptr;
-size_t *gNextColor = nullptr;
-
-// a static map of the coordinates of each shape in local space.
-const std::unordered_map<Shape, std::vector<Vec2>> gShapePatterns = {
-    {Shape::L, {{0, -1}, {0, 0}, {0, 1}, {1, 1}}},
-    {Shape::J, {{0, -1}, {0, 0}, {0, 1}, {-1, 1}}},
-    {Shape::Z, {{0, -1}, {0, 0}, {1, 0}, {1, 1}}},
-    {Shape::S, {{0, -1}, {0, 0}, {-1, 0}, {-1, 1}}},
-    {Shape::I, {{0, -1}, {0, 0}, {0, 1}, {0, 2}}},
-    {Shape::T, {{-1, 0}, {0, 0}, {1, 0}, {0, 1}}},
-    {Shape::Square, {{0, 0}, {0, 1}, {1, 0}, {1, 1}}},
-};
 
 
 void setNextShapeAndColor() {
