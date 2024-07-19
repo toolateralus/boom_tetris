@@ -10,7 +10,6 @@ void Grid::draw(LayoutState &state) {
 
   for (const auto &element : elements) {
     LayoutState elementState;
-    elementState.applyMargin(element->margin);
     // keep element in bounds of grid
     auto maxElementX = subdivisions.width - std::max(element->size.width, 1);
     auto maxElementY = subdivisions.height - std::max(element->size.height, 1);
@@ -40,7 +39,8 @@ void Grid::draw(LayoutState &state) {
       elementState.size.height = state.size.height; // Stretch vertically
       break;
     }
-
+    
+    elementState.applyMargin(element->margin);
     element->draw(elementState);
   }
 }
