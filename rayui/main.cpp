@@ -1,13 +1,23 @@
 #include "rayui.hpp"
+#include <cstdio>
 #include <raylib.h>
+
+
+using namespace rayui;
 
 int main(int argc, char *argv[]) {
 	
-	rayui::Grid grid;
+	Grid grid;
 	grid.subdivisions = {16, 16};
+	grid.emplace_element<Rect>(Position{0, 0}, Size{2, 2}, Style {GREEN, RED}, LayoutKind::None);
+	grid.emplace_element<Rect>(Position{2, 0}, Size{2, 2}, Style {GREEN, RED}, LayoutKind::None);
 	
-	grid.emplace_element<rayui::Rect>(rayui::Position{0, 0}, rayui::Size{2, 2}, rayui::Style {GREEN, RED}, rayui::LayoutKind::None);
-	grid.emplace_element<rayui::Rect>(rayui::Position{2, 0}, rayui::Size{2, 2}, rayui::Style {GREEN, RED}, rayui::LayoutKind::None);
+	grid.emplace_element<Button>(Position{10, 10}, Size{2, 2});
+	auto *button = dynamic_cast<Button*>(grid.elements[2].get());
+	button->text = (char*)"Click me";
+	button->onClicked = [](){
+		printf("I am a button that was clicked.\n");
+	};
 	
 	
 	InitWindow(0, 0, "ui test");
@@ -32,10 +42,10 @@ int main(int argc, char *argv[]) {
 		}
 		
 		if (IsKeyPressed(KEY_R)) {
-			element->layoutKind = (rayui::LayoutKind)(((int)element->layoutKind + 1) % ((int)rayui::LayoutKind::StretchVertical + 1));
+			element->layoutKind = (LayoutKind)(((int)element->layoutKind + 1) % ((int)LayoutKind::StretchVertical + 1));
 		}
 		
-		rayui::LayoutState state({0,0}, {(float)GetScreenWidth(), (float)GetScreenHeight()});
+		LayoutState state({0,0}, {(float)GetScreenWidth(), (float)GetScreenHeight()});
 		grid.draw(state);
 		EndDrawing();
 	}
