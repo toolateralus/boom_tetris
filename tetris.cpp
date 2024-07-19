@@ -188,6 +188,12 @@ void Game::drawUi() {
                 gBlockSize * 4, BLACK);
   auto nextBlockAreaCenterX = rightStart + gBlockSize * 2;
   auto nextBlockAreaCenterY = gBlockSize * 2;
+  if (*gNextShape != Shape::I && *gNextShape != Shape::Square) {
+    nextBlockAreaCenterX += gBlockSize / 2;
+  }
+  if (*gNextShape == Shape::I) {
+    nextBlockAreaCenterY += gBlockSize / 2;
+  }
   for (const auto &block : gShapePatterns.at(*gNextShape)) {
     auto color = palette[paletteIdx][*gNextColor];
     auto destX = nextBlockAreaCenterX + block.x * gBlockSize;
