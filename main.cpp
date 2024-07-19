@@ -529,6 +529,8 @@ int main(int argc, char *argv[]) {
 	gNextColor = new size_t;
 	setNextShapeAndColor();
 	
+  srand(time(0));
+  
   InitWindow(800, 600, "boom taetris");
   SetWindowState(FLAG_WINDOW_RESIZABLE);
   gTexture = LoadTexture("res/block.png");
