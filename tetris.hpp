@@ -57,7 +57,7 @@ struct Cell {
 struct Board {
   std::array<std::array<Cell, boardWidth>, boardHeight> rows = {};
 
-  Cell &operator[](int x, int y) noexcept;
+  Cell &operator[](int x, int y) ;
 
   Cell &get_cell(int x, int y) noexcept { return (*this)[x, y]; }
 
@@ -129,29 +129,20 @@ struct Animation {
     
   }
   
-  virtual void invoke() = 0;
+  virtual bool invoke() = 0;
 };
 struct CellDissolveAnimation: Animation {
   explicit CellDissolveAnimation(Game *game, std::vector<size_t> lines)
       : Animation(game), lines(std::move(lines)) {}
   std::vector<size_t> lines;
-  void invoke() override {
-    
-  }
-};
-struct LineRemoveAnimation: Animation {
-  explicit LineRemoveAnimation(Game *game, std::vector<size_t> lines)
-      : Animation(game), lines(std::move(lines)) {}
-  std::vector<size_t> lines;
-  void invoke() override {
-    
-  }
+  int cellIdx = 0;
+  bool invoke() override;
 };
 
 
 struct Game {
   ScoreFile scoreFile;
-  
+  size_t frameCount = 0;
   Grid createGrid();
   Grid gameGrid;
   void drawGame();

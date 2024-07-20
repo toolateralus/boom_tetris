@@ -1,5 +1,6 @@
 #include "tetris.hpp"
 #include "rayui.hpp"
+#include <chrono>
 #include <cmath>
 #include <filesystem>
 #include <fstream>
@@ -7,7 +8,9 @@
 #include <iostream>
 #include <memory>
 #include <raylib.h>
+#include <stdexcept>
 #include <string>
+#include <thread>
 #include <utility>
 
 void Game::saveTetromino() { tetromino->saveState(); }
@@ -49,7 +52,7 @@ Game::Game() {
 }
 
 void Game::processGameLogic() {
-
+  frameCount++;
   // if an animation is active, we pause the game.
   if (!animation_queue.empty()) {
     return;
@@ -383,15 +386,14 @@ HorizontalInput Game::delayedAutoShift() {
   return HorizontalInput(moveLeft, moveRight);
 }
 
-Cell &Board::operator[](int x, int y) noexcept {
+Cell &Board::operator[](int x, int y)  {
   if (rows.size() > y) {
     auto &row = rows[y];
     if (row.size() > x) {
       return row[x];
     }
   }
-  // we are always bounds checked before calling this function.
-  std::unreachable();
+  throw std::runtime_error("board subscript out of range");
 }
 
 ShapeIndices Game::getIndices(std::unique_ptr<Tetromino> &tetromino) const {
@@ -501,7 +503,6 @@ size_t Game::clearLines(std::vector<size_t> &linesToClear) {
   }
 
   animation_queue.push_back(std::make_unique<CellDissolveAnimation>(this, std::vector<size_t>(linesToClear)));
-  animation_queue.push_back(std::make_unique<LineRemoveAnimation>(this,std::vector<size_t>(linesToClear)));
 
   return linesToClear.size();
 }
@@ -521,8 +522,9 @@ void NumberText::draw(LayoutState &state) {
 void Game::drawGame() {
 
   if (!animation_queue.empty()) {
-    animation_queue.front()->invoke();
-    animation_queue.pop_front();
+    if (animation_queue.front()->invoke()) {
+      animation_queue.pop_front();
+    }
   }
 
   const auto screenWidth = (float)GetScreenWidth();
@@ -687,4 +689,22 @@ void Game::generateGravityLevels(int totalLevels) {
     }
     gravityLevels.push_back(1.0 / divisor);
   }
+}
+bool CellDissolveAnimation::invoke() {
+  if (cellIdx >= 5) {
+    for (const auto line : lines) {
+      for (int j = line; j >= 1; j--) {
+        game->board.rows[j] = game->board.rows[j - 1];
+      }
+    }
+    return true;
+  }
+  if (game->frameCount % 4 == 0) {
+    for (const auto line : lines) {
+      game->board[4 - cellIdx, line].empty = true;
+      game->board[5 + cellIdx, line].empty = true;
+    }
+    cellIdx++;
+  }
+  return false;
 }
