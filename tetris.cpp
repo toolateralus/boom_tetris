@@ -44,7 +44,7 @@ Game::Game() {
   blockTxSourceRect =
       Rectangle{0, 0, (float)blockTexture.width, (float)blockTexture.height};
   gameGrid = createGrid();
-  inMenu = true;
+  scene = Scene::MainMenu;
   scoreFile.read();
   generateGravityLevels(100);
 }
@@ -72,7 +72,7 @@ void Game::processGameLogic() {
       if (score > scoreFile.high_score) {
         scoreFile.high_score = score;
       }
-      inMenu = true;
+      scene = Scene::GameOver;
       return;
     }
   }
@@ -169,7 +169,7 @@ void Game::processGameLogic() {
     }
     tetromino.reset(nullptr);
     if (mode == GameMode::FortyLines && totalLinesCleared >= 40) {
-      inMenu = true;
+      scene = Scene::GameOver;
       reset();
     }
   }
@@ -222,13 +222,13 @@ Grid Game::createGrid() {
   grid.style.background = BG_COLOR;
 
   auto linesLabel =
-      grid.emplace_element<DynamicLabel>(Position{1, 1}, Size{7, 1});
+      grid.emplace_element<Label>(Position{1, 1}, Size{7, 1});
   linesLabel->text = "Lines:";
   grid.emplace_element<NumberText>(Position{1, 2}, Size{7, 1},
                                    &totalLinesCleared, WHITE);
   
   if (mode == GameMode::FortyLines) {
-    auto timer_label = grid.emplace_element<DynamicLabel>(Position{1, 4}, Size{5, 1});
+    auto timer_label = grid.emplace_element<Label>(Position{1, 4}, Size{5, 1});
     timer_label->text = "Timer";
     auto timer_text = grid.emplace_element<TimerText>(Position{1, 5}, Size{1, 1}, &elapsed, WHITE);
   }
@@ -244,7 +244,7 @@ Grid Game::createGrid() {
   
   
   auto topLabel =
-      grid.emplace_element<DynamicLabel>(Position{19, yPos}, Size{7, height});
+      grid.emplace_element<Label>(Position{19, yPos}, Size{7, height});
   yPos += height;
   topLabel->text = "Top:";
   grid.emplace_element<NumberText>(Position{19, yPos}, Size{7, height},
@@ -253,7 +253,7 @@ Grid Game::createGrid() {
   yPos += 1;
 
   auto scoreLabel =
-      grid.emplace_element<DynamicLabel>(Position{19, yPos}, Size{7, height});
+      grid.emplace_element<Label>(Position{19, yPos}, Size{7, height});
   yPos += height;
   scoreLabel->text = "Score:";
   grid.emplace_element<NumberText>(Position{19, yPos}, Size{7, height}, &score,
@@ -262,7 +262,7 @@ Grid Game::createGrid() {
   yPos += 1;
 
   auto nextPieceLabel =
-      grid.emplace_element<DynamicLabel>(Position{19, yPos}, Size{7, height});
+      grid.emplace_element<Label>(Position{19, yPos}, Size{7, height});
   yPos += height;
   nextPieceLabel->text = "Next:";
   height = 4;
@@ -274,7 +274,7 @@ Grid Game::createGrid() {
   
   height = 1;
   auto levelLabel =
-      grid.emplace_element<DynamicLabel>(Position{19, yPos}, Size{7, height});
+      grid.emplace_element<Label>(Position{19, yPos}, Size{7, height});
   yPos += height;
   levelLabel->text = "Level:";
   grid.emplace_element<NumberText>(Position{19, yPos}, Size{7, height}, &level,
@@ -285,7 +285,7 @@ Grid Game::createGrid() {
 
   auto mainMenuButton = grid.emplace_element<Button>(
       Position{19, yPos}, Size{5, height}, "Main Menu",
-      std::function<void()>([&]() { inMenu = true; }));
+      std::function<void()>([&]() { scene = Scene::MainMenu; }));
   mainMenuButton->fontSize = 24;
   yPos += height;
 

@@ -223,9 +223,13 @@ struct Game {
   size_t startLevel = 0;
   size_t linesClearedThisLevel = 0;
   size_t totalLinesCleared = 0;
-  // are we in the main menu?
-  bool inMenu = true;
-
+  
+  enum struct Scene {
+    MainMenu,
+    GameOver,
+    InGame
+  } scene;
+  
   void generateGravityLevels(int totalLevels);
 
   void setNextShapeAndColor();
