@@ -17,6 +17,8 @@
 constexpr size_t boardWidth = 10;
 constexpr size_t boardHeight = 20;
 
+#define BG_COLOR GetColor(0x12121212)
+
 // the direction of user input.
 enum struct Direction { None, Left, Right, Down };
 // the shape of a tetromino, a group of cells.
@@ -48,7 +50,6 @@ struct Vec2 {
 // a way to key into the grid to update a tetromino.
 using ShapeIndices = std::vector<Vec2>;
 
-#define BG_COLOR GetColor(0x12121212)
 
 struct HorizontalInput {
   HorizontalInput(bool left, bool right) : left(left), right(right) {}
@@ -75,8 +76,6 @@ struct Board {
   // know what side we hit so we can depenetrate in the opposite direction.
   bool collides(Vec2 pos) noexcept;
 };
-
-
 
 // a group of cells the user is currently in control of.
 struct Tetromino {
