@@ -27,7 +27,7 @@ int drawMenu(Game &game) {
 // TODO: figure out why, even though we get a valid gamepad 0, we never can
 // query buttons properly.
 void gamepadLogger(Game &game) {
-  auto gamepad = game.FindGamepad();
+  auto gamepad = game.findGamepad();
   system("clear");
   printf("gamepad: %d:\n", gamepad);
   for (int i = GAMEPAD_BUTTON_LEFT_FACE_UP; i <= GAMEPAD_BUTTON_RIGHT_THUMB;

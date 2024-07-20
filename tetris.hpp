@@ -57,7 +57,6 @@ struct HorizontalInput {
 // a grid cell.
 struct Cell {
   size_t imageIdx;
-  size_t color = 0;
   bool empty = true;
 };
 
@@ -87,7 +86,6 @@ struct ScoreFile {
 // a group of cells the user is currently in control of.
 struct Tetromino {
   size_t softDropHeight = 0;
-  size_t color = 0;
   Vec2 prev_position;
   Orientation prev_orientation;
   Vec2 position;
@@ -100,9 +98,8 @@ struct Tetromino {
   void saveState();
 
   Tetromino() = delete;
-  Tetromino(Shape &shape, size_t color) {
+  Tetromino(Shape &shape) {
     this->shape = shape;
-    this->color = color;
     position = {5, 0};
   }
 };
@@ -173,10 +170,7 @@ enum struct GameMode {
 struct Game {
   ScoreFile scoreFile;
   size_t frameCount = 0;
-  Grid createGrid();
   Grid gameGrid;
-  void drawGame();
-  int FindGamepad() const;
   
   std::deque<std::unique_ptr<Animation>> animation_queue = {};
   
@@ -189,23 +183,15 @@ struct Game {
   
   // the upcoming shape & color of the next tetromino.
   Shape nextShape;
-  int nextColor;
   
   // the piece the player is in control of.
   std::unique_ptr<Tetromino> tetromino;
   
   std::chrono::milliseconds elapsed = std::chrono::milliseconds(0);
   
-  void reset();
-  
-  Game();
-  ~Game();
-  
   // TODO: make this more like classic tetris.
   std::vector<float> gravityLevels;
   static std::unordered_map<Shape, std::vector<Block>> shapePatterns;
-  // colors for each level[shape]
-  static std::vector<std::vector<Color>> palette;
 
   // unit size of a cell on the grid, in pixels. based on resolution
   int blockSize = 32;
@@ -230,9 +216,17 @@ struct Game {
     InGame
   } scene;
   
+  Game();
+  ~Game();
+
+  void reset();
+  Grid createGrid();
+  void drawGame();
+  int findGamepad() const;
+  
   void generateGravityLevels(int totalLevels);
 
-  void setNextShapeAndColor();
+  void setNextShape();
   void processGameLogic();
   
   std::vector<size_t> checkLines();

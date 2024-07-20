@@ -13,20 +13,6 @@
 
 void Game::saveTetromino() { tetromino->saveState(); }
 
-std::vector<std::vector<Color>> Game::palette = {
-    // Palette 1: Cool Blues
-    {SKYBLUE, DARKBLUE, LIGHTGRAY, BLUE, WHITE},
-    // Palette 2: Warm Tones
-    {YELLOW, GOLD, ORANGE, BEIGE, RAYWHITE},
-    // Palette 3: Greens
-    {GREEN, LIME, DARKGREEN, LIGHTGRAY, RAYWHITE},
-    // Palette 4: Purples
-    {PURPLE, VIOLET, DARKPURPLE, LIGHTGRAY, WHITE},
-    // Palette 5: Reds
-    {RED, MAROON, PINK, BEIGE, RAYWHITE},
-    // Palette 6: Earth Tones
-    {BROWN, DARKBROWN, BEIGE, GOLD, RAYWHITE},
-};
 std::unordered_map<Shape, std::vector<Block>> Game::shapePatterns = {
     {Shape::L, {{{-1, 1}, 1}, {{-1, 0}, 1}, {{0, 0}, 1}, {{1, 0}, 1}}},
     {Shape::J, {{{-1, 0}, 0}, {{0, 0}, 0}, {{1, 0}, 0}, {{1, 1}, 0}}},
@@ -39,7 +25,7 @@ std::unordered_map<Shape, std::vector<Block>> Game::shapePatterns = {
 
 Game::Game() {
   board = Board();
-  setNextShapeAndColor();
+  setNextShape();
   blockTexture = LoadTexture("res/block2.png");
   blockTxSourceRect =
       Rectangle{0, 0, (float)blockTexture.width, (float)blockTexture.height};
@@ -61,9 +47,8 @@ void Game::processGameLogic() {
   if (!tetromino) {
     // spawn a new tetromino, cause the last one landed.
     auto shape = nextShape;
-    auto color = nextColor;
-    tetromino = std::make_unique<Tetromino>(shape, color);
-    setNextShapeAndColor();
+    tetromino = std::make_unique<Tetromino>(shape);
+    setNextShape();
 
     tetromino->saveState();
 
@@ -97,7 +82,7 @@ void Game::processGameLogic() {
 
   bool moveDown = IsKeyDown(KEY_DOWN);
 
-  if (auto gpad = FindGamepad(); gpad != -1) {
+  if (auto gpad = findGamepad(); gpad != -1) {
     // z or A (xbox controller)
     turnLeft = turnLeft ||
                IsGamepadButtonPressed(gpad, GAMEPAD_BUTTON_RIGHT_FACE_DOWN);
@@ -153,7 +138,6 @@ void Game::processGameLogic() {
     }
     auto &cell = board.get_cell(pos.x, pos.y);
     cell.empty = false;
-    cell.color = tetromino->color;
     cell.imageIdx = block.imageIdx;
   }
 
@@ -177,11 +161,10 @@ void Game::processGameLogic() {
   gravity = oldGravity;
 }
 
-void Game::setNextShapeAndColor() {
+void Game::setNextShape() {
   static int num_shapes = (int)Shape::O + 1;
   auto shape = Shape(rand() % num_shapes);
   nextShape = shape;
-  nextColor = (size_t)((int)shape % (int)palette[paletteIdx].size());
 }
 
 void Game::cleanTetromino(std::unique_ptr<Tetromino> &tetromino) {
@@ -193,7 +176,6 @@ void Game::cleanTetromino(std::unique_ptr<Tetromino> &tetromino) {
     }
     auto &cell = board.get_cell(pos.x, pos.y);
     cell.empty = true;
-    cell.color = 0;
   }
 }
 
@@ -337,7 +319,7 @@ void Game::reset() {
   board = {}; // reset the grid state.
   elapsed = {};
   tetromino = nullptr;
-  setNextShapeAndColor();
+  setNextShape();
   gameGrid = createGrid();
 }
 
@@ -351,7 +333,7 @@ HorizontalInput Game::delayedAutoShift() {
 
   bool moveLeft = false, moveRight = false;
 
-  auto gamepad = FindGamepad();
+  auto gamepad = findGamepad();
   bool leftDown = IsKeyDown(KEY_LEFT);
   bool rightDown = IsKeyDown(KEY_RIGHT);
 
@@ -506,8 +488,6 @@ void Game::applyLineClearScoreAndLevel(size_t linesCleared) {
 
   if (linesClearedThisLevel >= levelAdvance) {
     level++;
-    paletteIdx = (paletteIdx + 1) % (palette.size() - 1);
-
     printf("\033[1;32madvanced level: to %ld\033[0m\n", level);
     if (this->level < gravityLevels.size()) {
       gravity = gravityLevels[level];
@@ -668,7 +648,7 @@ void ScoreFile::write() {
     file.close();
   }
 }
-int Game::FindGamepad() const {
+int Game::findGamepad() const {
   for (int i = 0; i < 5; ++i) {
     if (IsGamepadAvailable(i))
       return i;
