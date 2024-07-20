@@ -121,7 +121,9 @@ struct NumberText : Element {
 };
 
 struct Game {
-  Grid getGrid();
+  Grid createGrid();
+  Grid gameGrid;
+  void drawGame();
   int FindGamepad() const {
     for (int i = 0; i < 5; ++i) {
       if (IsGamepadAvailable(i)) 
@@ -181,21 +183,5 @@ struct Game {
   void cleanTetromino(std::unique_ptr<Tetromino> &tetromino);
   bool resolveCollision(std::unique_ptr<Tetromino> &tetromino);
   ShapeIndices getIndices(std::unique_ptr<Tetromino> &tetromino) const;
-  std::shared_ptr<rayui::Grid> getBoardGrid() {
-    auto grid = std::make_shared<Grid>();
-    grid->style.background = BLACK;
-    grid->subdivisions = {10, 20};
-    const auto blockTxSourceRect =
-        Rectangle{0, 0, (float)blockTexture.width, (float)blockTexture.height};
-    int y = 0;
-    for (auto& row : board.rows) {
-      int x = 0;
-      for (auto& cell : row) {
-        grid->emplace_element<BoardCell>(Position{x, y}, *this, cell, blockTxSourceRect);
-        x++;
-      }
-      y++;
-    }
-    return grid;
-  }
+  std::shared_ptr<rayui::Grid> createBoardGrid();
 };

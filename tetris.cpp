@@ -31,6 +31,7 @@ Game::Game() {
   board = Board();
   setNextShapeAndColor();
   blockTexture = LoadTexture("res/block.png");
+  gameGrid = createGrid();
   inMenu = true; 
 }
 
@@ -170,7 +171,7 @@ std::vector<size_t> Game::checkLines() {
   return linesToBurn;
 }
 
-Grid Game::getGrid() {
+Grid Game::createGrid() {
   Grid grid({26, 20});
   grid.style.background = BG_COLOR;
   
@@ -184,7 +185,7 @@ Grid Game::getGrid() {
   levelLabel->text = (char*)"Level:";
   auto levelTracker = grid.emplace_element<NumberText>(Position{0,3}, Size{8, 1}, &level, WHITE);
 
-  auto playfield = getBoardGrid();
+  auto playfield = createBoardGrid();
   playfield->position = {8, 0};
   playfield->size = {10, 20};
   grid.elements.push_back(playfield);
@@ -248,6 +249,7 @@ void Game::reset() {
   gravity = 0.1f;
   tetromino = nullptr;
   setNextShapeAndColor();
+  gameGrid = createGrid();
 }
 
 HorizontalInput Game::delayedAutoShift() {
@@ -444,4 +446,33 @@ void BoardCell::draw(rayui::LayoutState &state) {
 };
 void NumberText::draw(LayoutState &state) {
   DrawText(std::to_string(*number).c_str(), state.position.x, state.position.y, state.size.height, color);
+}
+void Game::drawGame() {
+  const auto screenWidth = (float)GetScreenWidth();
+  const auto screenHeight = (float)GetScreenHeight();
+  const auto unit = std::min(screenWidth / 26, screenHeight / 20);
+  const auto uiWidth = unit * 26;
+  const auto uiHeight = unit * 20;
+  const auto posX = screenWidth - uiWidth;
+  const auto posY = screenHeight - uiHeight;
+  LayoutState state({posX, posY}, {uiWidth, uiHeight});
+  gameGrid.draw(state);
+}
+std::shared_ptr<rayui::Grid> Game::createBoardGrid() {
+  auto grid = std::make_shared<Grid>();
+  grid->style.background = BLACK;
+  grid->subdivisions = {10, 20};
+  const auto blockTxSourceRect =
+      Rectangle{0, 0, (float)blockTexture.width, (float)blockTexture.height};
+  int y = 0;
+  for (auto &row : board.rows) {
+    int x = 0;
+    for (auto &cell : row) {
+      grid->emplace_element<BoardCell>(Position{x, y}, *this, cell,
+                                       blockTxSourceRect);
+      x++;
+    }
+    y++;
+  }
+  return grid;
 }
