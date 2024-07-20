@@ -160,14 +160,15 @@ void Game::processGameLogic() {
   if (landed) {
     animation_queue.push_back(std::make_unique<LockInAnimation>(this, tetromino->position.y));
     auto linesToClear = checkLines();
-    auto linesCleared = clearLines(linesToClear);
-    adjustScoreAndLevel(linesCleared, tetromino->softDropHeight);
+    if (linesToClear.size() > 0) {
+      animation_queue.push_back(std::make_unique<CellDissolveAnimation>(this, linesToClear, tetromino->softDropHeight));
+    } else {
+      applySoftDropScore(tetromino->softDropHeight);
+    }
     tetromino.reset(nullptr);
-    
-    if (mode == GameMode::FortyLines && linesCleared >= 40) {
+    if (mode == GameMode::FortyLines && totalLinesCleared >= 40) {
       inMenu = true;
     }
-    
   }
 
   gravity = oldGravity;
@@ -479,9 +480,8 @@ void Tetromino::saveState() {
   prev_orientation = orientation;
   prev_position = position;
 }
-void Game::adjustScoreAndLevel(size_t linesCleared, size_t softDropHeight) {
+void Game::applyLineClearScoreAndLevel(size_t linesCleared) {
   auto score_level = this->level + 1;
-  score += softDropHeight;
   if (linesCleared == 1) {
     score += 40 * score_level;
   } else if (linesCleared == 2) {
@@ -507,15 +507,6 @@ void Game::adjustScoreAndLevel(size_t linesCleared, size_t softDropHeight) {
     }
     linesClearedThisLevel = 0;
   }
-}
-size_t Game::clearLines(std::vector<size_t> &linesToClear) {
-  if (linesToClear.empty()) {
-    return 0;
-  }
-
-  animation_queue.push_back(std::make_unique<CellDissolveAnimation>(this, std::vector<size_t>(linesToClear)));
-
-  return linesToClear.size();
 }
 void BoardCell::draw(rayui::LayoutState &state) {
   if (!cell.empty) {
@@ -708,6 +699,7 @@ bool CellDissolveAnimation::invoke() {
         game->board.rows[j] = game->board.rows[j - 1];
       }
     }
+    game->applyLineClearScoreAndLevel(lines.size());
     return true;
   }
   if (game->frameCount % 4 == 0) {
@@ -745,3 +737,8 @@ void TimerText::draw(LayoutState &state) {
 
     DrawText(timeStr.c_str(), state.position.x, state.position.y, state.size.height, color);
 }
+void Game::applySoftDropScore(size_t softDropHeight) {
+  auto softDropScore = softDropHeight % 16;
+  softDropScore += (softDropHeight / 16) % 16 * 10;
+  score += softDropScore;
+};

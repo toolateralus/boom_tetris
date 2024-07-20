@@ -143,8 +143,9 @@ struct Animation {
   virtual bool invoke() = 0;
 };
 struct CellDissolveAnimation: Animation {
-  explicit CellDissolveAnimation(Game *game, std::vector<size_t> lines)
-      : Animation(game), lines(std::move(lines)) {}
+  explicit CellDissolveAnimation(Game *game, std::vector<size_t> lines, size_t softDropHeight)
+      : Animation(game), lines(std::move(lines)), softDropHeight(softDropHeight) {}
+  size_t softDropHeight;
   std::vector<size_t> lines;
   int cellIdx = 0;
   bool invoke() override;
@@ -152,6 +153,7 @@ struct CellDissolveAnimation: Animation {
 struct LockInAnimation: Animation {
   explicit LockInAnimation(Game *game, int pieceHeight)
     : Animation(game), pieceHeight(pieceHeight) {}
+  size_t softDropHeight;
   int frameCount = 0;
   int pieceHeight = 0;
   bool invoke() override;
@@ -224,8 +226,8 @@ struct Game {
   void processGameLogic();
   
   std::vector<size_t> checkLines();
-  size_t clearLines(std::vector<size_t> &linesToClear);
-  void adjustScoreAndLevel(size_t linesCleared, size_t softDropHeight);
+  void applyLineClearScoreAndLevel(size_t linesCleared);
+  void applySoftDropScore(size_t softDropHeight);
   void saveTetromino();
 
   HorizontalInput delayedAutoShift();
