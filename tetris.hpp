@@ -186,7 +186,7 @@ struct Game {
   // the piece the player is in control of.
   std::unique_ptr<Tetromino> tetromino;
   
-  std::chrono::milliseconds elapsed;
+  std::chrono::milliseconds elapsed = std::chrono::milliseconds(0);
   
   void reset();
   
