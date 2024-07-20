@@ -43,6 +43,7 @@ Game::Game() {
   board = Board();
   setNextShapeAndColor();
   blockTexture = LoadTexture("res/block.png");
+  blockTxSourceRect = Rectangle{0, 0, (float)blockTexture.width, (float)blockTexture.height};
   gameGrid = createGrid();
   inMenu = true; 
   scoreFile.read();
@@ -193,44 +194,23 @@ Grid Game::createGrid() {
   Grid grid({26, 20});
   grid.style.background = BG_COLOR;
   
-  auto scoreLabel = grid.emplace_element<Label>(Position{0,0}, Size{8, 1});
-  scoreLabel->fontSize = 24;
-  scoreLabel->text = (char*)"Score:";
-  auto scoreTracker = grid.emplace_element<NumberText>(Position{0,1}, Size{8, 1}, &score, WHITE);
+  auto scoreLabel = grid.emplace_element<DynamicLabel>(Position{1,1}, Size{7, 1});
+  scoreLabel->text = "Score:";
+  grid.emplace_element<NumberText>(Position{1,2}, Size{7, 1}, &score, WHITE);
 
-  auto levelLabel = grid.emplace_element<Label>(Position{0,2}, Size{8, 1});
-  levelLabel->fontSize = 24;
-  levelLabel->text = (char*)"Level:";
-  auto levelTracker = grid.emplace_element<NumberText>(Position{0,3}, Size{8, 1}, &level, WHITE);
+  auto levelLabel = grid.emplace_element<DynamicLabel>(Position{1,3}, Size{7, 1});
+  levelLabel->text = "Level:";
+  grid.emplace_element<NumberText>(Position{1,4}, Size{7, 1}, &level, WHITE);
 
   auto playfield = createBoardGrid();
   playfield->position = {8, 0};
   playfield->size = {10, 20};
   grid.elements.push_back(playfield);
-           
-  // // draw right side
-  // DrawText("Next:", rightStart + blockSize, 0, blockSize, WHITE);
   
-  // DrawRectangle(rightStart + blockSize, blockSize, blockSize * 4,
-  //               blockSize * 4, BLACK);
-                
-  // auto nextBlockAreaCenterX = rightStart + blockSize * 2;
-  // auto nextBlockAreaCenterY = blockSize * 2;
-  // if (nextShape != Shape::I && nextShape != Shape::Square) {
-  //   nextBlockAreaCenterX += blockSize / 2;
-  // }
-  // if (nextShape == Shape::I) {
-  //   nextBlockAreaCenterY += blockSize / 2;
-  // }
-  
-  // for (const auto &block : shapePatterns.at(nextShape)) {
-  //   auto color = palette[paletteIdx][nextColor];
-  //   auto destX = nextBlockAreaCenterX + block.x * blockSize;
-  //   auto destY = nextBlockAreaCenterY + block.y * blockSize;
-  //   auto destRect = Rectangle{(float)destX, (float)destY, (float)blockSize,
-  //                             (float)blockSize};
-  //   DrawTexturePro(blockTexture, blockTxSourceRect, destRect, {0, 0}, 0, color);
-  // }
+  auto nextPieceLabel = grid.emplace_element<DynamicLabel>(Position{19, 1}, Size{7, 1});
+  nextPieceLabel->text = "Next:";
+  auto pieceViewer = grid.emplace_element<PieceViewer>(Position{19, 2}, Size{4, 4}, *this);
+  pieceViewer->style.background = BLACK;
   return grid;
 }
 
@@ -460,11 +440,8 @@ void BoardCell::draw(rayui::LayoutState &state) {
     auto color = game.palette[game.paletteIdx][cell.color];
     auto destRect = Rectangle{state.position.x, state.position.y, state.size.width,
                               state.size.height};
-    DrawTexturePro(game.blockTexture, blockTxSourceRect, destRect, {0, 0}, 0,
+    DrawTexturePro(game.blockTexture, game.blockTxSourceRect, destRect, {0, 0}, 0,
                     color);
-  } else {
-    DrawRectangle(state.position.x, state.position.y, state.size.width,
-                              state.size.height, BLACK);
   }
 };
 void NumberText::draw(LayoutState &state) {
@@ -485,17 +462,37 @@ std::shared_ptr<rayui::Grid> Game::createBoardGrid() {
   auto grid = std::make_shared<Grid>();
   grid->style.background = BLACK;
   grid->subdivisions = {10, 20};
-  const auto blockTxSourceRect =
-      Rectangle{0, 0, (float)blockTexture.width, (float)blockTexture.height};
   int y = 0;
   for (auto &row : board.rows) {
     int x = 0;
     for (auto &cell : row) {
-      grid->emplace_element<BoardCell>(Position{x, y}, *this, cell,
-                                       blockTxSourceRect);
+      grid->emplace_element<BoardCell>(Position{x, y}, *this, cell);
       x++;
     }
     y++;
   }
   return grid;
 }
+void PieceViewer::draw(rayui::LayoutState &state) {
+  DrawRectangle(state.position.x, state.position.y, state.size.width,
+                state.size.height, style.background);
+
+  auto blockSize = std::min(state.size.height / 2, state.size.width / 4);
+  auto nextBlockAreaCenterX = state.position.x + state.size.height / 2 - blockSize;
+  auto nextBlockAreaCenterY = state.position.y + state.size.width / 2 - blockSize;
+  if (game.nextShape != Shape::I && game.nextShape != Shape::Square) {
+    nextBlockAreaCenterX += blockSize / 2;
+  }
+  if (game.nextShape == Shape::I) {
+    nextBlockAreaCenterY += blockSize / 2;
+  }
+  
+  for (const auto &block : game.shapePatterns.at(game.nextShape)) {
+    auto color = game.palette[game.paletteIdx][game.nextColor];
+    auto destX = nextBlockAreaCenterX + block.x * blockSize;
+    auto destY = nextBlockAreaCenterY + block.y * blockSize;
+    auto destRect = Rectangle{(float)destX, (float)destY, (float)blockSize,
+                              (float)blockSize};
+    DrawTexturePro(game.blockTexture, game.blockTxSourceRect, destRect, {0, 0}, 0, color);
+  }
+};

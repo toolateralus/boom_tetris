@@ -160,6 +160,18 @@ struct Label : Element {
   }
 };
 
+struct DynamicLabel : Element {
+  std::string text;
+  DynamicLabel(Position pos, Size size) : Element(pos, size) {}
+  void draw(LayoutState &state) override {
+    DrawRectangle(state.position.x, state.position.y, state.size.width,
+                  state.size.height, style.background);
+    auto fontSize = state.size.height;
+    DrawText(text.c_str(), state.position.x, state.position.y, fontSize,
+             style.foreground);
+  }
+};
+
 struct Button : Element {
   char *text = (char *)"";
   size_t fontSize = 24;
