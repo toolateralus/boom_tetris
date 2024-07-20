@@ -268,21 +268,24 @@ struct Game {
   
   void generateGravityLevels(int totalLevels) {
     float divisor = 48.0;
-    for (int level = 0; level < totalLevels; ++level) {
-        gravityLevels.push_back(1.0 / divisor);
-        if (level < 10) {
-          divisor -= 5.0;
-        } else if (level < 13) {
-          divisor = 5;
-        } else if (level < 16) {
-          divisor = 4;
-        } else if (level < 19) {
-          divisor = 3;  
-        } else if (level < 29) {
-          divisor = 2;
-        } else {
-          divisor = 1;
-        }
+    gravityLevels.push_back(1.0 / divisor);
+    for (int level = 1; level < totalLevels; ++level) {
+      if (level < 9) {
+        divisor -= 5.0;
+      } else if (level < 10) {
+        divisor = 6;
+      } else if (level < 13) {
+        divisor = 5;
+      } else if (level < 16) {
+        divisor = 4;
+      } else if (level < 19) {
+        divisor = 3;  
+      } else if (level < 29) {
+        divisor = 2;
+      } else {
+        divisor = 1;
+      }
+      gravityLevels.push_back(1.0 / divisor);
     }
   }
   
