@@ -1,5 +1,4 @@
 #include "tetris.hpp"
-#include <cstring>
 #include <functional>
 #include <raylib.h>
 #include <string>
@@ -57,7 +56,9 @@ int main(int argc, char *argv[]) {
   
   BeginDrawing();
   ClearBackground(BG_COLOR);
-  DrawText("Loading, please wait...", 124, 276, 48, WHITE);
+  DrawText("Loading Bagles & Cream Cheese\n", 124, 276, 36, WHITE);
+  DrawText("      please wait...", 124, 300, 36, YELLOW);
+  
   EndDrawing();
   if (WindowShouldClose()) {
     return 0;
