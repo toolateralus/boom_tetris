@@ -260,25 +260,28 @@ struct Game {
   float playerGravity = 0.0f;
   size_t level = 0;
   size_t score = 0;
+  size_t startLevel;
   size_t linesClearedThisLevel = 0;
   size_t totalLinesCleared = 0;
   // are we in the main menu?
   bool inMenu = true;
   
   void generateGravityLevels(int totalLevels) {
-    float divisor = 24.0;
-    gravityLevels.push_back(1.0 / 24);
+    float divisor = 48.0;
     for (int level = 0; level < totalLevels; ++level) {
         gravityLevels.push_back(1.0 / divisor);
         if (level < 10) {
-            divisor -= 3.0;
-        } else if (level < 20) {
-            divisor -= 2.0;
+          divisor -= 5.0;
+        } else if (level < 13) {
+          divisor = 5;
+        } else if (level < 16) {
+          divisor = 4;
+        } else if (level < 19) {
+          divisor = 3;  
+        } else if (level < 29) {
+          divisor = 2;
         } else {
-            divisor -= 1.0;
-        }
-        if (divisor < 3.0) {
-            divisor = 3.0;
+          divisor = 1;
         }
     }
   }
