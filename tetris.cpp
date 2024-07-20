@@ -107,20 +107,23 @@ void Game::processGameLogic() {
     executeMovement([&] { tetromino->position.x++; });
   }
   
-  if (moveDown) {
-    playerGravity = 0.25f;
+  
+  auto oldGravity = gravity;
+  if (moveDown && gravity <= 0.5f) {
+    gravity = 0.5;
   }
   
   // check if this piece hit the floor, or another piece.  
   auto landed = executeMovement([&] {
-    budge += gravity + playerGravity;
-    playerGravity = 0.0f;
+    budge += gravity;
     auto floored = std::floor(budge);
     if (floored > 0) {
       tetromino->position.y += 1;
       budge = 0;
     }
   });
+  
+  
 
   for (const auto &idx : getIndices(tetromino)) {
     if (idx.x < 0 || idx.x >= boardWidth || idx.y < 0 || idx.y >= boardHeight) {
@@ -140,6 +143,8 @@ void Game::processGameLogic() {
     auto linesCleared = clearLines(linesToClear);
     adjustScoreAndLevel(linesCleared);
   }
+  
+  gravity = oldGravity;
 }
 
 void Game::setNextShapeAndColor() {
@@ -442,9 +447,10 @@ void Game::adjustScoreAndLevel(size_t linesCleared) {
   totalLinesCleared += linesCleared;
   linesClearedThisLevel += linesCleared;
   
-  if (linesClearedThisLevel >= boardWidth) {
+  auto levelAdvance = level == startLevel ? score_level * 10 : 10;
+  
+  if (linesClearedThisLevel >= levelAdvance) {
     level++;
-    
     paletteIdx = (paletteIdx + 1) % (palette.size() - 1);
     
     printf("\033[1;32madvanced level: to %ld\033[0m\n", level);

@@ -40,6 +40,7 @@ void setupMenuButtons(Game &game) {
   grid.emplace_element<Rect>(Position{0, 11}, Size{1,4}, Style{GetColor(0x2b2b2baa), WHITE},LayoutKind::StretchHorizontal);
   for (int i = 0; i <= 9; ++i) {
     auto callback = std::function<void()>([&game, i]() {
+      game.startLevel = i;
       game.level = i;
       game.inMenu = false;
     });
@@ -55,7 +56,7 @@ int main(int argc, char *argv[]) {
   srand(time(0));
   InitWindow(800, 600, "boom taetris");
   SetWindowState(FLAG_WINDOW_RESIZABLE);
-  SetTargetFPS(30);
+  SetTargetFPS(60);
   
   BeginDrawing();
   ClearBackground(BG_COLOR);
