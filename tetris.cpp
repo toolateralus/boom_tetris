@@ -501,14 +501,15 @@ size_t Game::clearLines(std::vector<size_t> &linesToClear) {
   }
 
   for (auto idx : linesToClear) {
-   
-    for (size_t j = idx; j > 0; --j) {
-      animation_queue.push_back(std::function<void()>([this, j] {
-        board.rows[j] = board.rows[j - 1];
-      }));
+    for (auto &cell : board.rows[idx]) {
+      animation_queue.push_back([this, &cell] {
+        cell.empty = true;
+      });
     }
-    for (auto &cell: board.rows[0]) {
-      animation_queue.push_back([this, &cell] { cell.empty = true; });
+    for (size_t j = idx; j > 0; --j) {
+      animation_queue.push_back([this, j] {
+        board.rows[j] = board.rows[j - 1];
+      });
     }
   }
 
