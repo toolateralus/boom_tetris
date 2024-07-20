@@ -24,5 +24,5 @@ $(OBJ_DIR)/%.o: %.cpp
 clean:
 	rm -rf $(OBJ_DIR) $(BIN_DIR)
 
-run: boom_tetris
+run: all
 	./$(BIN_DIR)/boom_tetris
