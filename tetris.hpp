@@ -4,6 +4,7 @@
 #include "rayui.hpp"
 #include <cstdlib>
 #include <ctime>
+#include <deque>
 #include <functional>
 #include <memory>
 #include <stdio.h>
@@ -122,9 +123,7 @@ struct NumberText : Element {
   virtual void draw(LayoutState &state) override;
 };
 
-struct Animation {
-  std::vector<std::function<void()>> queue = {};
-};
+
 
 struct Game {
   ScoreFile scoreFile;
@@ -134,7 +133,7 @@ struct Game {
   void drawGame();
   int FindGamepad() const;
   
-  std::unique_ptr<Animation> animation;
+  std::deque<std::function<void()>> animation_queue = {};
   
   Rectangle blockTxSourceRect;
   

@@ -51,7 +51,7 @@ Game::Game() {
 void Game::processGameLogic() {
 
   // if an animation is active, we pause the game.
-  if (animation) {
+  if (!animation_queue.empty()) {
     return;
   }
 
@@ -488,16 +488,15 @@ size_t Game::clearLines(std::vector<size_t> &linesToClear) {
     return 0;
   }
 
-  animation = std::make_unique<Animation>();
   for (auto idx : linesToClear) {
    
     for (size_t j = idx; j > 0; --j) {
-      animation->queue.push_back(std::function<void()>([this, j] {
+      animation_queue.push_back(std::function<void()>([this, j] {
         board.rows[j] = board.rows[j - 1];
       }));
     }
     for (auto &cell: board.rows[0]) {
-      animation->queue.push_back([this, &cell] { cell.empty = true; });
+      animation_queue.push_back([this, &cell] { cell.empty = true; });
     }
   }
 
@@ -518,15 +517,10 @@ void NumberText::draw(LayoutState &state) {
 }
 void Game::drawGame() {
 
-  if (animation) {
-    if (animation->queue.empty()) {
-      animation.reset(nullptr);
-      animation = nullptr;
-    } else {
-      auto &lambda = animation->queue.back();
-      animation->queue.pop_back();
-      lambda();
-    }
+  if (!animation_queue.empty()) {
+    auto &lambda = animation_queue.front();
+    animation_queue.pop_front();
+    lambda();
   }
 
   const auto screenWidth = (float)GetScreenWidth();
