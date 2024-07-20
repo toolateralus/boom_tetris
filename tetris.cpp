@@ -233,13 +233,13 @@ Grid Game::createGrid() {
   yPos += height;
   yPos += 1;
 
-  auto mainMenuButton = grid.emplace_element<Button>(Position{19, yPos}, Size{5, height}, (char*)"Main Menu", std::function<void()>([&](){
+  auto mainMenuButton = grid.emplace_element<Button>(Position{19, yPos}, Size{5, height}, "Main Menu", std::function<void()>([&](){
     inMenu = true;
   }));
   mainMenuButton->fontSize = 24;
   yPos += height;
-
-  auto resetButton = grid.emplace_element<Button>(Position{19, yPos}, Size{5, height}, (char*)"Reset", std::function<void()>([&](){
+  
+  auto resetButton = grid.emplace_element<Button>(Position{19, yPos}, Size{5, height}, "Reset", std::function<void()>([&](){
     reset();
   }));
   resetButton->fontSize = 24;
