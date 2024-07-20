@@ -14,9 +14,21 @@ std::vector<float> Game::gravityLevels = {
     1.0 / 6,  1.0 / 6,  1.0 / 6,  1.0 / 5,  1.0 / 5,
 };
 
-std::vector<std::vector<Color>> Game::palette = {
-    {BLUE, LIME, YELLOW, ORANGE, RED}};
 
+std::vector<std::vector<Color>> Game::palette = {
+    // Palette 1: Cool Blues
+    {SKYBLUE, DARKBLUE, LIGHTGRAY, BLUE, WHITE},
+    // Palette 2: Warm Tones
+    {YELLOW, GOLD, ORANGE, BEIGE, RAYWHITE},
+    // Palette 3: Greens
+    {GREEN, LIME, DARKGREEN, LIGHTGRAY, RAYWHITE},
+    // Palette 4: Purples
+    {PURPLE, VIOLET, DARKPURPLE, LIGHTGRAY, WHITE},
+    // Palette 5: Reds
+    {RED, MAROON, PINK, BEIGE, RAYWHITE},
+    // Palette 6: Earth Tones
+    {BROWN, DARKBROWN, BEIGE, GOLD, RAYWHITE},
+};
 std::unordered_map<Shape, std::vector<Vec2>> Game::shapePatterns = {
     {Shape::L, {{-1, 1}, {-1, 0}, {0, 0}, {1, 0}}},
     {Shape::J, {{-1, 0}, {0, 0}, {1, 0}, {1, 1}}},
@@ -136,7 +148,7 @@ void Game::setNextShapeAndColor() {
   static int num_shapes = (int)Shape::Square + 1;
   auto shape = Shape(rand() % num_shapes);
   nextShape = shape;
-  nextColor = (size_t)std::min((int)shape, 4);
+  nextColor = (size_t)((int)shape % (int)palette[paletteIdx].size());
   
 }
 
@@ -397,6 +409,9 @@ void Game::adjustScoreAndLevel(size_t linesCleared) {
   
   if (linesClearedThisLevel >= boardWidth) {
     level++;
+    
+    paletteIdx = (paletteIdx + 1) % (palette.size() - 1);
+    
     printf("\033[1;32madvanced level: to %ld\033[0m\n", level);
     if (score_level < gravityLevels.size()) {
       gravity = gravityLevels[level];
