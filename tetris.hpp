@@ -2,6 +2,7 @@
 #include "raylib.h"
 
 #include "rayui.hpp"
+#include <chrono>
 #include <cstdlib>
 #include <ctime>
 #include <deque>
@@ -123,6 +124,15 @@ struct NumberText : Element {
   virtual void draw(LayoutState &state) override;
 };
 
+struct TimerText : Element {
+  std::chrono::milliseconds *time;
+  Color color;
+  TimerText(Position position, Size size, std::chrono::milliseconds *time, Color color)
+      : Element(position, size), time(time), color(color) {}
+  virtual void draw(LayoutState &state) override;
+};
+
+
 struct Animation {
   Animation(Game *game) : game(game) {}
   Game *game;
@@ -147,6 +157,10 @@ struct LockInAnimation: Animation {
   bool invoke() override;
 };
 
+enum struct GameMode {
+  Normal,// high score
+  FortyLines,
+};
 
 struct Game {
   ScoreFile scoreFile;
@@ -160,21 +174,25 @@ struct Game {
   
   Rectangle blockTxSourceRect;
   
+  GameMode mode = GameMode::Normal;
+    
   // the play grid.
   Board board;
-
+  
   // the upcoming shape & color of the next tetromino.
   Shape nextShape;
   int nextColor;
-
+  
   // the piece the player is in control of.
   std::unique_ptr<Tetromino> tetromino;
-
+  
+  std::chrono::milliseconds elapsed;
+  
   void reset();
-
+  
   Game();
   ~Game();
-
+  
   // TODO: make this more like classic tetris.
   std::vector<float> gravityLevels;
   static std::unordered_map<Shape, std::vector<Vec2>> shapePatterns;
