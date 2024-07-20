@@ -49,6 +49,7 @@ void setupMenuButtons(Game &game) {
   auto _40LineTxt = grid.emplace_element<Button>(pos, size, "40 lines", [&](){
     game.mode = GameMode::FortyLines;
     game.level = 5;
+    game.startLevel = 5;
     game.inMenu = false;
   });
   _40LineTxt->fontSize = 16;

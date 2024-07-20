@@ -326,6 +326,7 @@ Game::~Game() { UnloadTexture(blockTexture); }
 
 void Game::reset() {
   score = 0;
+  level = startLevel;
   gravity = gravityLevels[level];
   linesClearedThisLevel = 0;
   totalLinesCleared = 0;
