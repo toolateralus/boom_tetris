@@ -194,27 +194,47 @@ Grid Game::createGrid() {
   Grid grid({26, 20});
   grid.style.background = BG_COLOR;
 
-  auto levelLabel = grid.emplace_element<DynamicLabel>(Position{1, 1}, Size{7, 1});
-  levelLabel->text = "Level:";
-  grid.emplace_element<NumberText>(Position{1, 2}, Size{7, 1}, &level, WHITE);
+  auto linesLabel = grid.emplace_element<DynamicLabel>(Position{1, 1}, Size{7, 1});
+  linesLabel->text = "Lines:";
+  grid.emplace_element<NumberText>(Position{1, 2}, Size{7, 1}, &totalLinesCleared, WHITE);
 
   auto playfield = createBoardGrid();
   playfield->position = {8, 0};
   playfield->size = {10, 20};
   grid.elements.push_back(playfield);
   
-  auto topLabel = grid.emplace_element<DynamicLabel>(Position{19,0}, Size{7, 1});
-  topLabel->text = "Top:";
-  grid.emplace_element<NumberText>(Position{19, 1}, Size{7, 1}, &scoreFile.high_score, WHITE);
+  int yPos = 1, height = 1;
 
-  auto scoreLabel = grid.emplace_element<DynamicLabel>(Position{19,2}, Size{7, 1});
+  auto topLabel = grid.emplace_element<DynamicLabel>(Position{19, yPos}, Size{7, height});
+  yPos += height;
+  topLabel->text = "Top:";
+  grid.emplace_element<NumberText>(Position{19, yPos}, Size{7, height}, &scoreFile.high_score, WHITE);
+  yPos += height;
+  yPos += 1;
+
+  auto scoreLabel = grid.emplace_element<DynamicLabel>(Position{19, yPos}, Size{7, height});
+  yPos += height;
   scoreLabel->text = "Score:";
-  grid.emplace_element<NumberText>(Position{19, 3}, Size{7, 1}, &score, WHITE);
+  grid.emplace_element<NumberText>(Position{19, yPos}, Size{7, height}, &score, WHITE);
+  yPos += height;
+  yPos += 1;
   
-  auto nextPieceLabel = grid.emplace_element<DynamicLabel>(Position{19, 4}, Size{7, 1});
+  auto nextPieceLabel = grid.emplace_element<DynamicLabel>(Position{19, yPos}, Size{7, height});
+  yPos += height;
   nextPieceLabel->text = "Next:";
-  auto pieceViewer = grid.emplace_element<PieceViewer>(Position{19, 5}, Size{4, 4}, *this);
+  height = 4;
+  auto pieceViewer = grid.emplace_element<PieceViewer>(Position{19, yPos}, Size{4, height}, *this);
   pieceViewer->style.background = BLACK;
+  yPos += height;
+  yPos += 1;
+
+  height = 1;
+  auto levelLabel = grid.emplace_element<DynamicLabel>(Position{19, yPos}, Size{7, height});
+  yPos += height;
+  levelLabel->text = "Level:";
+  grid.emplace_element<NumberText>(Position{19, yPos}, Size{7, height}, &level, WHITE);
+  yPos += height;
+
   return grid;
 }
 
