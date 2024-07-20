@@ -500,10 +500,8 @@ size_t Game::clearLines(std::vector<size_t> &linesToClear) {
     return 0;
   }
 
-  for (auto idx : linesToClear) {
-    animation_queue.push_back(std::make_unique<CellDissolveAnimation>(std::vector<size_t>(linesToClear)));
-    animation_queue.push_back(std::make_unique<LineRemoveAnimation>(std::vector<size_t>(linesToClear)));
-  }
+  animation_queue.push_back(std::make_unique<CellDissolveAnimation>(std::vector<size_t>(linesToClear)));
+  animation_queue.push_back(std::make_unique<LineRemoveAnimation>(std::vector<size_t>(linesToClear)));
 
   return linesToClear.size();
 }
