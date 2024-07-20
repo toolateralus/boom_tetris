@@ -8,13 +8,6 @@
 
 void Game::saveTetromino() { tetromino->saveState(); }
 
-std::vector<float> Game::gravityLevels = {
-    1.0 / 48, 1.0 / 43, 1.0 / 38, 1.0 / 33, 1.0 / 28,
-    1.0 / 23, 1.0 / 18, 1.0 / 13, 1.0 / 8,  1.0 / 6,
-    1.0 / 6,  1.0 / 6,  1.0 / 6,  1.0 / 5,  1.0 / 5,
-};
-
-
 std::vector<std::vector<Color>> Game::palette = {
     // Palette 1: Cool Blues
     {SKYBLUE, DARKBLUE, LIGHTGRAY, BLUE, WHITE},
@@ -47,8 +40,7 @@ Game::Game() {
   gameGrid = createGrid();
   inMenu = true; 
   scoreFile.read();
-  
-  printf("high score: %ld\n", scoreFile.high_score);
+  generateGravityLevels(100);
 }
 
 void Game::processGameLogic() {
@@ -247,11 +239,10 @@ Game::~Game() {
 
 void Game::reset() {
   score = 0;
-  gravity =  gravityLevels[level];
+  gravity = gravityLevels[level];
   linesClearedThisLevel = 0;
   totalLinesCleared = 0;
   board = {}; // reset the grid state.
-  gravity = 0.1f;
   tetromino = nullptr;
   setNextShapeAndColor();
   gameGrid = createGrid();
@@ -415,10 +406,6 @@ void Game::adjustScoreAndLevel(size_t linesCleared) {
     score += 1200 * score_level;
   }
   
-  if (score > scoreFile.high_score) {
-    scoreFile.write();
-  }
-  
   totalLinesCleared += linesCleared;
   linesClearedThisLevel += linesCleared;
   
@@ -428,7 +415,7 @@ void Game::adjustScoreAndLevel(size_t linesCleared) {
     paletteIdx = (paletteIdx + 1) % (palette.size() - 1);
     
     printf("\033[1;32madvanced level: to %ld\033[0m\n", level);
-    if (score_level < gravityLevels.size()) {
+    if (this->level < gravityLevels.size()) {
       gravity = gravityLevels[level];
     }
     linesClearedThisLevel = 0;

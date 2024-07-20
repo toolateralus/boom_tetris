@@ -242,7 +242,7 @@ struct Game {
   ~Game();
 
   // TODO: make this more like classic tetris.
-  static std::vector<float> gravityLevels;
+  std::vector<float> gravityLevels;
   static std::unordered_map<Shape, std::vector<Vec2>> shapePatterns;
   // colors for each level[shape]
   static std::vector<std::vector<Color>> palette;
@@ -264,7 +264,26 @@ struct Game {
   size_t totalLinesCleared = 0;
   // are we in the main menu?
   bool inMenu = true;
-
+  
+  void generateGravityLevels(int totalLevels) {
+    float divisor = 24.0;
+    gravityLevels.push_back(1.0 / 24);
+    for (int level = 0; level < totalLevels; ++level) {
+        gravityLevels.push_back(1.0 / divisor);
+        if (level < 10) {
+            divisor -= 3.0;
+        } else if (level < 20) {
+            divisor -= 2.0;
+        } else {
+            divisor -= 1.0;
+        }
+        if (divisor < 3.0) {
+            divisor = 3.0;
+        }
+    }
+  }
+  
+  
   void setNextShapeAndColor();
   void processGameLogic();
   void drawUi();
