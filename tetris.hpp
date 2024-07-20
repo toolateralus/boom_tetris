@@ -5,7 +5,6 @@
 #include <cstdlib>
 #include <ctime>
 #include <deque>
-#include <functional>
 #include <memory>
 #include <stdio.h>
 #include <unistd.h>
@@ -123,6 +122,29 @@ struct NumberText : Element {
   virtual void draw(LayoutState &state) override;
 };
 
+struct Animation {
+  virtual ~Animation() {
+    
+  }
+  
+  virtual void invoke() = 0;
+};
+struct CellDissolveAnimation: Animation {
+  explicit CellDissolveAnimation(std::vector<size_t> lines)
+      : lines(std::move(lines)) {}
+  std::vector<size_t> lines;
+  void invoke() override {
+    
+  }
+};
+struct LineRemoveAnimation: Animation {
+  explicit LineRemoveAnimation(std::vector<size_t> lines)
+      : lines(std::move(lines)) {}
+  std::vector<size_t> lines;
+  void invoke() override {
+    
+  }
+};
 
 
 struct Game {
@@ -133,7 +155,7 @@ struct Game {
   void drawGame();
   int FindGamepad() const;
   
-  std::deque<std::function<void()>> animation_queue = {};
+  std::deque<std::unique_ptr<Animation>> animation_queue = {};
   
   Rectangle blockTxSourceRect;
   

@@ -501,16 +501,8 @@ size_t Game::clearLines(std::vector<size_t> &linesToClear) {
   }
 
   for (auto idx : linesToClear) {
-    for (auto &cell : board.rows[idx]) {
-      animation_queue.push_back([this, &cell] {
-        cell.empty = true;
-      });
-    }
-    for (size_t j = idx; j > 0; --j) {
-      animation_queue.push_back([this, j] {
-        board.rows[j] = board.rows[j - 1];
-      });
-    }
+    animation_queue.push_back(std::make_unique<CellDissolveAnimation>(std::vector<size_t>(linesToClear)));
+    animation_queue.push_back(std::make_unique<LineRemoveAnimation>(std::vector<size_t>(linesToClear)));
   }
 
   return linesToClear.size();
@@ -531,9 +523,8 @@ void NumberText::draw(LayoutState &state) {
 void Game::drawGame() {
 
   if (!animation_queue.empty()) {
-    auto &lambda = animation_queue.front();
+    animation_queue.front()->invoke();
     animation_queue.pop_front();
-    lambda();
   }
 
   const auto screenWidth = (float)GetScreenWidth();
