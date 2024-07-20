@@ -164,7 +164,7 @@ void Game::processGameLogic() {
     adjustScoreAndLevel(linesCleared, tetromino->softDropHeight);
     tetromino.reset(nullptr);
     
-    if (mode == GameMode::FortyLines && linesCleared == 40) {
+    if (mode == GameMode::FortyLines && linesCleared >= 40) {
       inMenu = true;
     }
     
