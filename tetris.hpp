@@ -47,7 +47,7 @@ struct Block {
 };
 
 // a way to key into the grid to update a tetromino.
-using ShapeIndices = std::vector<Vec2>;
+using ShapeIndices = std::vector<Block>;
 
 struct HorizontalInput {
   HorizontalInput(bool left, bool right) : left(left), right(right) {}
@@ -203,7 +203,7 @@ struct Game {
   
   // TODO: make this more like classic tetris.
   std::vector<float> gravityLevels;
-  static std::unordered_map<Shape, std::vector<Vec2>> shapePatterns;
+  static std::unordered_map<Shape, std::vector<Block>> shapePatterns;
   // colors for each level[shape]
   static std::vector<std::vector<Color>> palette;
 
@@ -239,6 +239,6 @@ struct Game {
   HorizontalInput delayedAutoShift();
   void cleanTetromino(std::unique_ptr<Tetromino> &tetromino);
   bool resolveCollision(std::unique_ptr<Tetromino> &tetromino);
-  ShapeIndices getIndices(std::unique_ptr<Tetromino> &tetromino) const;
+  ShapeIndices getTransformedBlocks(std::unique_ptr<Tetromino> &tetromino) const;
   std::shared_ptr<rayui::Grid> createBoardGrid();
 };

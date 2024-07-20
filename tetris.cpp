@@ -27,14 +27,14 @@ std::vector<std::vector<Color>> Game::palette = {
     // Palette 6: Earth Tones
     {BROWN, DARKBROWN, BEIGE, GOLD, RAYWHITE},
 };
-std::unordered_map<Shape, std::vector<Vec2>> Game::shapePatterns = {
-    {Shape::L, {{-1, 1}, {-1, 0}, {0, 0}, {1, 0}}},
-    {Shape::J, {{-1, 0}, {0, 0}, {1, 0}, {1, 1}}},
-    {Shape::Z, {{-1, 0}, {0, 0}, {0, 1}, {1, 1}}},
-    {Shape::S, {{-1, 1}, {0, 1}, {0, 0}, {1, 0}}},
-    {Shape::I, {{-1, 0}, {0, 0}, {1, 0}, {2, 0}}},
-    {Shape::T, {{-1, 0}, {0, 0}, {1, 0}, {0, 1}}},
-    {Shape::O, {{0, 0}, {0, 1}, {1, 0}, {1, 1}}},
+std::unordered_map<Shape, std::vector<Block>> Game::shapePatterns = {
+    {Shape::L, {{{-1, 1}, 1}, {{-1, 0}, 1}, {{0, 0}, 1}, {{1, 0}, 1}}},
+    {Shape::J, {{{-1, 0}, 0}, {{0, 0}, 0}, {{1, 0}, 0}, {{1, 1}, 0}}},
+    {Shape::Z, {{{-1, 0}, 1}, {{0, 0}, 1}, {{0, 1}, 1}, {{1, 1}, 1}}},
+    {Shape::S, {{{-1, 1}, 0}, {{0, 1}, 0}, {{0, 0}, 0}, {{1, 0}, 0}}},
+    {Shape::I, {{{-1, 0}, 3}, {{0, 0}, 3}, {{1, 0}, 3}, {{2, 0}, 3}}},
+    {Shape::T, {{{-1, 0}, 3}, {{0, 0}, 3}, {{1, 0}, 3}, {{0, 1}, 3}}},
+    {Shape::O, {{{0, 0}, 2}, {{0, 1}, 2}, {{1, 0}, 2}, {{1, 1}, 2}}},
 };
 
 Game::Game() {
@@ -146,14 +146,15 @@ void Game::processGameLogic() {
     }
   });
 
-  for (const auto &idx : getIndices(tetromino)) {
-    if (idx.x < 0 || idx.x >= boardWidth || idx.y < 0 || idx.y >= boardHeight) {
+  for (const auto &block : getTransformedBlocks(tetromino)) {
+    auto pos = block.pos;
+    if (pos.x < 0 || pos.x >= boardWidth || pos.y < 0 || pos.y >= boardHeight) {
       continue;
     }
-    auto &cell = board.get_cell(idx.x, idx.y);
+    auto &cell = board.get_cell(pos.x, pos.y);
     cell.empty = false;
     cell.color = tetromino->color;
-    cell.imageIdx = (size_t)tetromino->shape % 4;
+    cell.imageIdx = block.imageIdx;
   }
 
   // if we landed, we leave the cells where they are and spawn a new piece.
@@ -184,12 +185,13 @@ void Game::setNextShapeAndColor() {
 }
 
 void Game::cleanTetromino(std::unique_ptr<Tetromino> &tetromino) {
-  auto indices = getIndices(tetromino);
-  for (const auto &idx : indices) {
-    if (idx.y < 0 || idx.y >= boardHeight || idx.x < 0 || idx.x >= boardWidth) {
+  auto indices = getTransformedBlocks(tetromino);
+  for (const auto &block : indices) {
+    auto pos = block.pos;
+    if (pos.y < 0 || pos.y >= boardHeight || pos.x < 0 || pos.x >= boardWidth) {
       continue;
     }
-    auto &cell = board.get_cell(idx.x, idx.y);
+    auto &cell = board.get_cell(pos.x, pos.y);
     cell.empty = true;
     cell.color = 0;
   }
@@ -297,12 +299,13 @@ Grid Game::createGrid() {
 }
 
 bool Game::resolveCollision(std::unique_ptr<Tetromino> &tetromino) {
-  for (const auto idx : getIndices(tetromino)) {
+  for (const auto block : getTransformedBlocks(tetromino)) {
+    auto pos = block.pos;
     if (
-      idx.y >= boardHeight ||
-      idx.x < 0 ||
-      idx.x >= boardWidth ||
-      board.collides(idx)
+      pos.y >= boardHeight ||
+      pos.x < 0 ||
+      pos.x >= boardWidth ||
+      board.collides(pos)
     ) {
       tetromino->position = tetromino->prev_position;
       tetromino->orientation = tetromino->prev_orientation;
@@ -412,12 +415,12 @@ Cell &Board::operator[](int x, int y)  {
   throw std::runtime_error("board subscript out of range");
 }
 
-ShapeIndices Game::getIndices(std::unique_ptr<Tetromino> &tetromino) const {
+ShapeIndices Game::getTransformedBlocks(std::unique_ptr<Tetromino> &tetromino) const {
   ShapeIndices indices;
   auto pattern = shapePatterns.at(tetromino->shape);
-  for (const auto &idx : pattern) {
-    const auto rotated = idx.rotated(tetromino->orientation);
-    indices.push_back(tetromino->position + rotated);
+  for (const auto &block : pattern) {
+    const auto rotated = block.pos.rotated(tetromino->orientation);
+    indices.push_back({tetromino->position + rotated, block.imageIdx});
   }
   return indices;
 }
@@ -514,7 +517,6 @@ void Game::applyLineClearScoreAndLevel(size_t linesCleared) {
 }
 void BoardCell::draw(rayui::LayoutState &state) {
   if (!cell.empty) {
-    auto color = game.palette[game.paletteIdx][cell.color];
     auto destRect = Rectangle{state.position.x, state.position.y,
                               state.size.width, state.size.height};
     Rectangle srcRect = {(float)cell.imageIdx * 8, (float)(game.level % 10) * 8, 8, 8};
@@ -575,13 +577,12 @@ void PieceViewer::draw(rayui::LayoutState &state) {
   }
 
   for (const auto &block : game.shapePatterns.at(game.nextShape)) {
-    auto color = game.palette[game.paletteIdx][game.nextColor];
-    auto destX = nextBlockAreaCenterX + block.x * blockSize;
-    auto destY = nextBlockAreaCenterY + block.y * blockSize;
+    auto destX = nextBlockAreaCenterX + block.pos.x * blockSize;
+    auto destY = nextBlockAreaCenterY + block.pos.y * blockSize;
     auto destRect = Rectangle{(float)destX, (float)destY, (float)blockSize,
                               (float)blockSize};
-    DrawTexturePro(game.blockTexture, game.blockTxSourceRect, destRect, {0, 0},
-                   0, color);
+    Rectangle srcRect = {(float)block.imageIdx * 8, (float)(game.level % 10) * 8, 8, 8};
+    DrawTexturePro(game.blockTexture, srcRect, destRect, {0, 0}, 0, WHITE);
   }
 };
 Vec2 Vec2::operator+(const Vec2 &other) const {
