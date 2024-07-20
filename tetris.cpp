@@ -269,8 +269,12 @@ Grid Game::createGrid() {
 
 bool Game::resolveCollision(std::unique_ptr<Tetromino> &tetromino) {
   for (const auto idx : getIndices(tetromino)) {
-    if (idx.y >= boardHeight || idx.x < 0 || idx.x >= boardWidth ||
-        board.collides(idx)) {
+    if (
+      idx.y >= boardHeight ||
+      idx.x < 0 ||
+      idx.x >= boardWidth ||
+      board.collides(idx)
+    ) {
       tetromino->position = tetromino->prev_position;
       tetromino->orientation = tetromino->prev_orientation;
       return true;
@@ -282,13 +286,12 @@ bool Game::resolveCollision(std::unique_ptr<Tetromino> &tetromino) {
 bool Board::collides(Vec2 pos) noexcept {
   int x = pos.x;
   int y = pos.y;
-  if (y < 0 || y >= boardHeight || x < 0 || x >= boardWidth) {
-    return false;
-  }
-  if (!rows[y][x].empty) {
-    return true;
-  }
-  return false;
+  return
+    y < (int)rows.size() &&
+    y >= 0 &&
+    x < (int)rows[y].size() &&
+    x >= 0 &&
+    !get_cell(x, y).empty;
 }
 
 Game::~Game() { UnloadTexture(blockTexture); }
