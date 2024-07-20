@@ -261,6 +261,7 @@ struct Game {
   size_t level = 0;
   size_t score = 0;
   size_t linesClearedThisLevel = 0;
+  size_t totalLinesCleared = 0;
   // are we in the main menu?
   bool inMenu = true;
 
