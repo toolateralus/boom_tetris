@@ -1,4 +1,5 @@
 #pragma once
+#include <cstring>
 #include <functional>
 #include <memory>
 #include <raylib.h>
@@ -62,8 +63,8 @@ struct LayoutState {
 
 struct Element {
   Element(Position position, Size size,
-          LayoutKind layoutKind = LayoutKind::None,
-          Style style = {}, Margin margin = {})
+          LayoutKind layoutKind = LayoutKind::None, Style style = {},
+          Margin margin = {})
       : style(style), position(position), size(size), layoutKind(layoutKind),
         margin(margin) {}
   Element() {}
@@ -93,7 +94,8 @@ struct Grid : Element {
     // Calculate the size of each cell in the grid
     float cellWidth = state.size.width / subdivisions.width;
     float cellHeight = state.size.height / subdivisions.height;
-    DrawRectangle(state.position.x, state.position.y, state.size.width, state.size.height, style.background);
+    DrawRectangle(state.position.x, state.position.y, state.size.width,
+                  state.size.height, style.background);
 
     for (const auto &element : elements) {
       LayoutState elementState;
@@ -198,14 +200,16 @@ struct Button : Element {
     if (isMouseOver) {
       DrawRectangle(state.position.x, state.position.y, state.size.width,
                     state.size.height, style.background);
-      DrawText(text, state.position.x, state.position.y, fontSize,
-               style.foreground);
     } else {
       DrawRectangleLines(state.position.x, state.position.y, state.size.width,
                          state.size.height, style.borderColor);
-      DrawText(text, state.position.x, state.position.y, fontSize,
-               style.foreground);
     }
+    auto len = std::strlen(text);
+    float size = ((float)fontSize / 2) * len;
+    auto pos_x = state.position.x + (0.5 * state.size.width) - (size / 2);
+    auto pos_y = state.position.y + (0.5 * state.size.height) - (fontSize / 2.0);
+    
+    DrawText(text, pos_x, pos_y, fontSize, style.foreground);
   }
 };
 
