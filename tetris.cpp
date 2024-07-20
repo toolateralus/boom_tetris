@@ -249,6 +249,7 @@ void Game::reset() {
   score = 0;
   gravity =  gravityLevels[level];
   linesClearedThisLevel = 0;
+  totalLinesCleared = 0;
   board = {}; // reset the grid state.
   gravity = 0.1f;
   tetromino = nullptr;
@@ -414,6 +415,7 @@ void Game::adjustScoreAndLevel(size_t linesCleared) {
     score += 1200 * score_level;
   }
   
+  totalLinesCleared += linesCleared;
   linesClearedThisLevel += linesCleared;
   
   if (linesClearedThisLevel >= boardWidth) {
