@@ -28,7 +28,7 @@ using namespace rayui;
 // the direction of user input.
 enum struct Direction { None, Left, Right, Down };
 // the shape of a tetromino, a group of cells.
-enum struct Shape { L, J, Z, S, I, T, Square };
+enum struct Shape { L, J, Z, S, I, T, O };
 // the rotation of a tetromino
 enum struct Orientation { Up, Right, Down, Left };
 

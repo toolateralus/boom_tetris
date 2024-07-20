@@ -29,7 +29,7 @@ std::unordered_map<Shape, std::vector<Vec2>> Game::shapePatterns = {
     {Shape::S, {{-1, 1}, {0, 1}, {0, 0}, {1, 0}}},
     {Shape::I, {{-1, 0}, {0, 0}, {1, 0}, {2, 0}}},
     {Shape::T, {{-1, 0}, {0, 0}, {1, 0}, {0, 1}}},
-    {Shape::Square, {{0, 0}, {0, 1}, {1, 0}, {1, 1}}},
+    {Shape::O, {{0, 0}, {0, 1}, {1, 0}, {1, 1}}},
 };
 
 Game::Game() {
@@ -148,7 +148,7 @@ void Game::processGameLogic() {
 }
 
 void Game::setNextShapeAndColor() {
-  static int num_shapes = (int)Shape::Square + 1;
+  static int num_shapes = (int)Shape::O + 1;
   auto shape = Shape(rand() % num_shapes);
   nextShape = shape;
   nextColor = (size_t)((int)shape % (int)palette[paletteIdx].size());
@@ -391,7 +391,7 @@ void Tetromino::spinRight() {
   case Shape::T:
     max_oris = 4;
     break;
-  case Shape::Square:
+  case Shape::O:
     max_oris = 1;
     break;
   }
@@ -420,7 +420,7 @@ void Tetromino::spinLeft() {
   case Shape::T:
     max_oris = 4;
     break;
-  case Shape::Square:
+  case Shape::O:
     max_oris = 1;
     break;
   }
@@ -516,7 +516,7 @@ void PieceViewer::draw(rayui::LayoutState &state) {
   auto blockSize = std::min(state.size.height / 2, state.size.width / 4);
   auto nextBlockAreaCenterX = state.position.x + state.size.height / 2 - blockSize;
   auto nextBlockAreaCenterY = state.position.y + state.size.width / 2 - blockSize;
-  if (game.nextShape != Shape::I && game.nextShape != Shape::Square) {
+  if (game.nextShape != Shape::I && game.nextShape != Shape::O) {
     nextBlockAreaCenterX += blockSize / 2;
   }
   if (game.nextShape == Shape::I) {
