@@ -411,6 +411,10 @@ void Game::adjustScoreAndLevel(size_t linesCleared) {
     score += 1200 * score_level;
   }
   
+  if (score > scoreFile.high_score) {
+    scoreFile.write();
+  }
+  
   totalLinesCleared += linesCleared;
   linesClearedThisLevel += linesCleared;
   

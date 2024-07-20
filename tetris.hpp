@@ -268,7 +268,7 @@ struct Game {
   void setNextShapeAndColor();
   void processGameLogic();
   void drawUi();
-
+  
   std::vector<size_t> checkLines();
   size_t clearLines(std::vector<size_t> &linesToClear);
   void adjustScoreAndLevel(size_t linesCleared);
