@@ -175,18 +175,18 @@ struct DynamicLabel : Element {
 };
 
 struct Button : Element {
-  char *text = (char *)"";
+  std::string text;
   size_t fontSize = 24;
   using ClickedCallback = std::function<void()>;
   ClickedCallback onClicked = nullptr;
-
-  Button(Position position, Size size, char *text = (char *)"",
+  
+  Button(Position position, Size size, std::string text = "",
          ClickedCallback onClicked = nullptr,
          Style style = {BLACK, WHITE, WHITE, 0},
          LayoutKind layoutKind = LayoutKind::None)
       : Element(position, size, layoutKind, style), text(text),
         onClicked(onClicked) {}
-
+  
   void draw(LayoutState &state) override {
     bool isMouseOver = CheckCollisionPointRec(
         GetMousePosition(), {state.position.x, state.position.y,
@@ -204,12 +204,12 @@ struct Button : Element {
       DrawRectangleLines(state.position.x, state.position.y, state.size.width,
                          state.size.height, style.borderColor);
     }
-    auto len = std::strlen(text);
+    auto len = std::strlen(text.c_str());
     float size = ((float)fontSize / 2) * len;
     auto pos_x = state.position.x + (0.5 * state.size.width) - (size / 2);
     auto pos_y = state.position.y + (0.5 * state.size.height) - (fontSize / 2.0);
     
-    DrawText(text, pos_x, pos_y, fontSize, style.foreground);
+    DrawText(text.c_str(), pos_x, pos_y, fontSize, style.foreground);
   }
 };
 

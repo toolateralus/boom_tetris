@@ -44,10 +44,7 @@ void setupMenuButtons(Game &game) {
       game.level = i;
       game.inMenu = false;
     });
-    auto str = std::to_string(i);
-    char* owned_c_str = new char[str.length() + 1];
-    memcpy(owned_c_str, str.c_str(), str.length() + 1);
-    grid.emplace_element<Button>(pos, size, owned_c_str, callback);
+    grid.emplace_element<Button>(pos, size, std::to_string(i), callback);
     pos.x += size.width;
   }
 }
