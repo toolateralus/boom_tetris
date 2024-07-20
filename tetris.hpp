@@ -138,6 +138,13 @@ struct CellDissolveAnimation: Animation {
   int cellIdx = 0;
   bool invoke() override;
 };
+struct LockInAnimation: Animation {
+  explicit LockInAnimation(Game *game, int pieceHeight)
+    : Animation(game), pieceHeight(pieceHeight) {}
+  int frameCount = 0;
+  int pieceHeight = 0;
+  bool invoke() override;
+};
 
 
 struct Game {

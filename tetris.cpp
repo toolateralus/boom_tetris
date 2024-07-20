@@ -162,8 +162,8 @@ void Game::processGameLogic() {
   // if we landed, we leave the cells where they are and spawn a new piece.
   // also check for line clears and tetrises.
   if (landed) {
+    animation_queue.push_back(std::make_unique<LockInAnimation>(this, tetromino->position.y));
     tetromino.reset(nullptr);
-    
     auto linesToClear = checkLines();
     auto linesCleared = clearLines(linesToClear);
     adjustScoreAndLevel(linesCleared);
@@ -708,3 +708,10 @@ bool CellDissolveAnimation::invoke() {
   }
   return false;
 }
+bool LockInAnimation::invoke() {
+  if (frameCount == 10 + (pieceHeight / 4) * 2) {
+    return true;
+  }
+  frameCount++;
+  return false;
+};
