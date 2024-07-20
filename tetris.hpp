@@ -17,8 +17,8 @@
 #include <windows.h> // For GetEnvironmentVariable
 #endif
 
-constexpr size_t boardWidth = 10;
-constexpr size_t boardHeight = 20;
+constexpr int boardWidth = 10;
+constexpr int boardHeight = 20;
 
 #define BG_COLOR GetColor(0x12121212)
 
