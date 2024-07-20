@@ -40,7 +40,7 @@ std::unordered_map<Shape, std::vector<Vec2>> Game::shapePatterns = {
 Game::Game() {
   board = Board();
   setNextShapeAndColor();
-  blockTexture = LoadTexture("res/block.png");
+  blockTexture = LoadTexture("res/block2.png");
   blockTxSourceRect =
       Rectangle{0, 0, (float)blockTexture.width, (float)blockTexture.height};
   gameGrid = createGrid();
@@ -153,6 +153,7 @@ void Game::processGameLogic() {
     auto &cell = board.get_cell(idx.x, idx.y);
     cell.empty = false;
     cell.color = tetromino->color;
+    cell.imageIdx = (size_t)tetromino->shape % 4;
   }
 
   // if we landed, we leave the cells where they are and spawn a new piece.
@@ -515,8 +516,8 @@ void BoardCell::draw(rayui::LayoutState &state) {
     auto color = game.palette[game.paletteIdx][cell.color];
     auto destRect = Rectangle{state.position.x, state.position.y,
                               state.size.width, state.size.height};
-    DrawTexturePro(game.blockTexture, game.blockTxSourceRect, destRect, {0, 0},
-                   0, color);
+    Rectangle srcRect = {(float)cell.imageIdx * 8, (float)(game.level % 10) * 8, 8, 8};
+    DrawTexturePro(game.blockTexture, srcRect, destRect, {0, 0}, 0, WHITE);
   }
 };
 void NumberText::draw(LayoutState &state) {

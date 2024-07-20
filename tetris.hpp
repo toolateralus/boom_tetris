@@ -41,6 +41,11 @@ struct Vec2 {
   Vec2 rotated(Orientation orientation) const;
 };
 
+struct Block {
+  Vec2 pos;
+  size_t imageIdx;
+};
+
 // a way to key into the grid to update a tetromino.
 using ShapeIndices = std::vector<Vec2>;
 
@@ -51,6 +56,7 @@ struct HorizontalInput {
 
 // a grid cell.
 struct Cell {
+  size_t imageIdx;
   size_t color = 0;
   bool empty = true;
 };
