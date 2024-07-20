@@ -45,6 +45,9 @@ Game::Game() {
   blockTexture = LoadTexture("res/block.png");
   gameGrid = createGrid();
   inMenu = true; 
+  scoreFile.read();
+  
+  printf("high score: %ld\n", scoreFile.high_score);
 }
 
 void Game::processGameLogic() {
@@ -60,6 +63,9 @@ void Game::processGameLogic() {
     
     // game-over condition. currently, this is premature sometimes.
     if (resolveCollision(tetromino)) {
+      if (score > scoreFile.high_score) {
+        scoreFile.high_score = score;
+      }
       inMenu = true;
       return;
     }
@@ -251,7 +257,9 @@ bool Board::collides(Vec2 pos) noexcept {
   return false;
 }
 
-Game::~Game() { UnloadTexture(blockTexture); }
+Game::~Game() { 
+  UnloadTexture(blockTexture); 
+}
 
 void Game::reset() {
   score = 0;

@@ -59,11 +59,12 @@ int main(int argc, char *argv[]) {
   
   Game game = Game();
   
+  
   setupMenuButtons(game);
   
   while (!WindowShouldClose()) {
     BeginDrawing();
-
+    
     if (game.inMenu) {
       drawMenu(game);
       
@@ -82,6 +83,8 @@ int main(int argc, char *argv[]) {
     game.drawGame();
     EndDrawing();
   }
+  
+  game.scoreFile.write();
   
 	
   return 0;
