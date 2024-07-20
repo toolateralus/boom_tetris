@@ -154,7 +154,6 @@ void Game::processGameLogic() {
     tetromino.reset(nullptr);
     if (mode == GameMode::FortyLines && totalLinesCleared >= 40) {
       scene = Scene::GameOver;
-      reset();
     }
   }
 
