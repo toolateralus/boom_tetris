@@ -490,13 +490,14 @@ size_t Game::clearLines(std::vector<size_t> &linesToClear) {
 
   animation = std::make_unique<Animation>();
   for (auto idx : linesToClear) {
-    for (auto &cell: board.rows[0]) {
-      animation->queue.push_back([this, &cell] { cell.empty = true; });
-    }
+   
     for (size_t j = idx; j > 0; --j) {
       animation->queue.push_back(std::function<void()>([this, j] {
         board.rows[j] = board.rows[j - 1];
       }));
+    }
+    for (auto &cell: board.rows[0]) {
+      animation->queue.push_back([this, &cell] { cell.empty = true; });
     }
   }
 
