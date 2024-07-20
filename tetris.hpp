@@ -123,6 +123,8 @@ struct NumberText : Element {
 };
 
 struct Animation {
+  Animation(Game *game) : game(game) {}
+  Game *game;
   virtual ~Animation() {
     
   }
@@ -130,16 +132,16 @@ struct Animation {
   virtual void invoke() = 0;
 };
 struct CellDissolveAnimation: Animation {
-  explicit CellDissolveAnimation(std::vector<size_t> lines)
-      : lines(std::move(lines)) {}
+  explicit CellDissolveAnimation(Game *game, std::vector<size_t> lines)
+      : Animation(game), lines(std::move(lines)) {}
   std::vector<size_t> lines;
   void invoke() override {
     
   }
 };
 struct LineRemoveAnimation: Animation {
-  explicit LineRemoveAnimation(std::vector<size_t> lines)
-      : lines(std::move(lines)) {}
+  explicit LineRemoveAnimation(Game *game, std::vector<size_t> lines)
+      : Animation(game), lines(std::move(lines)) {}
   std::vector<size_t> lines;
   void invoke() override {
     
