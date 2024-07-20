@@ -56,6 +56,14 @@ int main(int argc, char *argv[]) {
   InitWindow(800, 600, "boom taetris");
   SetWindowState(FLAG_WINDOW_RESIZABLE);
   SetTargetFPS(30);
+
+  BeginDrawing();
+  ClearBackground(BG_COLOR);
+  DrawText("Loading, please wait...", 124, 276, 48, WHITE);
+  EndDrawing();
+  if (WindowShouldClose()) {
+    return 0;
+  }
   
   Game game = Game();
   
