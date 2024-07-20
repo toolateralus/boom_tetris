@@ -1,22 +1,21 @@
+#pragma once
 #include "raylib.h"
 
 #include "rayui.hpp"
 #include <cstdlib>
 #include <ctime>
-#include <filesystem>
-#include <fstream>
-#include <iostream>
 #include <memory>
 #include <stdio.h>
 #include <unistd.h>
 #include <unordered_map>
 #include <vector>
-#pragma once
-
-// an integer Vector2
 #include <array>
 #include <cstddef>
-#include <vector>
+
+#include <string>
+#ifdef _WIN32
+#include <windows.h> // For GetEnvironmentVariable
+#endif
 
 constexpr size_t boardWidth = 10;
 constexpr size_t boardHeight = 20;
@@ -35,22 +34,9 @@ enum struct Orientation { Up, Right, Down, Left };
 struct Vec2 {
   int x, y;
 
-  Vec2 operator+(const Vec2 &other) const {
-    return {this->x + other.x, this->y + other.y};
-  }
+  Vec2 operator+(const Vec2 &other) const;
 
-  Vec2 rotated(Orientation orientation) const {
-    switch (orientation) {
-    case Orientation::Up:
-      return *this;
-    case Orientation::Left:
-      return {-this->y, this->x};
-    case Orientation::Down:
-      return {-this->x, -this->y};
-    case Orientation::Right:
-      return {this->y, -this->x};
-    }
-  }
+  Vec2 rotated(Orientation orientation) const;
 };
 
 // a way to key into the grid to update a tetromino.
@@ -82,87 +68,12 @@ struct Board {
   bool collides(Vec2 pos) noexcept;
 };
 
-#include <cstdlib> // For getenv
-#include <fstream>
-#include <string>
-#ifdef _WIN32
-#include <windows.h> // For GetEnvironmentVariable
-#endif
-
 struct ScoreFile {
   size_t high_score = 0;
-
-  static std::string getScoreFilePath() {
-    std::string path;
-#ifdef _WIN32
-    char buffer[MAX_PATH];
-    if (GetEnvironmentVariable("APPDATA", buffer, MAX_PATH)) {
-      path = std::string(buffer) + "\\boom_tetris\\score";
-    }
-#else
-    const char *home = getenv("HOME");
-    if (home != nullptr) {
-      path = std::string(home) + "/.config/boom_tetris/score";
-    }
-#endif
-    createDirectoryAndFile(path);
-    return path;
-  }
-  
-  static void createDirectoryAndFile(const std::string &path) {
-    try {
-      std::filesystem::path dirPath = std::filesystem::path(path).parent_path();
-      if (!std::filesystem::exists(dirPath)) {
-        bool created = std::filesystem::create_directories(dirPath);
-        if (created) {
-          std::cout << "Directory created successfully: " << dirPath
-                    << std::endl;
-        } else {
-          std::cerr << "Failed to create directory: " << dirPath << std::endl;
-          return;
-        }
-      }
-
-      std::filesystem::path filePath = std::filesystem::path(path);
-      if (!std::filesystem::exists(filePath)) {
-        std::ofstream file(path);
-        if (file) {
-          std::cout << "File created successfully: " << filePath << std::endl;
-        } else {
-          std::cerr << "Failed to create file: " << filePath << std::endl;
-        }
-      }
-    } catch (const std::filesystem::filesystem_error &e) {
-      std::cerr << "Filesystem error: " << e.what() << std::endl;
-    } catch (const std::exception &e) {
-      std::cerr << "General error: " << e.what() << std::endl;
-    }
-  }
-
-  void read() {
-    std::string filename = getScoreFilePath();
-    if (filename.empty()) {
-      return;
-    }
-    std::ifstream file(filename);
-    if (file.is_open()) {
-      std::string s;
-      file >> s;
-      high_score = std::atoi(s.c_str());
-      file.close();
-    }
-  }
-  void write() {
-    std::string filename = getScoreFilePath();
-    if (filename.empty()) {
-      return;
-    }
-    std::ofstream file(filename);
-    if (file.is_open()) {
-      file << std::to_string(high_score);
-      file.close();
-    }
-  }
+  static std::string getScoreFilePath();
+  static void createDirectoryAndFile(const std::string &path);
+  void read();
+  void write();
 };
 
 // a group of cells the user is currently in control of.
@@ -216,13 +127,7 @@ struct Game {
   Grid createGrid();
   Grid gameGrid;
   void drawGame();
-  int FindGamepad() const {
-    for (int i = 0; i < 5; ++i) {
-      if (IsGamepadAvailable(i))
-        return i;
-    }
-    return -1;
-  }
+  int FindGamepad() const;
 
   Rectangle blockTxSourceRect;
   
@@ -265,31 +170,9 @@ struct Game {
   size_t totalLinesCleared = 0;
   // are we in the main menu?
   bool inMenu = true;
-  
-  void generateGravityLevels(int totalLevels) {
-    float divisor = 48.0;
-    gravityLevels.push_back(1.0 / divisor);
-    for (int level = 1; level < totalLevels; ++level) {
-      if (level < 9) {
-        divisor -= 5.0;
-      } else if (level < 10) {
-        divisor = 6;
-      } else if (level < 13) {
-        divisor = 5;
-      } else if (level < 16) {
-        divisor = 4;
-      } else if (level < 19) {
-        divisor = 3;  
-      } else if (level < 29) {
-        divisor = 2;
-      } else {
-        divisor = 1;
-      }
-      gravityLevels.push_back(1.0 / divisor);
-    }
-  }
-  
-  
+
+  void generateGravityLevels(int totalLevels);
+
   void setNextShapeAndColor();
   void processGameLogic();
   void drawUi();
