@@ -58,6 +58,7 @@ int main(int argc, char *argv[]) {
   SetTargetFPS(30);
   
   Game game = Game();
+  rayui::Grid gameGrid = game.getGrid();
   
   setupMenuButtons(game);
   
@@ -79,8 +80,8 @@ int main(int argc, char *argv[]) {
     
     ClearBackground(BG_COLOR);
     game.processGameLogic();
-    game.drawUi();
-    game.draw();
+    LayoutState state({0, 0}, {(float)GetScreenWidth(), (float)GetScreenHeight()});
+    gameGrid.draw(state);
     EndDrawing();
   }
   
