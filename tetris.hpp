@@ -80,6 +80,7 @@ struct ScoreFile {
 
 // a group of cells the user is currently in control of.
 struct Tetromino {
+  size_t softDropped = 0;
   size_t color = 0;
   Vec2 prev_position;
   Orientation prev_orientation;
