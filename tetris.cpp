@@ -10,8 +10,6 @@
 #include <raylib.h>
 #include <stdexcept>
 #include <string>
-#include <thread>
-#include <utility>
 
 void Game::saveTetromino() { tetromino->saveState(); }
 
@@ -52,6 +50,8 @@ Game::Game() {
 }
 
 void Game::processGameLogic() {
+  elapsed += std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::seconds(1)) / 60;
+  
   frameCount++;
   // if an animation is active, we pause the game.
   if (!animation_queue.empty()) {
@@ -75,17 +75,6 @@ void Game::processGameLogic() {
       inMenu = true;
       return;
     }
-  }
-  
-  if (IsKeyPressed(KEY_F)) {
-    for (int i = 16; i < 20; ++i) {
-      for (auto &cell: board.rows[i]) {
-        cell.empty = false;        
-      }
-    }
-    auto linesToClear = checkLines();
-    auto linesCleared = clearLines(linesToClear);
-    return;
   }
   
 
@@ -167,6 +156,11 @@ void Game::processGameLogic() {
     auto linesToClear = checkLines();
     auto linesCleared = clearLines(linesToClear);
     adjustScoreAndLevel(linesCleared);
+    
+    if (linesCleared == 40) {
+      inMenu = true;
+    }
+    
   }
 
   gravity = oldGravity;
@@ -220,14 +214,23 @@ Grid Game::createGrid() {
   linesLabel->text = "Lines:";
   grid.emplace_element<NumberText>(Position{1, 2}, Size{7, 1},
                                    &totalLinesCleared, WHITE);
-
+  
+  if (mode == GameMode::FortyLines) {
+    auto timer_label = grid.emplace_element<DynamicLabel>(Position{1, 4}, Size{5, 1});
+    timer_label->text = "Timer";
+    auto timer_text = grid.emplace_element<TimerText>(Position{1, 5}, Size{1, 1}, &elapsed, WHITE);
+  }
+  
+  
   auto playfield = createBoardGrid();
   playfield->position = {8, 0};
   playfield->size = {10, 20};
   grid.elements.push_back(playfield);
-
+  
   int yPos = 1, height = 1;
-
+  
+  
+  
   auto topLabel =
       grid.emplace_element<DynamicLabel>(Position{19, yPos}, Size{7, height});
   yPos += height;
@@ -256,7 +259,7 @@ Grid Game::createGrid() {
   pieceViewer->style.background = BLACK;
   yPos += height;
   yPos += 1;
-
+  
   height = 1;
   auto levelLabel =
       grid.emplace_element<DynamicLabel>(Position{19, yPos}, Size{7, height});
@@ -266,6 +269,7 @@ Grid Game::createGrid() {
                                    WHITE);
   yPos += height;
   yPos += 1;
+  
 
   auto mainMenuButton = grid.emplace_element<Button>(
       Position{19, yPos}, Size{5, height}, "Main Menu",
@@ -715,3 +719,22 @@ bool LockInAnimation::invoke() {
   frameCount++;
   return false;
 };
+
+void TimerText::draw(LayoutState &state) {
+    auto totalMilliseconds = (*this->time).count() / 1000;
+    int hours = totalMilliseconds / 3600;
+    int minutes = (totalMilliseconds % 3600) / 60;
+    int seconds = totalMilliseconds % 60;
+
+    std::string timeStr;
+    if (hours > 0) {
+        timeStr = std::to_string(hours) + ":" + 
+                  std::to_string(minutes).insert(0, 2 - std::to_string(minutes).length(), '0') + ":" + 
+                  std::to_string(seconds).insert(0, 2 - std::to_string(seconds).length(), '0');
+    } else {
+        timeStr = std::to_string(minutes) + ":" + 
+                  std::to_string(seconds).insert(0, 2 - std::to_string(seconds).length(), '0');
+    }
+
+    DrawText(timeStr.c_str(), state.position.x, state.position.y, state.size.height, color);
+}

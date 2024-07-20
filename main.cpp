@@ -34,7 +34,7 @@ void gamepadLogger(Game &game) {
 }
 
 void setupMenuButtons(Game &game) {
-  auto pos = Position{2,12};
+  auto pos = Position{1,12};
   auto size = Size{2,2};
   grid.emplace_element<Rect>(Position{0, 11}, Size{1,4}, Style{GetColor(0x2b2b2baa), WHITE},LayoutKind::StretchHorizontal);
   for (int i = 0; i <= 9; ++i) {
@@ -46,6 +46,12 @@ void setupMenuButtons(Game &game) {
     grid.emplace_element<Button>(pos, size, std::to_string(i), callback);
     pos.x += size.width;
   }
+  auto _40LineTxt = grid.emplace_element<Button>(pos, size, "40 lines", [&](){
+    game.mode = GameMode::FortyLines;
+    game.level = 5;
+    game.inMenu = false;
+  });
+  _40LineTxt->fontSize = 16;
 }
 
 int main(int argc, char *argv[]) {
