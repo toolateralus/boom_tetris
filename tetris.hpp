@@ -1,9 +1,12 @@
 #include "raylib.h"
 
+#include "rayui.hpp"
 #include <cstdlib>
 #include <ctime>
+#include <filesystem>
+#include <fstream>
+#include <iostream>
 #include <memory>
-#include "rayui.hpp"
 #include <stdio.h>
 #include <unistd.h>
 #include <unordered_map>
@@ -53,7 +56,6 @@ struct Vec2 {
 // a way to key into the grid to update a tetromino.
 using ShapeIndices = std::vector<Vec2>;
 
-
 struct HorizontalInput {
   HorizontalInput(bool left, bool right) : left(left), right(right) {}
   bool left, right;
@@ -69,15 +71,98 @@ struct Board {
   std::array<std::array<Cell, boardWidth>, boardHeight> rows = {};
 
   Cell &operator[](int x, int y) noexcept;
-  
+
   Cell &get_cell(int x, int y) noexcept { return (*this)[x, y]; }
-  
+
   auto begin() noexcept { return rows.begin(); }
   auto end() noexcept { return rows.end(); }
 
   // We need more information that just whether it collided or not: we need to
   // know what side we hit so we can depenetrate in the opposite direction.
   bool collides(Vec2 pos) noexcept;
+};
+
+#include <cstdlib> // For getenv
+#include <fstream>
+#include <string>
+#ifdef _WIN32
+#include <windows.h> // For GetEnvironmentVariable
+#endif
+
+struct ScoreFile {
+  size_t high_score = 0;
+
+  static std::string getScoreFilePath() {
+    std::string path;
+#ifdef _WIN32
+    char buffer[MAX_PATH];
+    if (GetEnvironmentVariable("APPDATA", buffer, MAX_PATH)) {
+      path = std::string(buffer) + "\\boom_tetris\\score";
+    }
+#else
+    const char *home = getenv("HOME");
+    if (home != nullptr) {
+      path = std::string(home) + "/.config/boom_tetris/score";
+    }
+#endif
+    createDirectoryAndFile(path);
+    return path;
+  }
+  
+  static void createDirectoryAndFile(const std::string &path) {
+    try {
+      std::filesystem::path dirPath = std::filesystem::path(path).parent_path();
+      if (!std::filesystem::exists(dirPath)) {
+        bool created = std::filesystem::create_directories(dirPath);
+        if (created) {
+          std::cout << "Directory created successfully: " << dirPath
+                    << std::endl;
+        } else {
+          std::cerr << "Failed to create directory: " << dirPath << std::endl;
+          return;
+        }
+      }
+
+      std::filesystem::path filePath = std::filesystem::path(path);
+      if (!std::filesystem::exists(filePath)) {
+        std::ofstream file(path);
+        if (file) {
+          std::cout << "File created successfully: " << filePath << std::endl;
+        } else {
+          std::cerr << "Failed to create file: " << filePath << std::endl;
+        }
+      }
+    } catch (const std::filesystem::filesystem_error &e) {
+      std::cerr << "Filesystem error: " << e.what() << std::endl;
+    } catch (const std::exception &e) {
+      std::cerr << "General error: " << e.what() << std::endl;
+    }
+  }
+
+  void read() {
+    std::string filename = getScoreFilePath();
+    if (filename.empty()) {
+      return;
+    }
+    std::ifstream file(filename);
+    if (file.is_open()) {
+      std::string s;
+      file >> s;
+      high_score = std::atoi(s.c_str());
+      file.close();
+    }
+  }
+  void write() {
+    std::string filename = getScoreFilePath();
+    if (filename.empty()) {
+      return;
+    }
+    std::ofstream file(filename);
+    if (file.is_open()) {
+      file << std::to_string(high_score);
+      file.close();
+    }
+  }
 };
 
 // a group of cells the user is currently in control of.
@@ -118,20 +203,22 @@ struct BoardCell : Element {
 };
 
 struct NumberText : Element {
-  size_t* number;
+  size_t *number;
   Color color;
-  NumberText(Position position, Size size, size_t* number, Color color)
+  NumberText(Position position, Size size, size_t *number, Color color)
       : Element(position, size), number(number), color(color) {}
   virtual void draw(LayoutState &state) override;
 };
 
 struct Game {
+  ScoreFile scoreFile;
+
   Grid createGrid();
   Grid gameGrid;
   void drawGame();
   int FindGamepad() const {
     for (int i = 0; i < 5; ++i) {
-      if (IsGamepadAvailable(i)) 
+      if (IsGamepadAvailable(i))
         return i;
     }
     return -1;
@@ -141,7 +228,7 @@ struct Game {
   
   // the play grid.
   Board board;
-  
+
   // the upcoming shape & color of the next tetromino.
   Shape nextShape;
   int nextColor;
@@ -162,7 +249,7 @@ struct Game {
 
   // unit size of a cell on the grid, in pixels. based on resolution
   int blockSize = 32;
-  
+
   // the block texture, used and tinted for every block.
   Texture2D blockTexture;
   // an index into the current pallette, based on level.
@@ -180,12 +267,12 @@ struct Game {
   void setNextShapeAndColor();
   void processGameLogic();
   void drawUi();
-  
+
   std::vector<size_t> checkLines();
   size_t clearLines(std::vector<size_t> &linesToClear);
   void adjustScoreAndLevel(size_t linesCleared);
   void saveTetromino();
-  
+
   HorizontalInput delayedAutoShift();
   void cleanTetromino(std::unique_ptr<Tetromino> &tetromino);
   bool resolveCollision(std::unique_ptr<Tetromino> &tetromino);
