@@ -453,8 +453,8 @@ void Game::drawGame() {
   const auto unit = std::min(screenWidth / 26, screenHeight / 20);
   const auto uiWidth = unit * 26;
   const auto uiHeight = unit * 20;
-  const auto posX = screenWidth - uiWidth;
-  const auto posY = screenHeight - uiHeight;
+  const auto posX = (screenWidth - uiWidth) / 2;
+  const auto posY = (screenHeight - uiHeight) / 2;
   LayoutState state({posX, posY}, {uiWidth, uiHeight});
   gameGrid.draw(state);
 }
