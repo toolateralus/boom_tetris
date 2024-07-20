@@ -183,6 +183,7 @@ struct Game {
   ShapeIndices getIndices(std::unique_ptr<Tetromino> &tetromino) const;
   std::shared_ptr<rayui::Grid> getBoardGrid() {
     auto grid = std::make_shared<Grid>();
+    grid->style.background = BLACK;
     grid->subdivisions = {10, 20};
     const auto blockTxSourceRect =
         Rectangle{0, 0, (float)blockTexture.width, (float)blockTexture.height};

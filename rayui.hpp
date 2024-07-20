@@ -18,8 +18,9 @@ struct Style {
   Style(Color bg, Color fg, Color border, int borderSize)
       : background(bg), foreground(fg), borderColor(border),
         borderSize(borderSize) {}
+  Style() {}
   virtual ~Style() {}
-  Color background = BLACK;
+  Color background = {0, 0, 0, 0};
   Color foreground = WHITE;
   Color borderColor = {0, 0, 0, 0};
   int borderSize = 0;
@@ -62,12 +63,12 @@ struct LayoutState {
 struct Element {
   Element(Position position, Size size,
           LayoutKind layoutKind = LayoutKind::None,
-          Style style = {BLACK, WHITE}, Margin margin = {})
+          Style style = {}, Margin margin = {})
       : style(style), position(position), size(size), layoutKind(layoutKind),
         margin(margin) {}
   Element() {}
   virtual ~Element() {}
-  Style style = {BLACK, WHITE};
+  Style style;
   LayoutKind layoutKind = LayoutKind::None;
   Position position = {0, 0};
   Size size = {1, 1};
@@ -92,6 +93,7 @@ struct Grid : Element {
     // Calculate the size of each cell in the grid
     float cellWidth = state.size.width / subdivisions.width;
     float cellHeight = state.size.height / subdivisions.height;
+    DrawRectangle(state.position.x, state.position.y, state.size.width, state.size.height, style.background);
 
     for (const auto &element : elements) {
       LayoutState elementState;
@@ -136,7 +138,7 @@ struct Grid : Element {
 };
 
 struct Rect : Element {
-  Rect(Position position, Size size, Style style = {BLACK, WHITE},
+  Rect(Position position, Size size, Style style = {},
        LayoutKind layoutKind = LayoutKind::None, Margin margin = {})
       : Element(position, size, layoutKind, style, margin) {}
 

@@ -172,6 +172,7 @@ std::vector<size_t> Game::checkLines() {
 
 Grid Game::getGrid() {
   Grid grid({26, 20});
+  grid.style.background = BG_COLOR;
   
   auto scoreLabel = grid.emplace_element<Label>(Position{0,0}, Size{8, 1});
   scoreLabel->fontSize = 24;
