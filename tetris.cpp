@@ -1,13 +1,14 @@
 #include "tetris.hpp"
-#include <cmath>
-#include <functional>
-#include <raylib.h>
 #include "rayui.hpp"
-#include <string>
-#include <utility>
+#include <cmath>
 #include <filesystem>
 #include <fstream>
+#include <functional>
 #include <iostream>
+#include <memory>
+#include <raylib.h>
+#include <string>
+#include <utility>
 
 void Game::saveTetromino() { tetromino->saveState(); }
 
@@ -39,24 +40,30 @@ Game::Game() {
   board = Board();
   setNextShapeAndColor();
   blockTexture = LoadTexture("res/block.png");
-  blockTxSourceRect = Rectangle{0, 0, (float)blockTexture.width, (float)blockTexture.height};
+  blockTxSourceRect =
+      Rectangle{0, 0, (float)blockTexture.width, (float)blockTexture.height};
   gameGrid = createGrid();
-  inMenu = true; 
+  inMenu = true;
   scoreFile.read();
   generateGravityLevels(100);
 }
 
 void Game::processGameLogic() {
-  
+
+  // if an animation is active, we pause the game.
+  if (animation) {
+    return;
+  }
+
   if (!tetromino) {
     // spawn a new tetromino, cause the last one landed.
     auto shape = nextShape;
     auto color = nextColor;
     tetromino = std::make_unique<Tetromino>(shape, color);
     setNextShapeAndColor();
-    
+
     tetromino->saveState();
-    
+
     // game-over condition. currently, this is premature sometimes.
     if (resolveCollision(tetromino)) {
       if (score > scoreFile.high_score) {
@@ -66,57 +73,59 @@ void Game::processGameLogic() {
       return;
     }
   }
-  
-  
-  // used to increment until >= 1 so we can have sub-frame velocity for the tetromino.
+
+  // used to increment until >= 1 so we can have sub-frame velocity for the
+  // tetromino.
   static float budge = 0.0;
-  
+
   cleanTetromino(tetromino);
 
   auto horizontal = delayedAutoShift();
-  
+
   auto executeMovement = [&](std::function<void()> fun) -> bool {
     tetromino->saveState();
     fun();
     return resolveCollision(tetromino);
   };
-  
+
   bool turnLeft = IsKeyPressed(KEY_Z);
   bool turnRight = IsKeyPressed(KEY_X) || IsKeyPressed(KEY_UP);
-  
+
   bool moveDown = IsKeyDown(KEY_DOWN);
-  
+
   if (auto gpad = FindGamepad(); gpad != -1) {
     // z or A (xbox controller)
-    turnLeft = turnLeft || IsGamepadButtonPressed(gpad, GAMEPAD_BUTTON_RIGHT_FACE_DOWN);
+    turnLeft = turnLeft ||
+               IsGamepadButtonPressed(gpad, GAMEPAD_BUTTON_RIGHT_FACE_DOWN);
     // x or B (xbox controller)
-    turnRight = turnRight || IsGamepadButtonPressed(gpad, GAMEPAD_BUTTON_RIGHT_FACE_RIGHT);
+    turnRight = turnRight ||
+                IsGamepadButtonPressed(gpad, GAMEPAD_BUTTON_RIGHT_FACE_RIGHT);
     // down arrow or dpad down
-    moveDown = moveDown || IsGamepadButtonPressed(gpad, GAMEPAD_BUTTON_LEFT_FACE_DOWN);
+    moveDown =
+        moveDown || IsGamepadButtonPressed(gpad, GAMEPAD_BUTTON_LEFT_FACE_DOWN);
   }
-  
+
   if (turnLeft) {
     executeMovement([&]() { tetromino->spinLeft(); });
   }
-  
+
   if (turnRight) {
     executeMovement([&] { tetromino->spinRight(); });
   }
-  
+
   if (horizontal.left) {
     executeMovement([&] { tetromino->position.x--; });
   }
   if (horizontal.right) {
     executeMovement([&] { tetromino->position.x++; });
   }
-  
-  
+
   auto oldGravity = gravity;
   if (moveDown && gravity <= 0.5f) {
     gravity = 0.5;
   }
-  
-  // check if this piece hit the floor, or another piece.  
+
+  // check if this piece hit the floor, or another piece.
   auto landed = executeMovement([&] {
     budge += gravity;
     auto floored = std::floor(budge);
@@ -125,8 +134,6 @@ void Game::processGameLogic() {
       budge = 0;
     }
   });
-  
-  
 
   for (const auto &idx : getIndices(tetromino)) {
     if (idx.x < 0 || idx.x >= boardWidth || idx.y < 0 || idx.y >= boardHeight) {
@@ -136,17 +143,17 @@ void Game::processGameLogic() {
     cell.empty = false;
     cell.color = tetromino->color;
   }
-  
+
   // if we landed, we leave the cells where they are and spawn a new piece.
   // also check for line clears and tetrises.
   if (landed) {
     tetromino.reset(nullptr);
-    
+
     auto linesToClear = checkLines();
     auto linesCleared = clearLines(linesToClear);
     adjustScoreAndLevel(linesCleared);
   }
-  
+
   gravity = oldGravity;
 }
 
@@ -155,7 +162,6 @@ void Game::setNextShapeAndColor() {
   auto shape = Shape(rand() % num_shapes);
   nextShape = shape;
   nextColor = (size_t)((int)shape % (int)palette[paletteIdx].size());
-  
 }
 
 void Game::cleanTetromino(std::unique_ptr<Tetromino> &tetromino) {
@@ -186,7 +192,7 @@ std::vector<size_t> Game::checkLines() {
     }
     ++i;
   }
-  
+
   return linesToBurn;
 }
 
@@ -194,57 +200,67 @@ Grid Game::createGrid() {
   Grid grid({26, 20});
   grid.style.background = BG_COLOR;
 
-  auto linesLabel = grid.emplace_element<DynamicLabel>(Position{1, 1}, Size{7, 1});
+  auto linesLabel =
+      grid.emplace_element<DynamicLabel>(Position{1, 1}, Size{7, 1});
   linesLabel->text = "Lines:";
-  grid.emplace_element<NumberText>(Position{1, 2}, Size{7, 1}, &totalLinesCleared, WHITE);
+  grid.emplace_element<NumberText>(Position{1, 2}, Size{7, 1},
+                                   &totalLinesCleared, WHITE);
 
   auto playfield = createBoardGrid();
   playfield->position = {8, 0};
   playfield->size = {10, 20};
   grid.elements.push_back(playfield);
-  
+
   int yPos = 1, height = 1;
 
-  auto topLabel = grid.emplace_element<DynamicLabel>(Position{19, yPos}, Size{7, height});
+  auto topLabel =
+      grid.emplace_element<DynamicLabel>(Position{19, yPos}, Size{7, height});
   yPos += height;
   topLabel->text = "Top:";
-  grid.emplace_element<NumberText>(Position{19, yPos}, Size{7, height}, &scoreFile.high_score, WHITE);
+  grid.emplace_element<NumberText>(Position{19, yPos}, Size{7, height},
+                                   &scoreFile.high_score, WHITE);
   yPos += height;
   yPos += 1;
 
-  auto scoreLabel = grid.emplace_element<DynamicLabel>(Position{19, yPos}, Size{7, height});
+  auto scoreLabel =
+      grid.emplace_element<DynamicLabel>(Position{19, yPos}, Size{7, height});
   yPos += height;
   scoreLabel->text = "Score:";
-  grid.emplace_element<NumberText>(Position{19, yPos}, Size{7, height}, &score, WHITE);
+  grid.emplace_element<NumberText>(Position{19, yPos}, Size{7, height}, &score,
+                                   WHITE);
   yPos += height;
   yPos += 1;
-  
-  auto nextPieceLabel = grid.emplace_element<DynamicLabel>(Position{19, yPos}, Size{7, height});
+
+  auto nextPieceLabel =
+      grid.emplace_element<DynamicLabel>(Position{19, yPos}, Size{7, height});
   yPos += height;
   nextPieceLabel->text = "Next:";
   height = 4;
-  auto pieceViewer = grid.emplace_element<PieceViewer>(Position{19, yPos}, Size{4, height}, *this);
+  auto pieceViewer = grid.emplace_element<PieceViewer>(Position{19, yPos},
+                                                       Size{4, height}, *this);
   pieceViewer->style.background = BLACK;
   yPos += height;
   yPos += 1;
 
   height = 1;
-  auto levelLabel = grid.emplace_element<DynamicLabel>(Position{19, yPos}, Size{7, height});
+  auto levelLabel =
+      grid.emplace_element<DynamicLabel>(Position{19, yPos}, Size{7, height});
   yPos += height;
   levelLabel->text = "Level:";
-  grid.emplace_element<NumberText>(Position{19, yPos}, Size{7, height}, &level, WHITE);
+  grid.emplace_element<NumberText>(Position{19, yPos}, Size{7, height}, &level,
+                                   WHITE);
   yPos += height;
   yPos += 1;
 
-  auto mainMenuButton = grid.emplace_element<Button>(Position{19, yPos}, Size{5, height}, "Main Menu", std::function<void()>([&](){
-    inMenu = true;
-  }));
+  auto mainMenuButton = grid.emplace_element<Button>(
+      Position{19, yPos}, Size{5, height}, "Main Menu",
+      std::function<void()>([&]() { inMenu = true; }));
   mainMenuButton->fontSize = 24;
   yPos += height;
-  
-  auto resetButton = grid.emplace_element<Button>(Position{19, yPos}, Size{5, height}, "Reset", std::function<void()>([&](){
-    reset();
-  }));
+
+  auto resetButton =
+      grid.emplace_element<Button>(Position{19, yPos}, Size{5, height}, "Reset",
+                                   std::function<void()>([&]() { reset(); }));
   resetButton->fontSize = 24;
   yPos += height;
 
@@ -253,7 +269,8 @@ Grid Game::createGrid() {
 
 bool Game::resolveCollision(std::unique_ptr<Tetromino> &tetromino) {
   for (const auto idx : getIndices(tetromino)) {
-    if (idx.y >= boardHeight || idx.x < 0 || idx.x >= boardWidth || board.collides(idx)) {
+    if (idx.y >= boardHeight || idx.x < 0 || idx.x >= boardWidth ||
+        board.collides(idx)) {
       tetromino->position = tetromino->prev_position;
       tetromino->orientation = tetromino->prev_orientation;
       return true;
@@ -274,9 +291,7 @@ bool Board::collides(Vec2 pos) noexcept {
   return false;
 }
 
-Game::~Game() { 
-  UnloadTexture(blockTexture); 
-}
+Game::~Game() { UnloadTexture(blockTexture); }
 
 void Game::reset() {
   score = 0;
@@ -296,18 +311,20 @@ HorizontalInput Game::delayedAutoShift() {
   static float arrTimer = 0.0f;
   static bool leftKeyPressed = false;
   static bool rightKeyPressed = false;
-  
+
   bool moveLeft = false, moveRight = false;
-  
+
   auto gamepad = FindGamepad();
   bool leftDown = IsKeyDown(KEY_LEFT);
   bool rightDown = IsKeyDown(KEY_RIGHT);
-  
+
   if (gamepad != -1) {
-    leftDown = leftDown || IsGamepadButtonDown(gamepad, GAMEPAD_BUTTON_LEFT_FACE_LEFT);
-    rightDown = rightDown || IsGamepadButtonDown(gamepad, GAMEPAD_BUTTON_LEFT_FACE_RIGHT);
+    leftDown =
+        leftDown || IsGamepadButtonDown(gamepad, GAMEPAD_BUTTON_LEFT_FACE_LEFT);
+    rightDown = rightDown ||
+                IsGamepadButtonDown(gamepad, GAMEPAD_BUTTON_LEFT_FACE_RIGHT);
   }
-  
+
   if (leftDown && !rightDown) {
     if (!leftKeyPressed) {
       leftKeyPressed = true;
@@ -326,7 +343,7 @@ HorizontalInput Game::delayedAutoShift() {
   } else {
     leftKeyPressed = false;
   }
-  
+
   if (rightDown && !leftDown) {
     if (!rightKeyPressed) {
       rightKeyPressed = true;
@@ -436,7 +453,7 @@ void Tetromino::saveState() {
 }
 void Game::adjustScoreAndLevel(size_t linesCleared) {
   auto score_level = this->level + 1;
-  
+
   if (linesCleared == 1) {
     score += 40 * score_level;
   } else if (linesCleared == 2) {
@@ -446,16 +463,16 @@ void Game::adjustScoreAndLevel(size_t linesCleared) {
   } else if (linesCleared == 4) {
     score += 1200 * score_level;
   }
-  
+
   totalLinesCleared += linesCleared;
   linesClearedThisLevel += linesCleared;
-  
+
   auto levelAdvance = level == startLevel ? score_level * 10 : 10;
-  
+
   if (linesClearedThisLevel >= levelAdvance) {
     level++;
     paletteIdx = (paletteIdx + 1) % (palette.size() - 1);
-    
+
     printf("\033[1;32madvanced level: to %ld\033[0m\n", level);
     if (this->level < gravityLevels.size()) {
       gravity = gravityLevels[level];
@@ -464,29 +481,50 @@ void Game::adjustScoreAndLevel(size_t linesCleared) {
   }
 }
 size_t Game::clearLines(std::vector<size_t> &linesToClear) {
+  if (linesToClear.empty()) {
+    return 0;
+  }
+
+  animation = std::make_unique<Animation>();
   for (auto idx : linesToClear) {
-    for (size_t j = idx; j > 0; --j) {
-      board.rows[j] = board.rows[j - 1];
+    for (int i = 0; i < boardWidth; ++i) {
+      animation->queue.push_back([this, i] { board.rows[0][i].empty = true; });
     }
-    for (auto &cell : board.rows[0]) {
-      cell.empty = true;
+    for (size_t j = idx; j > 0; --j) {
+      animation->queue.push_back(std::function<void()>([this, j] {
+        board.rows[j] = board.rows[j - 1];
+      }));
     }
   }
+
   return linesToClear.size();
 }
 void BoardCell::draw(rayui::LayoutState &state) {
   if (!cell.empty) {
     auto color = game.palette[game.paletteIdx][cell.color];
-    auto destRect = Rectangle{state.position.x, state.position.y, state.size.width,
-                              state.size.height};
-    DrawTexturePro(game.blockTexture, game.blockTxSourceRect, destRect, {0, 0}, 0,
-                    color);
+    auto destRect = Rectangle{state.position.x, state.position.y,
+                              state.size.width, state.size.height};
+    DrawTexturePro(game.blockTexture, game.blockTxSourceRect, destRect, {0, 0},
+                   0, color);
   }
 };
 void NumberText::draw(LayoutState &state) {
-  DrawText(std::to_string(*number).c_str(), state.position.x, state.position.y, state.size.height, color);
+  DrawText(std::to_string(*number).c_str(), state.position.x, state.position.y,
+           state.size.height, color);
 }
 void Game::drawGame() {
+
+  if (animation) {
+    if (animation->queue.empty()) {
+      animation.reset(nullptr);
+      animation = nullptr;
+    } else {
+      auto &lambda = animation->queue.back();
+      animation->queue.pop_back();
+      lambda();
+    }
+  }
+
   const auto screenWidth = (float)GetScreenWidth();
   const auto screenHeight = (float)GetScreenHeight();
   const auto unit = std::min(screenWidth / 26, screenHeight / 20);
@@ -517,22 +555,25 @@ void PieceViewer::draw(rayui::LayoutState &state) {
                 state.size.height, style.background);
 
   auto blockSize = std::min(state.size.height / 2, state.size.width / 4);
-  auto nextBlockAreaCenterX = state.position.x + state.size.height / 2 - blockSize;
-  auto nextBlockAreaCenterY = state.position.y + state.size.width / 2 - blockSize;
+  auto nextBlockAreaCenterX =
+      state.position.x + state.size.height / 2 - blockSize;
+  auto nextBlockAreaCenterY =
+      state.position.y + state.size.width / 2 - blockSize;
   if (game.nextShape != Shape::I && game.nextShape != Shape::O) {
     nextBlockAreaCenterX += blockSize / 2;
   }
   if (game.nextShape == Shape::I) {
     nextBlockAreaCenterY += blockSize / 2;
   }
-  
+
   for (const auto &block : game.shapePatterns.at(game.nextShape)) {
     auto color = game.palette[game.paletteIdx][game.nextColor];
     auto destX = nextBlockAreaCenterX + block.x * blockSize;
     auto destY = nextBlockAreaCenterY + block.y * blockSize;
     auto destRect = Rectangle{(float)destX, (float)destY, (float)blockSize,
                               (float)blockSize};
-    DrawTexturePro(game.blockTexture, game.blockTxSourceRect, destRect, {0, 0}, 0, color);
+    DrawTexturePro(game.blockTexture, game.blockTxSourceRect, destRect, {0, 0},
+                   0, color);
   }
 };
 Vec2 Vec2::operator+(const Vec2 &other) const {

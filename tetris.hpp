@@ -4,6 +4,7 @@
 #include "rayui.hpp"
 #include <cstdlib>
 #include <ctime>
+#include <functional>
 #include <memory>
 #include <stdio.h>
 #include <unistd.h>
@@ -121,14 +122,20 @@ struct NumberText : Element {
   virtual void draw(LayoutState &state) override;
 };
 
+struct Animation {
+  std::vector<std::function<void()>> queue = {};
+};
+
 struct Game {
   ScoreFile scoreFile;
-
+  
   Grid createGrid();
   Grid gameGrid;
   void drawGame();
   int FindGamepad() const;
-
+  
+  std::unique_ptr<Animation> animation;
+  
   Rectangle blockTxSourceRect;
   
   // the play grid.
@@ -175,7 +182,6 @@ struct Game {
 
   void setNextShapeAndColor();
   void processGameLogic();
-  void drawUi();
   
   std::vector<size_t> checkLines();
   size_t clearLines(std::vector<size_t> &linesToClear);
