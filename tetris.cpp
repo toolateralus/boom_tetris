@@ -709,7 +709,7 @@ bool CellDissolveAnimation::invoke() {
   return false;
 }
 bool LockInAnimation::invoke() {
-  if (frameCount == 10 + (pieceHeight / 4) * 2) {
+  if (frameCount == 10 + ((20 - pieceHeight) / 4) * 2) {
     return true;
   }
   frameCount++;
