@@ -87,7 +87,7 @@ struct Grid : Element {
   }
   Grid(Position pos, Size size) : Element(pos, size) {}
   Grid(Size subdivisions = {1, 1}) : Element(), subdivisions(subdivisions) {}
-
+  
   std::vector<std::shared_ptr<Element>> elements;
 
   void draw(LayoutState &state) override {
@@ -151,20 +151,12 @@ struct Rect : Element {
 };
 
 struct Label : Element {
-  size_t fontSize = 12;
-  char *text;
-  Label(Position pos, Size size) : Element(pos, size) {}
-  void draw(LayoutState &state) override {
-    DrawRectangle(state.position.x, state.position.y, state.size.width,
-                  state.size.height, style.background);
-    DrawText(text, state.position.x, state.position.y, fontSize,
-             style.foreground);
-  }
-};
-
-struct DynamicLabel : Element {
   std::string text;
-  DynamicLabel(Position pos, Size size) : Element(pos, size) {}
+  Label(Position pos, Size size, std::string text) : Element(pos, size), text(text) {}
+  Label(Position pos, Size size, std::string text, Color foreground) : Element(pos, size), text(text) {
+    style.foreground = foreground;
+  }
+  Label(Position pos, Size size) : Element(pos, size) {}
   void draw(LayoutState &state) override {
     DrawRectangle(state.position.x, state.position.y, state.size.width,
                   state.size.height, style.background);
