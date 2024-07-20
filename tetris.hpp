@@ -79,7 +79,7 @@ struct ScoreFile {
 
 // a group of cells the user is currently in control of.
 struct Tetromino {
-  size_t softDropped = 0;
+  size_t softDropHeight = 0;
   size_t color = 0;
   Vec2 prev_position;
   Orientation prev_orientation;
@@ -207,7 +207,7 @@ struct Game {
   
   std::vector<size_t> checkLines();
   size_t clearLines(std::vector<size_t> &linesToClear);
-  void adjustScoreAndLevel(size_t linesCleared);
+  void adjustScoreAndLevel(size_t linesCleared, size_t softDropHeight);
   void saveTetromino();
 
   HorizontalInput delayedAutoShift();

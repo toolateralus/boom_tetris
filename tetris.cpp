@@ -136,8 +136,12 @@ void Game::processGameLogic() {
   }
 
   auto oldGravity = gravity;
-  if (moveDown && gravity <= 0.5f) {
-    gravity = 0.5;
+  if (moveDown) {
+    if (gravity <= 0.5f) {
+      gravity = 0.5;
+    }
+  } else {
+    tetromino->softDropHeight = 0;
   }
 
   // check if this piece hit the floor, or another piece.
@@ -145,6 +149,9 @@ void Game::processGameLogic() {
     budge += gravity;
     auto floored = std::floor(budge);
     if (floored > 0) {
+      if (moveDown) {
+        tetromino->softDropHeight++;
+      }
       tetromino->position.y += 1;
       budge = 0;
     }
@@ -163,10 +170,10 @@ void Game::processGameLogic() {
   // also check for line clears and tetrises.
   if (landed) {
     animation_queue.push_back(std::make_unique<LockInAnimation>(this, tetromino->position.y));
-    tetromino.reset(nullptr);
     auto linesToClear = checkLines();
     auto linesCleared = clearLines(linesToClear);
-    adjustScoreAndLevel(linesCleared);
+    adjustScoreAndLevel(linesCleared, tetromino->softDropHeight);
+    tetromino.reset(nullptr);
   }
 
   gravity = oldGravity;
@@ -468,9 +475,9 @@ void Tetromino::saveState() {
   prev_orientation = orientation;
   prev_position = position;
 }
-void Game::adjustScoreAndLevel(size_t linesCleared) {
+void Game::adjustScoreAndLevel(size_t linesCleared, size_t softDropHeight) {
   auto score_level = this->level + 1;
-
+  score += softDropHeight;
   if (linesCleared == 1) {
     score += 40 * score_level;
   } else if (linesCleared == 2) {
