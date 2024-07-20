@@ -193,23 +193,27 @@ std::vector<size_t> Game::checkLines() {
 Grid Game::createGrid() {
   Grid grid({26, 20});
   grid.style.background = BG_COLOR;
-  
-  auto scoreLabel = grid.emplace_element<DynamicLabel>(Position{1,1}, Size{7, 1});
-  scoreLabel->text = "Score:";
-  grid.emplace_element<NumberText>(Position{1,2}, Size{7, 1}, &score, WHITE);
 
-  auto levelLabel = grid.emplace_element<DynamicLabel>(Position{1,3}, Size{7, 1});
+  auto levelLabel = grid.emplace_element<DynamicLabel>(Position{1, 1}, Size{7, 1});
   levelLabel->text = "Level:";
-  grid.emplace_element<NumberText>(Position{1,4}, Size{7, 1}, &level, WHITE);
+  grid.emplace_element<NumberText>(Position{1, 2}, Size{7, 1}, &level, WHITE);
 
   auto playfield = createBoardGrid();
   playfield->position = {8, 0};
   playfield->size = {10, 20};
   grid.elements.push_back(playfield);
   
-  auto nextPieceLabel = grid.emplace_element<DynamicLabel>(Position{19, 1}, Size{7, 1});
+  auto topLabel = grid.emplace_element<DynamicLabel>(Position{19,0}, Size{7, 1});
+  topLabel->text = "Top:";
+  grid.emplace_element<NumberText>(Position{19, 1}, Size{7, 1}, &scoreFile.high_score, WHITE);
+
+  auto scoreLabel = grid.emplace_element<DynamicLabel>(Position{19,2}, Size{7, 1});
+  scoreLabel->text = "Score:";
+  grid.emplace_element<NumberText>(Position{19, 3}, Size{7, 1}, &score, WHITE);
+  
+  auto nextPieceLabel = grid.emplace_element<DynamicLabel>(Position{19, 4}, Size{7, 1});
   nextPieceLabel->text = "Next:";
-  auto pieceViewer = grid.emplace_element<PieceViewer>(Position{19, 2}, Size{4, 4}, *this);
+  auto pieceViewer = grid.emplace_element<PieceViewer>(Position{19, 5}, Size{4, 4}, *this);
   pieceViewer->style.background = BLACK;
   return grid;
 }
