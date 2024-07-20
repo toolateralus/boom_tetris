@@ -103,13 +103,18 @@ struct Tetromino {
 };
 
 struct Game;
+struct PieceViewer : Element {
+  Game& game;
+  virtual void draw(rayui::LayoutState &state) override;
+  PieceViewer(Position position, Size size, Game& game)
+      : Element(position, size), game(game) {}
+};
 struct BoardCell : Element {
   Game& game;
-  Rectangle blockTxSourceRect;
   Cell& cell;
   virtual void draw(rayui::LayoutState &state) override;
-  BoardCell(Position position, Game& game, Cell& cell, Rectangle blockTxSourceRect)
-      : Element(position, {1,1}), game(game), cell(cell), blockTxSourceRect(blockTxSourceRect) {}
+  BoardCell(Position position, Game& game, Cell& cell)
+      : Element(position, {1,1}), game(game), cell(cell) {}
 };
 
 struct NumberText : Element {
@@ -131,6 +136,8 @@ struct Game {
     }
     return -1;
   }
+
+  Rectangle blockTxSourceRect;
   
   // the play grid.
   Board board;
