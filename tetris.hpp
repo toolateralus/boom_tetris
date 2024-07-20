@@ -220,7 +220,7 @@ struct Game {
   float playerGravity = 0.0f;
   size_t level = 0;
   size_t score = 0;
-  size_t startLevel;
+  size_t startLevel = 0;
   size_t linesClearedThisLevel = 0;
   size_t totalLinesCleared = 0;
   // are we in the main menu?
