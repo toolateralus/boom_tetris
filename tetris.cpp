@@ -73,6 +73,18 @@ void Game::processGameLogic() {
       return;
     }
   }
+  
+  if (IsKeyPressed(KEY_F)) {
+    for (int i = 16; i < 20; ++i) {
+      for (auto &cell: board.rows[i]) {
+        cell.empty = false;        
+      }
+    }
+    auto linesToClear = checkLines();
+    auto linesCleared = clearLines(linesToClear);
+    return;
+  }
+  
 
   // used to increment until >= 1 so we can have sub-frame velocity for the
   // tetromino.
@@ -148,7 +160,7 @@ void Game::processGameLogic() {
   // also check for line clears and tetrises.
   if (landed) {
     tetromino.reset(nullptr);
-
+    
     auto linesToClear = checkLines();
     auto linesCleared = clearLines(linesToClear);
     adjustScoreAndLevel(linesCleared);
