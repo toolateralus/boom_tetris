@@ -166,6 +166,7 @@ void Game::processGameLogic() {
     
     if (mode == GameMode::FortyLines && linesCleared >= 40) {
       inMenu = true;
+      reset();
     }
     
   }
@@ -328,6 +329,7 @@ void Game::reset() {
   linesClearedThisLevel = 0;
   totalLinesCleared = 0;
   board = {}; // reset the grid state.
+  elapsed = {};
   tetromino = nullptr;
   setNextShapeAndColor();
   gameGrid = createGrid();
