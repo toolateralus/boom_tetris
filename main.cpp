@@ -2,7 +2,6 @@
 #include <functional>
 #include <raylib.h>
 #include <string>
-
 #include "rayui.hpp"
 
 using namespace rayui;
