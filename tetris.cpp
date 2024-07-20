@@ -2,6 +2,7 @@
 #include <cmath>
 #include <functional>
 #include <raylib.h>
+#include <rayui.hpp>
 #include <string>
 #include <utility>
 
@@ -169,83 +170,48 @@ std::vector<size_t> Game::checkLines() {
   return linesToBurn;
 }
 
-void Game::draw() {
-  auto screen_width = GetScreenWidth();
-  auto halfScreen = screen_width / 2;
-  auto boardStart = halfScreen - (blockSize * boardWidth / 2);
-  auto blockTxSourceRect =
-      Rectangle{0, 0, (float)blockTexture.width, (float)blockTexture.height};
-  size_t x = 0, y = 0;
-
-  for (const auto &row : board.rows) {
-    for (const auto &cell : row) {
-      auto color = BLACK;
-      if (!cell.empty) {
-        color = palette[paletteIdx][cell.color];
-        auto dx = x + boardStart;
-        auto destRect = Rectangle{(float)dx, (float)y, (float)blockSize,
-                                  (float)blockSize};
-        DrawTexturePro(blockTexture, blockTxSourceRect, destRect, {0, 0}, 0,
-                       color);
-      } else {
-        DrawRectangle(x + boardStart, y, blockSize, blockSize, color);
-      }
-
-      x += blockSize;
-    }
-    y += blockSize;
-    x = 0;
-  }
-}
-
-void Game::drawUi() {
-  // constants
-  constexpr auto uiWidth = 26;
-  constexpr auto uiHeight = (int)boardHeight;
-  constexpr auto halfUiWidth = uiWidth / 2;
-  constexpr auto halfBoardWidth = boardWidth / 2;
-
-  const auto blockTxSourceRect =
-      Rectangle{0, 0, (float)blockTexture.width, (float)blockTexture.height};
-  const auto screenWidth = GetScreenWidth();
-  const auto screenHeight = GetScreenHeight();
-  blockSize = std::min(screenHeight / uiHeight, screenWidth / uiWidth);
-  const auto halfScreen = screenWidth / 2;
-  const auto leftStart = halfScreen - blockSize * halfUiWidth;
-  const auto rightStart = halfScreen + blockSize * halfBoardWidth;
-
-  // draw left side
-  DrawText("Score:", leftStart + blockSize, 0, blockSize, WHITE);
-  DrawText(std::to_string(score).c_str(), leftStart + blockSize, blockSize,
-           blockSize, WHITE);
-           
-  DrawText("Level:", leftStart + blockSize, blockSize * 2, blockSize, WHITE);
-  DrawText(std::to_string(level).c_str(), leftStart + blockSize,
-           blockSize * 3, blockSize, WHITE);
-           
-  // draw right side
-  DrawText("Next:", rightStart + blockSize, 0, blockSize, WHITE);
+Grid Game::getGrid() {
+  Grid grid({26, 20});
   
-  DrawRectangle(rightStart + blockSize, blockSize, blockSize * 4,
-                blockSize * 4, BLACK);
+  auto scoreLabel = grid.emplace_element<Label>(Position{0,0}, Size{8, 1});
+  scoreLabel->fontSize = 24;
+  scoreLabel->text = (char*)"Score:";
+  auto scoreTracker = grid.emplace_element<NumberText>(Position{0,1}, Size{8, 1}, &score, WHITE);
+
+  auto levelLabel = grid.emplace_element<Label>(Position{0,2}, Size{8, 1});
+  levelLabel->fontSize = 24;
+  levelLabel->text = (char*)"Level:";
+  auto levelTracker = grid.emplace_element<NumberText>(Position{0,3}, Size{8, 1}, &level, WHITE);
+
+  auto playfield = getBoardGrid();
+  playfield->position = {8, 0};
+  playfield->size = {10, 20};
+  grid.elements.push_back(playfield);
+           
+  // // draw right side
+  // DrawText("Next:", rightStart + blockSize, 0, blockSize, WHITE);
+  
+  // DrawRectangle(rightStart + blockSize, blockSize, blockSize * 4,
+  //               blockSize * 4, BLACK);
                 
-  auto nextBlockAreaCenterX = rightStart + blockSize * 2;
-  auto nextBlockAreaCenterY = blockSize * 2;
-  if (nextShape != Shape::I && nextShape != Shape::Square) {
-    nextBlockAreaCenterX += blockSize / 2;
-  }
-  if (nextShape == Shape::I) {
-    nextBlockAreaCenterY += blockSize / 2;
-  }
+  // auto nextBlockAreaCenterX = rightStart + blockSize * 2;
+  // auto nextBlockAreaCenterY = blockSize * 2;
+  // if (nextShape != Shape::I && nextShape != Shape::Square) {
+  //   nextBlockAreaCenterX += blockSize / 2;
+  // }
+  // if (nextShape == Shape::I) {
+  //   nextBlockAreaCenterY += blockSize / 2;
+  // }
   
-  for (const auto &block : shapePatterns.at(nextShape)) {
-    auto color = palette[paletteIdx][nextColor];
-    auto destX = nextBlockAreaCenterX + block.x * blockSize;
-    auto destY = nextBlockAreaCenterY + block.y * blockSize;
-    auto destRect = Rectangle{(float)destX, (float)destY, (float)blockSize,
-                              (float)blockSize};
-    DrawTexturePro(blockTexture, blockTxSourceRect, destRect, {0, 0}, 0, color);
-  }
+  // for (const auto &block : shapePatterns.at(nextShape)) {
+  //   auto color = palette[paletteIdx][nextColor];
+  //   auto destX = nextBlockAreaCenterX + block.x * blockSize;
+  //   auto destY = nextBlockAreaCenterY + block.y * blockSize;
+  //   auto destRect = Rectangle{(float)destX, (float)destY, (float)blockSize,
+  //                             (float)blockSize};
+  //   DrawTexturePro(blockTexture, blockTxSourceRect, destRect, {0, 0}, 0, color);
+  // }
+  return grid;
 }
 
 bool Game::resolveCollision(std::unique_ptr<Tetromino> &tetromino) {
@@ -462,4 +428,19 @@ size_t Game::clearLines(std::vector<size_t> &linesToClear) {
     }
   }
   return linesToClear.size();
+}
+void BoardCell::draw(rayui::LayoutState &state) {
+  if (!cell.empty) {
+    auto color = game.palette[game.paletteIdx][cell.color];
+    auto destRect = Rectangle{state.position.x, state.position.y, state.size.width,
+                              state.size.height};
+    DrawTexturePro(game.blockTexture, blockTxSourceRect, destRect, {0, 0}, 0,
+                    color);
+  } else {
+    DrawRectangle(state.position.x, state.position.y, state.size.width,
+                              state.size.height, BLACK);
+  }
+};
+void NumberText::draw(LayoutState &state) {
+  DrawText(std::to_string(*number).c_str(), state.position.x, state.position.y, state.size.height, color);
 }

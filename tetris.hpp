@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <memory>
+#include <rayui.hpp>
 #include <stdio.h>
 #include <unistd.h>
 #include <unordered_map>
@@ -18,6 +19,8 @@ constexpr size_t boardWidth = 10;
 constexpr size_t boardHeight = 20;
 
 #define BG_COLOR GetColor(0x12121212)
+
+using namespace rayui;
 
 // the direction of user input.
 enum struct Direction { None, Left, Right, Down };
@@ -99,8 +102,26 @@ struct Tetromino {
   }
 };
 
+struct Game;
+struct BoardCell : Element {
+  Game& game;
+  Rectangle blockTxSourceRect;
+  Cell& cell;
+  virtual void draw(rayui::LayoutState &state) override;
+  BoardCell(Position position, Game& game, Cell& cell, Rectangle blockTxSourceRect)
+      : Element(position, {1,1}), game(game), cell(cell), blockTxSourceRect(blockTxSourceRect) {}
+};
+
+struct NumberText : Element {
+  size_t* number;
+  Color color;
+  NumberText(Position position, Size size, size_t* number, Color color)
+      : Element(position, size), number(number), color(color) {}
+  virtual void draw(LayoutState &state) override;
+};
+
 struct Game {
-  
+  Grid getGrid();
   int FindGamepad() const {
     for (int i = 0; i < 5; ++i) {
       if (IsGamepadAvailable(i)) 
@@ -150,7 +171,6 @@ struct Game {
   void setNextShapeAndColor();
   void processGameLogic();
   void drawUi();
-  void draw();
   
   std::vector<size_t> checkLines();
   size_t clearLines(std::vector<size_t> &linesToClear);
@@ -161,5 +181,20 @@ struct Game {
   void cleanTetromino(std::unique_ptr<Tetromino> &tetromino);
   bool resolveCollision(std::unique_ptr<Tetromino> &tetromino);
   ShapeIndices getIndices(std::unique_ptr<Tetromino> &tetromino) const;
+  std::shared_ptr<rayui::Grid> getBoardGrid() {
+    auto grid = std::make_shared<Grid>();
+    grid->subdivisions = {10, 20};
+    const auto blockTxSourceRect =
+        Rectangle{0, 0, (float)blockTexture.width, (float)blockTexture.height};
+    int y = 0;
+    for (auto& row : board.rows) {
+      int x = 0;
+      for (auto& cell : row) {
+        grid->emplace_element<BoardCell>(Position{x, y}, *this, cell, blockTxSourceRect);
+        x++;
+      }
+      y++;
+    }
+    return grid;
+  }
 };
-
