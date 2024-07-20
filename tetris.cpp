@@ -188,14 +188,12 @@ Grid Game::createGrid() {
   Grid grid({26, 20});
   grid.style.background = BG_COLOR;
   
-  auto scoreLabel = grid.emplace_element<Label>(Position{1,1}, Size{7, 1});
-  scoreLabel->fontSize = 24;
-  scoreLabel->text = (char*)"Score:";
+  auto scoreLabel = grid.emplace_element<DynamicLabel>(Position{1,1}, Size{7, 1});
+  scoreLabel->text = "Score:";
   grid.emplace_element<NumberText>(Position{1,2}, Size{7, 1}, &score, WHITE);
 
-  auto levelLabel = grid.emplace_element<Label>(Position{1,3}, Size{7, 1});
-  levelLabel->fontSize = 24;
-  levelLabel->text = (char*)"Level:";
+  auto levelLabel = grid.emplace_element<DynamicLabel>(Position{1,3}, Size{7, 1});
+  levelLabel->text = "Level:";
   grid.emplace_element<NumberText>(Position{1,4}, Size{7, 1}, &level, WHITE);
 
   auto playfield = createBoardGrid();
@@ -203,9 +201,8 @@ Grid Game::createGrid() {
   playfield->size = {10, 20};
   grid.elements.push_back(playfield);
   
-  auto nextPieceLabel = grid.emplace_element<Label>(Position{19, 1}, Size{7, 1});
-  nextPieceLabel->fontSize = 24;
-  nextPieceLabel->text = (char*)"Next:";
+  auto nextPieceLabel = grid.emplace_element<DynamicLabel>(Position{19, 1}, Size{7, 1});
+  nextPieceLabel->text = "Next:";
   auto pieceViewer = grid.emplace_element<PieceViewer>(Position{19, 2}, Size{4, 4}, *this);
   pieceViewer->style.background = BLACK;
   return grid;
