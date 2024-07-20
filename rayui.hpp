@@ -110,7 +110,7 @@ struct Label: Element {
 
 struct Button : Element {
   char *text = (char*)"";
-  size_t fontSize;
+  size_t fontSize = 24;
   using ClickedCallback = std::function<void()>;
   ClickedCallback onClicked = nullptr;
   
