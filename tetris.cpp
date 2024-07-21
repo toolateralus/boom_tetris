@@ -282,12 +282,17 @@ Grid Game::createGrid() {
       std::function<void()>([&]() { scene = Scene::MainMenu; }));
   mainMenuButton->fontSize = 24;
   yPos += height;
-
+  
+  // somehow this causes a crash and windows is impossible to debug so I can't even breakpoint or find where it happens.
+  // Somewhere in a windows api.
+  // pressing main menu and re-entering is easy enough.
+  #ifndef _WIN32
   auto resetButton =
       grid.emplace_element<Button>(Position{19, yPos}, Size{5, height}, "Reset",
                                    std::function<void()>([&]() { reset(); }));
   resetButton->fontSize = 24;
   yPos += height;
+  #endif
 
   return grid;
 }
