@@ -323,6 +323,9 @@ Game::~Game() { UnloadTexture(blockTexture); }
 
 void Game::reset() {
   score = 0;
+  animation_queue.clear();
+  frameCount = 0;
+  mode = GameMode::Normal;
   level = startLevel;
   gravity = gravityLevels[level];
   linesClearedThisLevel = 0;

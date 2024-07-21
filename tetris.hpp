@@ -201,8 +201,6 @@ struct Game {
 
   // the block texture, used and tinted for every block.
   Texture2D blockTexture;
-  // an index into the current pallette, based on level.
-  size_t paletteIdx = 0;
   // at which rate are we moving the tetromino down?
   float gravity = 0.0f;
   // extra gravity for when the player is holding down.
