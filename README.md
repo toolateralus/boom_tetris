@@ -1,5 +1,5 @@
 # Begal Tetris: 
-  An attempt to make a very NES Tetris (1989) accurate remake of tetris with some bagels and cream cheese.
+  An attempt to make a very NES Tetris (1989) accurate remake with some bagels and cream cheese.
 
 # Playing the game: 
   Pre compiled binaries are available in the `tetris` directory, for windows and linux (built on cinnamon mint)
