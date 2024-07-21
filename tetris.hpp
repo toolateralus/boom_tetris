@@ -137,7 +137,9 @@ struct Game {
   Sound rotateSound;
   Sound lockInSound;
   Sound clearLineSound;
-
+  
+  bool downLocked = false;
+  
   ScoreFile scoreFile;
   size_t frameCount = 0;
   Grid gameGrid;

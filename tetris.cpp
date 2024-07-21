@@ -63,6 +63,10 @@ void Game::processGameLogic() {
     }
   }
   
+  if (downLocked && IsKeyPressed(KEY_DOWN)) {
+    downLocked = false;
+  }
+  
 
   // used to increment until >= 1 so we can have sub-frame velocity for the
   // tetromino.
@@ -81,7 +85,7 @@ void Game::processGameLogic() {
   bool turnLeft = IsKeyPressed(KEY_Z);
   bool turnRight = IsKeyPressed(KEY_X) || IsKeyPressed(KEY_UP);
 
-  bool moveDown = IsKeyDown(KEY_DOWN);
+  bool moveDown = IsKeyDown(KEY_DOWN) && !downLocked;
 
   if (auto gpad = findGamepad(); gpad != -1) {
     // z or A (xbox controller)
@@ -166,6 +170,7 @@ void Game::processGameLogic() {
     if (mode == Mode::FortyLines && totalLinesCleared >= 40) {
       scene = Scene::GameOver;
     }
+    downLocked = true;
   }
 
   gravity = oldGravity;
