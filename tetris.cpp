@@ -37,6 +37,7 @@ Game::Game() {
 }
 
 void Game::processGameLogic() {
+  
   elapsed += std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::seconds(1)) / 60;
   
   frameCount++;
@@ -133,6 +134,9 @@ void Game::processGameLogic() {
 
   // check if this piece hit the floor, or another piece.
   auto landed = executeMovement([&] {
+    if (frameCount < 60 && !moveDown) {
+      return;
+    }
     budge += gravity;
     auto floored = std::floor(budge);
     if (floored > 0) {
@@ -331,7 +335,8 @@ bool Board::collides(Vec2 pos) noexcept {
 Game::~Game() { UnloadTexture(blockTexture); }
 
 void Game::reset() {
-
+  
+  downLocked = false;
   score = 0;
   animation_queue.clear();
   frameCount = 0;
