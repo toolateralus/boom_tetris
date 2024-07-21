@@ -283,7 +283,7 @@ Grid Game::createGrid() {
   mainMenuButton->fontSize = 24;
   yPos += height;
   
-  // somehow this causes a crash and windows is impossible to debug so I can't even breakpoint or find where it happens.
+  // somehow this causes a crash (pressing the reset button, not making it) and windows is impossible to debug so I can't even breakpoint or find where it happens.
   // Somewhere in a windows api.
   // pressing main menu and re-entering is easy enough.
   #ifndef _WIN32
