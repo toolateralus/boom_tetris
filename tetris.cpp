@@ -27,8 +27,6 @@ Game::Game() {
   board = Board();
   setNextShape();
   blockTexture = LoadTexture("res/block2.png");
-  blockTxSourceRect =
-      Rectangle{0, 0, (float)blockTexture.width, (float)blockTexture.height};
   gameGrid = createGrid();
   scene = Scene::MainMenu;
   scoreFile.read();

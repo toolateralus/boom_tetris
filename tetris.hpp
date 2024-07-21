@@ -174,8 +174,6 @@ struct Game {
   
   std::deque<std::unique_ptr<Animation>> animation_queue = {};
   
-  Rectangle blockTxSourceRect;
-  
   GameMode mode = GameMode::Normal;
     
   // the play grid.
