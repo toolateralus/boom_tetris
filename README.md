@@ -2,8 +2,11 @@
   An attempt to make a very NES Tetris (1989) accurate remake with some bagels and cream cheese.
 
 # Playing the game: 
-  Pre compiled binaries are available in the `tetris` directory, for windows and linux (built on cinnamon mint)
-  We also have releases for both platforms available on the github page.
+  Pre compiled versions can be found at
+  `boom_linux.zip`
+  or 
+  `boom_windows.zip`
+  simply unzip the archive somewhere and make SURE that the `res/` directory is right along-side the `boom_tetris` executable.
 
 # Building  
 ## Installing dependencies:
