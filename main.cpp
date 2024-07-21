@@ -12,14 +12,22 @@ Grid gameOverGrid = {{24, 24}};
 int drawMenu(Game &game) {
   ClearBackground(BLACK);
   static Texture2D texture = LoadTexture("res/title.png");
-
-  auto source = Rectangle{0, 0, (float)texture.width, (float)texture.height};
-  auto dest =
-      Rectangle{0, 0, (float)GetScreenWidth(), (float)GetScreenHeight()};
+  // get full image
+  auto imageWidth = (float)texture.width;
+  auto imageHeight = (float)texture.height;
+  auto source = Rectangle{0, 0, imageWidth, imageHeight};
+  // scale image to height
+  auto screenWidth = (float)GetScreenWidth();
+  auto screenHeight = (float)GetScreenHeight();
+  auto scale = screenHeight / imageHeight;
+  auto destWidth = imageWidth * scale;
+  // center image
+  auto destX = (screenWidth - destWidth) / 2;
+  auto dest = Rectangle{destX, 0, destWidth, screenHeight};
   DrawTexturePro(texture, source, dest, {0, 0}, 0, WHITE);
   auto state =
       LayoutState{PixelPosition{0, 0},
-                  PixelSize{(float)GetScreenWidth(), (float)GetScreenHeight()}};
+                  PixelSize{screenWidth, screenHeight}};
   mainMenuGrid.draw(state);
   return true;
 }
@@ -116,13 +124,14 @@ int main(int argc, char *argv[]) {
 
   while (!WindowShouldClose()) {
     BeginDrawing();
+    ClearBackground(BG_COLOR);
     switch (game.scene) {
       case Game::Scene::MainMenu: {
         drawMenu(game);
         break;
       }
       case Game::Scene::GameOver: {
-        ClearBackground(BG_COLOR);
+        game.drawGame();
         auto state =
             LayoutState{0, 0, (float)GetScreenWidth(), (float)GetScreenHeight()};
         gameOverGrid.draw(state);
@@ -130,7 +139,6 @@ int main(int argc, char *argv[]) {
       }
       case Game::Scene::InGame: {
         // gamepadLogger(game);
-        ClearBackground(BG_COLOR);
         game.processGameLogic();
         game.drawGame();
         break;
