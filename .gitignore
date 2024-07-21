@@ -1,7 +1,5 @@
-/bin
 /.cache
 /compile_commands.json
-/objs
 /CMakeFiles
 /build
 /_deps

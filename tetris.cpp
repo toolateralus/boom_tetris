@@ -2,9 +2,7 @@
 #include "rayui.hpp"
 #include <chrono>
 #include <cmath>
-
 #include <functional>
-#include <iostream>
 #include <memory>
 #include <raylib.h>
 #include <stdexcept>
