@@ -48,6 +48,7 @@ void setupMenuButtons(Game &game) {
       game.startLevel = i;
       game.level = i;
       game.scene = Game::Scene::InGame;
+      game.gravity = game.gravityLevels[i];
     });
     mainMenuGrid.emplace_element<Button>(pos, size, std::to_string(i),
                                          callback);
@@ -60,6 +61,7 @@ void setupMenuButtons(Game &game) {
         game.level = 5;
         game.startLevel = 5;
         game.scene = Game::Scene::InGame;
+        game.gravity = game.gravityLevels[game.level];
       });
   _40LineTxt->fontSize = 16;
 }
