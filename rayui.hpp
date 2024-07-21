@@ -6,14 +6,20 @@
 #include <vector>
 
 namespace rayui {
+  
+// the grid position of an element.
+// if this exceeds the subdivisions of the grid, or goes below 0,
+// it will be clamped to the furthest it can go.
 struct Position {
   int x, y;
 };
 
+// the grid size of an element, {1,1} would take up exactly one cell.
 struct Size {
   int width, height;
 };
 
+// Color and border information to describe the appearance of an element.
 struct Style {
   Style(Color bg, Color fg) : background(bg), foreground(fg) {}
   Style(Color bg, Color fg, Color border, int borderSize)
@@ -27,23 +33,27 @@ struct Style {
   int borderSize = 0;
 };
 
-// What other kinds of layout-kind might we want?
+
 enum struct LayoutKind {
   // use the exact x,y & size coordinates provided by the element.
   None,
-  // use the x & y coordinates but stretch to the full width of the container.
+  // draw at the y coordinate but stretch to the full width of the container.
   StretchHorizontal,
-  // use the x & y coordinates but stretch to the full height of the container.
+  // draw at the x coordinate but stretch to the full height of the container.
   StretchVertical,
 };
 
+// the pixel position of an element; used internally for drawing.
 struct PixelPosition {
   float x, y;
 };
+
+// the pixel size of an element; used internally for drawing.
 struct PixelSize {
   float width, height;
 };
 
+// Margins to deviate from the exact grid cell coordinates.
 struct Margin {
   int top, left, bottom, right;
 };
@@ -61,6 +71,7 @@ struct LayoutState {
   }
 };
 
+// the base class for all UI elements.
 struct Element {
   Element(Position position, Size size,
           LayoutKind layoutKind = LayoutKind::None, Style style = {},
@@ -139,6 +150,7 @@ struct Grid : Element {
   Size subdivisions = {1, 1};
 };
 
+// A basic colored rectangle.
 struct Rect : Element {
   Rect(Position position, Size size, Style style = {},
        LayoutKind layoutKind = LayoutKind::None, Margin margin = {})
@@ -150,6 +162,7 @@ struct Rect : Element {
   }
 };
 
+// A simple text label.
 struct Label : Element {
   std::string text;
   Label(Position pos, Size size, std::string text) : Element(pos, size), text(text) {}
@@ -166,14 +179,16 @@ struct Label : Element {
   }
 };
 
+// A simple button with a mouse-over highlight, and an onClicked callback.
 struct Button : Element {
   std::string text;
   size_t fontSize = 24;
-  using ClickedCallback = std::function<void()>;
-  ClickedCallback onClicked = nullptr;
+  
+  using ClickCallback = std::function<void()>;
+  ClickCallback onClicked = nullptr;
   
   Button(Position position, Size size, std::string text = "",
-         ClickedCallback onClicked = nullptr,
+         ClickCallback onClicked = nullptr,
          Style style = {BLACK, WHITE, WHITE, 0},
          LayoutKind layoutKind = LayoutKind::None)
       : Element(position, size, layoutKind, style), text(text),
@@ -202,6 +217,49 @@ struct Button : Element {
     auto pos_y = state.position.y + (0.5 * state.size.height) - (fontSize / 2.0);
     
     DrawText(text.c_str(), pos_x, pos_y, fontSize, style.foreground);
+  }
+};
+
+
+// An easy way to draw a texture within a UI.
+struct Image : Element {
+  // raylib image.
+  ::Texture2D texture;
+  bool loadedFromPath = false;
+  
+  // dictates the region of the image that will be drawn.
+  // 0,0, imageWidth, imageHeight is default, and draws thw whole texture.
+  Rectangle imageSourceRect = {};
+  
+  // the rotation of the texture. (in radians)
+  float rotation = 0;
+  
+  // I don't really know what this field does but raylib takes it.
+  Vector2 origin = {0,0};
+  
+  Image(Position position, Size size, std::string path,
+         Style style = {BLACK, WHITE, WHITE, 0},
+         LayoutKind layoutKind = LayoutKind::None)
+      : Element(position, size, layoutKind, style) {
+        texture = LoadTexture(path.c_str());      
+        imageSourceRect = {0, 0, (float)texture.width, (float)texture.height};
+        loadedFromPath = true;
+      }
+      
+  Image(Position position, Size size, Texture2D &texture,
+        Style style = {BLACK, WHITE, WHITE, 0},
+        LayoutKind layoutKind = LayoutKind::None)
+    : Element(position, size, layoutKind, style), texture(texture) {
+      imageSourceRect = {0, 0, (float)texture.width, (float)texture.height};
+    }
+      
+  void draw(LayoutState &state) override {
+    Rectangle destRect = {state.position.x, state.position.y, state.position.x + state.size.width, state.position.y + state.size.height};    
+    DrawTexturePro(texture, imageSourceRect, destRect, origin, rotation, style.background);
+  }    
+  ~Image() {
+    if (loadedFromPath)
+      UnloadTexture(texture);
   }
 };
 
