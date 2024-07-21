@@ -5,11 +5,10 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "preLaunchTask": "make",
-      "type": "lldb",
+      "type": "cppdbg",
       "request": "launch",
       "name": "Debug",
-      "program": "${workspaceFolder}/bin/boom_tetris",
+      "program": "${workspaceFolder}/build/boom_tetris",
       "args": [],
       "cwd": "${workspaceFolder}"
     }

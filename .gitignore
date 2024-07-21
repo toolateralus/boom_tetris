@@ -2,3 +2,11 @@
 /.cache
 /compile_commands.json
 /objs
+/CMakeFiles
+/build
+/_deps
+/*.vcxproj
+/*.vcxproj.filters
+/*.vcxproj.user
+/*.sln
+/*.cmake

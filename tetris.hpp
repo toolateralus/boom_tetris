@@ -8,16 +8,15 @@
 #include <deque>
 #include <memory>
 #include <stdio.h>
-#include <unistd.h>
 #include <unordered_map>
 #include <vector>
 #include <array>
 #include <cstddef>
 
 #include <string>
-#ifdef _WIN32
-#include <windows.h> // For GetEnvironmentVariable
-#endif
+#include "score.hpp"
+
+
 
 constexpr int boardWidth = 10;
 constexpr int boardHeight = 20;
@@ -71,13 +70,7 @@ struct Board {
   // know what side we hit so we can depenetrate in the opposite direction.
   bool collides(Vec2 pos) noexcept;
 };
-struct ScoreFile {
-  size_t high_score = 0;
-  static std::string getScoreFilePath();
-  static void createDirectoryAndFile(const std::string &path);
-  void read();
-  void write();
-};
+
 
 // a group of cells the user is currently in control of.
 struct Tetromino {

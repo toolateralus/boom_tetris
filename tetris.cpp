@@ -2,8 +2,7 @@
 #include "rayui.hpp"
 #include <chrono>
 #include <cmath>
-#include <filesystem>
-#include <fstream>
+
 #include <functional>
 #include <iostream>
 #include <memory>
@@ -159,10 +158,10 @@ void Game::processGameLogic() {
     animation_queue.push_back(std::make_unique<LockInAnimation>(this, tetromino->position.y));
     auto linesToClear = checkLines();
     if (linesToClear.size() > 0) {
-      PlaySound(clearLineSound);
+      ::PlaySound(clearLineSound);
       animation_queue.push_back(std::make_unique<CellDissolveAnimation>(this, linesToClear, tetromino->softDropHeight));
     } else {
-      PlaySound(lockInSound);
+      ::PlaySound(lockInSound);
       applySoftDropScore(tetromino->softDropHeight);
     }
     tetromino.reset(nullptr);
@@ -324,6 +323,7 @@ bool Board::collides(Vec2 pos) noexcept {
 Game::~Game() { UnloadTexture(blockTexture); }
 
 void Game::reset() {
+
   score = 0;
   animation_queue.clear();
   frameCount = 0;
@@ -335,6 +335,7 @@ void Game::reset() {
   board = {}; // reset the grid state.
   elapsed = {};
   tetromino = nullptr;
+
   setNextShape();
   gameGrid = createGrid();
 }
@@ -504,7 +505,6 @@ void Game::applyLineClearScoreAndLevel(size_t linesCleared) {
 
   if (linesClearedThisLevel >= levelAdvance) {
     level++;
-    printf("\033[1;32madvanced level: to %ld\033[0m\n", level);
     if (this->level < gravityLevels.size()) {
       gravity = gravityLevels[level];
     }
@@ -593,74 +593,6 @@ Vec2 Vec2::rotated(Orientation orientation) const {
     return {this->y, -this->x};
   }
 }
-std::string ScoreFile::getScoreFilePath() {
-  std::string path;
-#ifdef _WIN32
-  char buffer[MAX_PATH];
-  if (GetEnvironmentVariable("APPDATA", buffer, MAX_PATH)) {
-    path = std::string(buffer) + "\\boom_tetris\\score";
-  }
-#else
-  const char *home = getenv("HOME");
-  if (home != nullptr) {
-    path = std::string(home) + "/.config/boom_tetris/score";
-  }
-#endif
-  createDirectoryAndFile(path);
-  return path;
-}
-void ScoreFile::createDirectoryAndFile(const std::string &path) {
-  try {
-    std::filesystem::path dirPath = std::filesystem::path(path).parent_path();
-    if (!std::filesystem::exists(dirPath)) {
-      bool created = std::filesystem::create_directories(dirPath);
-      if (created) {
-        std::cout << "Directory created successfully: " << dirPath << std::endl;
-      } else {
-        std::cerr << "Failed to create directory: " << dirPath << std::endl;
-        return;
-      }
-    }
-
-    std::filesystem::path filePath = std::filesystem::path(path);
-    if (!std::filesystem::exists(filePath)) {
-      std::ofstream file(path);
-      if (file) {
-        std::cout << "File created successfully: " << filePath << std::endl;
-      } else {
-        std::cerr << "Failed to create file: " << filePath << std::endl;
-      }
-    }
-  } catch (const std::filesystem::filesystem_error &e) {
-    std::cerr << "Filesystem error: " << e.what() << std::endl;
-  } catch (const std::exception &e) {
-    std::cerr << "General error: " << e.what() << std::endl;
-  }
-}
-void ScoreFile::read() {
-  std::string filename = getScoreFilePath();
-  if (filename.empty()) {
-    return;
-  }
-  std::ifstream file(filename);
-  if (file.is_open()) {
-    std::string s;
-    file >> s;
-    high_score = std::atoi(s.c_str());
-    file.close();
-  }
-}
-void ScoreFile::write() {
-  std::string filename = getScoreFilePath();
-  if (filename.empty()) {
-    return;
-  }
-  std::ofstream file(filename);
-  if (file.is_open()) {
-    file << std::to_string(high_score);
-    file.close();
-  }
-}
 int Game::findGamepad() const {
   for (int i = 0; i < 5; ++i) {
     if (IsGamepadAvailable(i))
@@ -716,8 +648,6 @@ bool LockInAnimation::invoke() {
   frameCount++;
   return false;
 };
-
-
 void Game::applySoftDropScore(size_t softDropHeight) {
   auto softDropScore = softDropHeight % 16;
   softDropScore += (softDropHeight / 16) % 16 * 10;

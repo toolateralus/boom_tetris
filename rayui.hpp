@@ -115,8 +115,8 @@ struct Grid : Element {
       auto maxElementX = subdivisions.width - std::max(element->size.width, 1);
       auto maxElementY =
           subdivisions.height - std::max(element->size.height, 1);
-      auto elementX = std::clamp(element->position.x, 0, maxElementX);
-      auto elementY = std::clamp(element->position.y, 0, maxElementY);
+      auto elementX = std::min(std::max(element->position.x, 0), maxElementX);
+      auto elementY = std::min(std::max(element->position.y, 0), maxElementY);
       // Convert grid position and size to pixel values
       float pixelPosX = state.position.x + elementX * cellWidth;
       float pixelPosY = state.position.y + elementY * cellHeight;

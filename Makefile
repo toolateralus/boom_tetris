@@ -9,16 +9,12 @@ BIN_DIR := bin
 SRCS := $(wildcard *.cpp)
 OBJS := $(patsubst %.cpp,$(OBJ_DIR)/%.o,$(wildcard *.cpp))
 
-all: directories boom_tetris
-
-directories:
-	mkdir -p $(OBJ_DIR) $(BIN_DIR)
+all: boom_tetris
 
 boom_tetris: $(OBJS)
 	$(COMPILER) $(COMPILER_FLAGS) -o $(BIN_DIR)/$@ $^ $(LD_FLAGS)
 
 $(OBJ_DIR)/%.o: %.cpp
-	mkdir -p $(@D)
 	$(COMPILER) $(COMPILER_FLAGS) -c $< -o $@
 
 clean:
