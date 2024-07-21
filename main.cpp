@@ -37,7 +37,7 @@ void gamepadLogger(Game &game) {
 }
 
 void setupMenuButtons(Game &game) {
-  auto pos = Position{1, 12};
+  auto pos = Position{1, 23};
   auto size = Size{2, 2};
   mainMenuGrid.emplace_element<Rect>(Position{0, 11}, Size{1, 4},
                                      Style{GetColor(0x2b2b2baa), WHITE},
