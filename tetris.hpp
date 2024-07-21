@@ -26,13 +26,17 @@ constexpr int boardHeight = 20;
 
 using namespace rayui;
 
+
+namespace boom_tetris {
+  
+
 // the direction of user input.
 enum struct Direction { None, Left, Right, Down };
 // the shape of a tetromino, a group of cells.
 enum struct Shape { L, J, Z, S, I, T, O };
 // the rotation of a tetromino
 enum struct Orientation { Up, Right, Down, Left };
-
+// an integer based vec2.
 struct Vec2 {
   int x, y;
 
@@ -40,33 +44,26 @@ struct Vec2 {
 
   Vec2 rotated(Orientation orientation) const;
 };
-
+// an image associated with a cell.
 struct Block {
   Vec2 pos;
   size_t imageIdx;
 };
-
 // a way to key into the grid to update a tetromino.
 using ShapeIndices = std::vector<Block>;
-
 struct HorizontalInput {
   HorizontalInput(bool left, bool right) : left(left), right(right) {}
   bool left, right;
 };
-
 // a grid cell.
 struct Cell {
   size_t imageIdx;
   bool empty = true;
 };
-
 struct Board {
   std::array<std::array<Cell, boardWidth>, boardHeight> rows = {};
-
   Cell &operator[](int x, int y) ;
-
   Cell &get_cell(int x, int y) noexcept { return (*this)[x, y]; }
-
   auto begin() noexcept { return rows.begin(); }
   auto end() noexcept { return rows.end(); }
 
@@ -74,7 +71,6 @@ struct Board {
   // know what side we hit so we can depenetrate in the opposite direction.
   bool collides(Vec2 pos) noexcept;
 };
-
 struct ScoreFile {
   size_t high_score = 0;
   static std::string getScoreFilePath();
@@ -105,6 +101,7 @@ struct Tetromino {
 };
 
 struct Game;
+
 struct PieceViewer : Element {
   Game& game;
   virtual void draw(rayui::LayoutState &state) override;
@@ -119,30 +116,10 @@ struct BoardCell : Element {
       : Element(position, {1,1}), game(game), cell(cell) {}
 };
 
-struct NumberText : Element {
-  size_t *number;
-  Color color;
-  NumberText(Position position, Size size, size_t *number, Color color)
-      : Element(position, size), number(number), color(color) {}
-  virtual void draw(LayoutState &state) override;
-};
-
-struct TimerText : Element {
-  std::chrono::milliseconds *time;
-  Color color;
-  TimerText(Position position, Size size, std::chrono::milliseconds *time, Color color)
-      : Element(position, size), time(time), color(color) {}
-  virtual void draw(LayoutState &state) override;
-};
-
-
 struct Animation {
   Animation(Game *game) : game(game) {}
   Game *game;
-  virtual ~Animation() {
-    
-  }
-  
+  virtual ~Animation() {}
   virtual bool invoke() = 0;
 };
 struct CellDissolveAnimation: Animation {
@@ -162,10 +139,6 @@ struct LockInAnimation: Animation {
   bool invoke() override;
 };
 
-enum struct GameMode {
-  Normal,// high score
-  FortyLines,
-};
 
 struct Game {
   Sound shiftSound;
@@ -179,38 +152,42 @@ struct Game {
   
   std::deque<std::unique_ptr<Animation>> animation_queue = {};
   
-  GameMode mode = GameMode::Normal;
+  enum struct Mode {
+    Normal,// high score
+    FortyLines, // timed 40 line clear.
+  } mode = Mode::Normal;
     
   // the play grid.
   Board board;
-  
   // the upcoming shape & color of the next tetromino.
   Shape nextShape;
-  
   // the piece the player is in control of.
   std::unique_ptr<Tetromino> tetromino;
-  
+  // time since game start.
   std::chrono::milliseconds elapsed = std::chrono::milliseconds(0);
-  
   // TODO: make this more like classic tetris.
   std::vector<float> gravityLevels;
+  // different shape patterns.
   static std::unordered_map<Shape, std::vector<Block>> shapePatterns;
-
   // unit size of a cell on the grid, in pixels. based on resolution
   int blockSize = 32;
-
   // the block texture, used and tinted for every block.
   Texture2D blockTexture;
   // at which rate are we moving the tetromino down?
   float gravity = 0.0f;
   // extra gravity for when the player is holding down.
   float playerGravity = 0.0f;
+  // current level
   size_t level = 0;
+  // current score
   size_t score = 0;
+  // the level this latest game started at.
   size_t startLevel = 0;
+  
   size_t linesClearedThisLevel = 0;
   size_t totalLinesCleared = 0;
   
+  // used for swapping between menus and the game.  
   enum struct Scene {
     MainMenu,
     GameOver,
@@ -241,3 +218,5 @@ struct Game {
   ShapeIndices getTransformedBlocks(std::unique_ptr<Tetromino> &tetromino) const;
   std::shared_ptr<rayui::Grid> createBoardGrid();
 };
+
+}

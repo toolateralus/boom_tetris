@@ -11,6 +11,8 @@
 #include <stdexcept>
 #include <string>
 
+using namespace boom_tetris;
+
 void Game::saveTetromino() { tetromino->saveState(); }
 
 std::unordered_map<Shape, std::vector<Block>> Game::shapePatterns = {
@@ -164,7 +166,7 @@ void Game::processGameLogic() {
       applySoftDropScore(tetromino->softDropHeight);
     }
     tetromino.reset(nullptr);
-    if (mode == GameMode::FortyLines && totalLinesCleared >= 40) {
+    if (mode == Mode::FortyLines && totalLinesCleared >= 40) {
       scene = Scene::GameOver;
     }
   }
@@ -220,10 +222,10 @@ Grid Game::createGrid() {
   grid.emplace_element<NumberText>(Position{1, 2}, Size{7, 1},
                                    &totalLinesCleared, WHITE);
   
-  if (mode == GameMode::FortyLines) {
+  if (mode == Mode::FortyLines) {
     auto timer_label = grid.emplace_element<Label>(Position{1, 4}, Size{5, 1});
     timer_label->text = "Timer";
-    auto timer_text = grid.emplace_element<TimerText>(Position{1, 5}, Size{1, 1}, &elapsed, WHITE);
+    auto timer_text = grid.emplace_element<TimeText>(Position{1, 5}, Size{1, 1}, &elapsed, WHITE);
   }
   
   
@@ -325,7 +327,7 @@ void Game::reset() {
   score = 0;
   animation_queue.clear();
   frameCount = 0;
-  mode = GameMode::Normal;
+  mode = Mode::Normal;
   level = startLevel;
   gravity = gravityLevels[level];
   linesClearedThisLevel = 0;
@@ -517,10 +519,7 @@ void BoardCell::draw(rayui::LayoutState &state) {
     DrawTexturePro(game.blockTexture, srcRect, destRect, {0, 0}, 0, WHITE);
   }
 };
-void NumberText::draw(LayoutState &state) {
-  DrawText(std::to_string(*number).c_str(), state.position.x, state.position.y,
-           state.size.height, color);
-}
+
 void Game::drawGame() {
 
   if (!animation_queue.empty()) {
@@ -718,24 +717,7 @@ bool LockInAnimation::invoke() {
   return false;
 };
 
-void TimerText::draw(LayoutState &state) {
-    auto totalMilliseconds = (*this->time).count() / 1000;
-    int hours = totalMilliseconds / 3600;
-    int minutes = (totalMilliseconds % 3600) / 60;
-    int seconds = totalMilliseconds % 60;
 
-    std::string timeStr;
-    if (hours > 0) {
-        timeStr = std::to_string(hours) + ":" + 
-                  std::to_string(minutes).insert(0, 2 - std::to_string(minutes).length(), '0') + ":" + 
-                  std::to_string(seconds).insert(0, 2 - std::to_string(seconds).length(), '0');
-    } else {
-        timeStr = std::to_string(minutes) + ":" + 
-                  std::to_string(seconds).insert(0, 2 - std::to_string(seconds).length(), '0');
-    }
-
-    DrawText(timeStr.c_str(), state.position.x, state.position.y, state.size.height, color);
-}
 void Game::applySoftDropScore(size_t softDropHeight) {
   auto softDropScore = softDropHeight % 16;
   softDropScore += (softDropHeight / 16) % 16 * 10;

@@ -5,7 +5,7 @@
 #include <string>
 
 using namespace rayui;
-
+using namespace boom_tetris;
 Grid mainMenuGrid = {{24, 24}};
 Grid gameOverGrid = {{24, 24}};
 
@@ -57,7 +57,7 @@ void setupMenuButtons(Game &game) {
   auto _40LineTxt =
       mainMenuGrid.emplace_element<Button>(pos, size, "40 lines", [&]() {
         game.reset();
-        game.mode = GameMode::FortyLines;
+        game.mode = Game::Mode::FortyLines;
         game.level = 5;
         game.startLevel = 5;
         game.scene = Game::Scene::InGame;
@@ -78,7 +78,7 @@ void setupGameOverMenu(Game &game) {
   gameOverGrid.emplace_element<NumberText>(Position{11, 9}, Size{1,1}, &game.score, MAGENTA);
   
   gameOverGrid.emplace_element<Label>(Position{9, 11}, Size{1,1}, "Time:", WHITE);
-  gameOverGrid.emplace_element<TimerText>(Position{11, 12}, Size{1,1}, &game.elapsed, GREEN);
+  gameOverGrid.emplace_element<TimeText>(Position{11, 12}, Size{1,1}, &game.elapsed, GREEN);
   
   gameOverGrid.emplace_element<Label>(Position{9, 14}, Size{1,1}, "Lines:", WHITE);
   gameOverGrid.emplace_element<NumberText>(Position{11, 15}, Size{1,1}, &game.totalLinesCleared, ORANGE);

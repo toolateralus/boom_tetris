@@ -1,4 +1,5 @@
 #pragma once
+#include <chrono>
 #include <cstring>
 #include <functional>
 #include <memory>
@@ -220,7 +221,6 @@ struct Button : Element {
   }
 };
 
-
 // An easy way to draw a texture within a UI.
 struct Image : Element {
   // raylib image.
@@ -260,6 +260,44 @@ struct Image : Element {
   ~Image() {
     if (loadedFromPath)
       UnloadTexture(texture);
+  }
+};
+
+// attach a size_t * to this element so it displays a self-updating numerical value.
+struct NumberText : Element {
+  size_t *number;
+  Color color;
+  NumberText(Position position, Size size, size_t *number, Color color)
+      : Element(position, size), number(number), color(color) {}
+  virtual void draw(LayoutState &state) override {
+    DrawText(std::to_string(*number).c_str(), state.position.x, state.position.y,
+            state.size.height, color);
+  }
+};
+
+// attach a std::chrono::milliseconds * to this element so it has a self updating time value.
+struct TimeText : Element {
+  std::chrono::milliseconds *time;
+  Color color;
+  TimeText(Position position, Size size, std::chrono::milliseconds *time, Color color)
+      : Element(position, size), time(time), color(color) {}
+  virtual void draw(LayoutState &state) override {
+    auto totalMilliseconds = (*this->time).count() / 1000;
+    int hours = totalMilliseconds / 3600;
+    int minutes = (totalMilliseconds % 3600) / 60;
+    int seconds = totalMilliseconds % 60;
+    
+    std::string timeStr;
+    if (hours > 0) {
+        timeStr = std::to_string(hours) + ":" + 
+                  std::to_string(minutes).insert(0, 2 - std::to_string(minutes).length(), '0') + ":" + 
+                  std::to_string(seconds).insert(0, 2 - std::to_string(seconds).length(), '0');
+    } else {
+        timeStr = std::to_string(minutes) + ":" + 
+                  std::to_string(seconds).insert(0, 2 - std::to_string(seconds).length(), '0');
+    }
+    
+    DrawText(timeStr.c_str(), state.position.x, state.position.y, state.size.height, color);
   }
 };
 
