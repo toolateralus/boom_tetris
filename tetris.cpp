@@ -27,6 +27,10 @@ Game::Game() {
   board = Board();
   setNextShape();
   blockTexture = LoadTexture("res/block2.png");
+  shiftSound = LoadSound("res/shift.wav");
+  rotateSound = LoadSound("res/rotate.wav");
+  lockInSound = LoadSound("res/lock.wav");
+  clearLineSound = LoadSound("res/clear.wav");
   gameGrid = createGrid();
   scene = Scene::MainMenu;
   scoreFile.read();
@@ -93,18 +97,26 @@ void Game::processGameLogic() {
   }
 
   if (turnLeft) {
-    executeMovement([&]() { tetromino->spinLeft(); });
+    if (!executeMovement([&]() { tetromino->spinLeft(); })) {
+      PlaySound(rotateSound);
+    }
   }
 
   if (turnRight) {
-    executeMovement([&] { tetromino->spinRight(); });
+    if (!executeMovement([&] { tetromino->spinRight(); })) {
+      PlaySound(rotateSound);
+    }
   }
 
   if (horizontal.left) {
-    executeMovement([&] { tetromino->position.x--; });
+    if (!executeMovement([&] { tetromino->position.x--; })) {
+      PlaySound(shiftSound);
+    }
   }
   if (horizontal.right) {
-    executeMovement([&] { tetromino->position.x++; });
+    if (!executeMovement([&] { tetromino->position.x++; })) {
+      PlaySound(shiftSound);
+    }
   }
 
   auto oldGravity = gravity;
@@ -145,8 +157,10 @@ void Game::processGameLogic() {
     animation_queue.push_back(std::make_unique<LockInAnimation>(this, tetromino->position.y));
     auto linesToClear = checkLines();
     if (linesToClear.size() > 0) {
+      PlaySound(clearLineSound);
       animation_queue.push_back(std::make_unique<CellDissolveAnimation>(this, linesToClear, tetromino->softDropHeight));
     } else {
+      PlaySound(lockInSound);
       applySoftDropScore(tetromino->softDropHeight);
     }
     tetromino.reset(nullptr);

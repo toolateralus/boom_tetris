@@ -1,8 +1,4 @@
 adding sounds:
-- shift left/right
-- rotating
-- locking in
-- clearing lines
 - menu?
 better ui:
 - in-game ui:

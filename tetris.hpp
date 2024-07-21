@@ -168,6 +168,11 @@ enum struct GameMode {
 };
 
 struct Game {
+  Sound shiftSound;
+  Sound rotateSound;
+  Sound lockInSound;
+  Sound clearLineSound;
+
   ScoreFile scoreFile;
   size_t frameCount = 0;
   Grid gameGrid;

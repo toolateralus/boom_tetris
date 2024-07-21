@@ -96,6 +96,7 @@ void setupGameOverMenu(Game &game) {
 int main(int argc, char *argv[]) {
   srand(time(0));
   InitWindow(800, 600, "boom taetris");
+  InitAudioDevice();
   SetWindowState(FLAG_WINDOW_RESIZABLE);
   SetTargetFPS(60);
   
@@ -139,6 +140,6 @@ int main(int argc, char *argv[]) {
   }
 
   game.scoreFile.write();
-
+  CloseAudioDevice();
   return 0;
 }
