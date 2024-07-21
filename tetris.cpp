@@ -335,8 +335,8 @@ void Game::reset() {
 }
 
 HorizontalInput Game::delayedAutoShift() {
-  static float dasDelay = 0.2f;
-  static float arrDelay = 0.075f;
+  static float dasDelay = 0.26667f;
+  static float arrDelay = 0.1f;
   static float dasTimer = 0.0f;
   static float arrTimer = 0.0f;
   static bool leftKeyPressed = false;
