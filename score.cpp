@@ -32,25 +32,27 @@ void ScoreFile::write() {
     file.close();
   }
 }
-
 std::string ScoreFile::getScoreFilePath() {
-  std::string path;
-#ifdef _WIN32
-  wchar_t wBuffer[MAX_PATH];
-  if (GetEnvironmentVariableW(L"APPDATA", wBuffer, MAX_PATH)) {
-    int len = WideCharToMultiByte(CP_UTF8, 0, wBuffer, -1, NULL, 0, NULL, NULL);
-    std::string narrowPath(len, '\0');
-    WideCharToMultiByte(CP_UTF8, 0, wBuffer, -1, &narrowPath[0], len, NULL, NULL);
-    path = narrowPath + "\\boom_tetris\\score";
-  }
-#else
-  const char *home = getenv("HOME");
-  if (home != nullptr) {
-    path = std::string(home) + "/.config/boom_tetris/score";
-  }
-#endif
-  createDirectoryAndFile(path);
-  return path;
+    std::filesystem::path path;
+
+    // Use std::filesystem to find the appropriate app data directory
+    #ifdef _WIN32
+    auto appDataPath = std::getenv("APPDATA");
+    if (appDataPath != nullptr) {
+        path = std::filesystem::path(appDataPath) / "boom_tetris" / "score";
+    }
+    #else
+    auto homePath = std::getenv("HOME");
+    if (homePath != nullptr) {
+        path = std::filesystem::path(homePath) / ".config" / "boom_tetris" / "score";
+    }
+    #endif
+    // Create the directory if it doesn't exist
+    if (!std::filesystem::exists(path.parent_path())) {
+        std::filesystem::create_directories(path.parent_path());
+    }
+
+    return path.string();
 }
 
 void ScoreFile::createDirectoryAndFile(const std::string &path) {
