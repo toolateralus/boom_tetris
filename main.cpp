@@ -47,6 +47,9 @@ void gamepadLogger(Game &game) {
 void setupMenuButtons(Game &game) {
   auto pos = Position{1, 21};
   auto size = Size{2, 2};
+  
+
+  
   mainMenuGrid.emplace_element<Rect>(Position{0, 23}, Size{1, 4},
                                      Style{GetColor(0x2b2b2baa), WHITE},
                                      LayoutKind::StretchHorizontal);
@@ -72,6 +75,16 @@ void setupMenuButtons(Game &game) {
         game.gravity = game.gravityLevels[game.level];
       });
   _40LineTxt->fontSize = 16;
+  
+  
+  *game.volumeLabel= "Volume: 100";
+  auto volumeSlider = mainMenuGrid.emplace_element<Slider>(Position{1, 1}, Size{2,2}, game.volumeLabel, 0, 100, 100, [&](float volume){
+    *game.volumeLabel = "Volume: " + std::to_string((int)volume);
+    SetMasterVolume(volume / 100.0f);
+  });
+  volumeSlider->style.background = MAGENTA;
+  volumeSlider->style.foreground = RED;
+  volumeSlider->fontSize = 24;
 }
 
 void setupGameOverMenu(Game &game) {

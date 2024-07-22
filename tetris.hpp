@@ -138,6 +138,8 @@ struct Game {
   Sound lockInSound;
   Sound clearLineSound;
   
+  std::string *volumeLabel = new std::string();
+  
   bool downLocked = false;
   
   ScoreFile scoreFile;

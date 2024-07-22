@@ -1,5 +1,4 @@
 #pragma once
-#include <barrier>
 #include <chrono>
 #include <cstring>
 #include <functional>
@@ -316,35 +315,41 @@ struct TimeText : Element {
 };
 
 struct Slider : Element {
-  Slider(Position position, Size size) : Element(position, size) {
-    
-  }
+  using OnValueChangedCallback = std::function<void(float new_value)>;
+
+  OnValueChangedCallback onValueChanged = nullptr;
+  
+  Slider(Position pos, Size size, std::string *text, int min, float max,
+         float init_value, OnValueChangedCallback onValueChanged)
+      : Element(pos, size), max(max), min(min), value(init_value), label(text),
+        onValueChanged(onValueChanged) {}
+        
+  Slider(Position position, Size size) : Element(position, size) {}
   float min = 0, max = 1;
   float value = 0;
-  
+
   int fontSize = 12;
-  
+
   std::string *label = nullptr;
-  
+
   enum struct Orientation {
     Horizontal,
     Vertical,
   } orientation = Orientation::Horizontal;
-  
+
   float handleRadius = 5;
   float barWidth = 3, barHeight = 5;
   bool isDragging = false;
-  
+
   void handleDragging(LayoutState &state, Vector2 &currentMousePos,
-                 Vector2 &handlePosition) {
+                      Vector2 &handlePosition) {
     static Vector2 lastMousePos = {};
-    
-    
+
     DrawCircleLines(currentMousePos.x, currentMousePos.y, 25.f, WHITE);
     DrawCircleLines(handlePosition.x, handlePosition.y, 1.5f, ORANGE);
-    
-    if (CheckCollisionCircles(handlePosition, handleRadius * 1.5f, currentMousePos,
-                              handleRadius * 25.0f)) {
+
+    if (CheckCollisionCircles(handlePosition, handleRadius * 1.5f,
+                              currentMousePos, handleRadius * 25.0f)) {
       if (!isDragging && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
         lastMousePos = currentMousePos;
         isDragging = true;
@@ -352,7 +357,7 @@ struct Slider : Element {
         isDragging = false;
       }
     }
-    
+
     if (isDragging) {
       Vector2 mouseDelta = {currentMousePos.x - lastMousePos.x,
                             currentMousePos.y - lastMousePos.y};
@@ -365,10 +370,15 @@ struct Slider : Element {
             mouseDelta.y / (state.size.height * barHeight - 2 * handleRadius);
         value += deltaNormalized * (max - min);
       }
+
+      if (onValueChanged) {
+        onValueChanged(value);
+      }
+
       value = std::max(min, std::min(value, max));
       lastMousePos = currentMousePos;
     }
-    
+
     if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
       isDragging = false;
     }
@@ -376,43 +386,46 @@ struct Slider : Element {
   void draw(LayoutState &state) override {
     Vector2 currentMousePos = GetMousePosition();
     float normalizedValue = (value - min) / (max - min);
-    
+
     Vector2 handlePosition = Vector2();
-    
+
     if (orientation == Orientation::Horizontal) {
-        float effectiveWidth = state.size.width * barWidth - 2 * handleRadius;
-        handlePosition = {
-            state.position.x + normalizedValue * effectiveWidth + handleRadius,
-            state.position.y + barHeight / 2
-        };
-        DrawRectangle(state.position.x, state.position.y, state.size.width * barWidth, barHeight, style.background);
+      float effectiveWidth = state.size.width * barWidth - 2 * handleRadius;
+      handlePosition = {state.position.x + normalizedValue * effectiveWidth +
+                            handleRadius,
+                        state.position.y + barHeight / 2};
+      DrawRectangle(state.position.x, state.position.y,
+                    state.size.width * barWidth, barHeight, style.background);
     } else {
-        float effectiveHeight = state.size.height * barHeight - 2 * handleRadius;
-        handlePosition = {
-            state.position.x + barWidth / 2,
-            state.position.y + normalizedValue * effectiveHeight + handleRadius
-        };
-        DrawRectangle(state.position.x, state.position.y, barWidth, state.size.height * barHeight, style.background);
+      float effectiveHeight = state.size.height * barHeight - 2 * handleRadius;
+      handlePosition = {state.position.x + barWidth / 2,
+                        state.position.y + normalizedValue * effectiveHeight +
+                            handleRadius};
+      DrawRectangle(state.position.x, state.position.y, barWidth,
+                    state.size.height * barHeight, style.background);
     }
-    
-    DrawCircle(handlePosition.x, handlePosition.y, handleRadius, style.foreground);
-    
+
+    DrawCircle(handlePosition.x, handlePosition.y, handleRadius,
+               style.foreground);
+
     handleDragging(state, currentMousePos, handlePosition);
-    
+
     if (label) {
-        auto label = *this->label;
-        auto size = MeasureText(label.c_str(), fontSize);
-        
-        if (orientation == Orientation::Horizontal) {
-            DrawText(label.c_str(), state.position.x, state.position.y - fontSize, fontSize, style.foreground);
-        } else {
-            float currentY = state.position.y;
-            for (char c : label) {
-                std::string charStr(1, c);
-                DrawText(charStr.c_str(), state.position.x + barWidth + 5, currentY, fontSize, style.foreground); // Adjusted for spacing
-                currentY += fontSize;
-            }
+      auto label = *this->label;
+      auto size = MeasureText(label.c_str(), fontSize);
+
+      if (orientation == Orientation::Horizontal) {
+        DrawText(label.c_str(), state.position.x, state.position.y - fontSize,
+                 fontSize, style.foreground);
+      } else {
+        float currentY = state.position.y;
+        for (char c : label) {
+          std::string charStr(1, c);
+          DrawText(charStr.c_str(), state.position.x + barWidth + 5, currentY,
+                   fontSize, style.foreground); // Adjusted for spacing
+          currentY += fontSize;
         }
+      }
     }
   }
 };

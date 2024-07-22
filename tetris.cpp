@@ -332,7 +332,7 @@ bool Board::collides(Vec2 pos) noexcept {
     !get_cell(x, y).empty;
 }
 
-Game::~Game() { UnloadTexture(blockTexture); }
+Game::~Game() { UnloadTexture(blockTexture); delete volumeLabel; }
 
 void Game::reset() {
   
