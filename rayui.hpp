@@ -1,4 +1,5 @@
 #pragma once
+#include <barrier>
 #include <chrono>
 #include <cstring>
 #include <functional>
@@ -7,7 +8,7 @@
 #include <vector>
 
 namespace rayui {
-  
+
 // the grid position of an element.
 // if this exceeds the subdivisions of the grid, or goes below 0,
 // it will be clamped to the furthest it can go.
@@ -33,7 +34,6 @@ struct Style {
   Color borderColor = {0, 0, 0, 0};
   int borderSize = 0;
 };
-
 
 enum struct LayoutKind {
   // use the exact x,y & size coordinates provided by the element.
@@ -99,7 +99,7 @@ struct Grid : Element {
   }
   Grid(Position pos, Size size) : Element(pos, size) {}
   Grid(Size subdivisions = {1, 1}) : Element(), subdivisions(subdivisions) {}
-  
+
   std::vector<std::shared_ptr<Element>> elements;
 
   void draw(LayoutState &state) override {
@@ -166,8 +166,10 @@ struct Rect : Element {
 // A simple text label.
 struct Label : Element {
   std::string text;
-  Label(Position pos, Size size, std::string text) : Element(pos, size), text(text) {}
-  Label(Position pos, Size size, std::string text, Color foreground) : Element(pos, size), text(text) {
+  Label(Position pos, Size size, std::string text)
+      : Element(pos, size), text(text) {}
+  Label(Position pos, Size size, std::string text, Color foreground)
+      : Element(pos, size), text(text) {
     style.foreground = foreground;
   }
   Label(Position pos, Size size) : Element(pos, size) {}
@@ -184,17 +186,17 @@ struct Label : Element {
 struct Button : Element {
   std::string text;
   size_t fontSize = 24;
-  
+
   using ClickCallback = std::function<void()>;
   ClickCallback onClicked = nullptr;
-  
+
   Button(Position position, Size size, std::string text = "",
          ClickCallback onClicked = nullptr,
          Style style = {BLACK, WHITE, WHITE, 0},
          LayoutKind layoutKind = LayoutKind::None)
       : Element(position, size, layoutKind, style), text(text),
         onClicked(onClicked) {}
-  
+
   void draw(LayoutState &state) override {
     bool isMouseOver = CheckCollisionPointRec(
         GetMousePosition(), {state.position.x, state.position.y,
@@ -215,8 +217,9 @@ struct Button : Element {
     auto len = std::strlen(text.c_str());
     float size = ((float)fontSize / 2) * len;
     auto pos_x = state.position.x + (0.5 * state.size.width) - (size / 2);
-    auto pos_y = state.position.y + (0.5 * state.size.height) - (fontSize / 2.0);
-    
+    auto pos_y =
+        state.position.y + (0.5 * state.size.height) - (fontSize / 2.0);
+
     DrawText(text.c_str(), pos_x, pos_y, fontSize, style.foreground);
   }
 };
@@ -226,78 +229,191 @@ struct Image : Element {
   // raylib image.
   ::Texture2D texture;
   bool loadedFromPath = false;
-  
+
   // dictates the region of the image that will be drawn.
   // 0,0, imageWidth, imageHeight is default, and draws thw whole texture.
   Rectangle imageSourceRect = {};
-  
+
   // the rotation of the texture. (in radians)
   float rotation = 0;
-  
+
   // I don't really know what this field does but raylib takes it.
-  Vector2 origin = {0,0};
-  
+  Vector2 origin = {0, 0};
+
   Image(Position position, Size size, std::string path,
-         Style style = {BLACK, WHITE, WHITE, 0},
-         LayoutKind layoutKind = LayoutKind::None)
+        Style style = {BLACK, WHITE, WHITE, 0},
+        LayoutKind layoutKind = LayoutKind::None)
       : Element(position, size, layoutKind, style) {
-        texture = LoadTexture(path.c_str());      
-        imageSourceRect = {0, 0, (float)texture.width, (float)texture.height};
-        loadedFromPath = true;
-      }
-      
+    texture = LoadTexture(path.c_str());
+    imageSourceRect = {0, 0, (float)texture.width, (float)texture.height};
+    loadedFromPath = true;
+  }
+
   Image(Position position, Size size, Texture2D &texture,
         Style style = {BLACK, WHITE, WHITE, 0},
         LayoutKind layoutKind = LayoutKind::None)
-    : Element(position, size, layoutKind, style), texture(texture) {
-      imageSourceRect = {0, 0, (float)texture.width, (float)texture.height};
-    }
-      
+      : Element(position, size, layoutKind, style), texture(texture) {
+    imageSourceRect = {0, 0, (float)texture.width, (float)texture.height};
+  }
+
   void draw(LayoutState &state) override {
-    Rectangle destRect = {state.position.x, state.position.y, state.position.x + state.size.width, state.position.y + state.size.height};    
-    DrawTexturePro(texture, imageSourceRect, destRect, origin, rotation, style.background);
-  }    
+    Rectangle destRect = {state.position.x, state.position.y,
+                          state.position.x + state.size.width,
+                          state.position.y + state.size.height};
+    DrawTexturePro(texture, imageSourceRect, destRect, origin, rotation,
+                   style.background);
+  }
   ~Image() {
     if (loadedFromPath)
       UnloadTexture(texture);
   }
 };
 
-// attach a size_t * to this element so it displays a self-updating numerical value.
+// attach a size_t * to this element so it displays a self-updating numerical
+// value.
 struct NumberText : Element {
   size_t *number;
   Color color;
   NumberText(Position position, Size size, size_t *number, Color color)
       : Element(position, size), number(number), color(color) {}
   virtual void draw(LayoutState &state) override {
-    DrawText(std::to_string(*number).c_str(), state.position.x, state.position.y,
-            state.size.height, color);
+    DrawText(std::to_string(*number).c_str(), state.position.x,
+             state.position.y, state.size.height, color);
   }
 };
 
-// attach a std::chrono::milliseconds * to this element so it has a self updating time value.
+// attach a std::chrono::milliseconds * to this element so it has a self
+// updating time value.
 struct TimeText : Element {
   std::chrono::milliseconds *time;
   Color color;
-  TimeText(Position position, Size size, std::chrono::milliseconds *time, Color color)
+  TimeText(Position position, Size size, std::chrono::milliseconds *time,
+           Color color)
       : Element(position, size), time(time), color(color) {}
   virtual void draw(LayoutState &state) override {
     auto totalMilliseconds = (*this->time).count() / 1000;
     int hours = totalMilliseconds / 3600;
     int minutes = (totalMilliseconds % 3600) / 60;
     int seconds = totalMilliseconds % 60;
-    
+
     std::string timeStr;
     if (hours > 0) {
-        timeStr = std::to_string(hours) + ":" + 
-                  std::to_string(minutes).insert(0, 2 - std::to_string(minutes).length(), '0') + ":" + 
-                  std::to_string(seconds).insert(0, 2 - std::to_string(seconds).length(), '0');
+      timeStr = std::to_string(hours) + ":" +
+                std::to_string(minutes).insert(
+                    0, 2 - std::to_string(minutes).length(), '0') +
+                ":" +
+                std::to_string(seconds).insert(
+                    0, 2 - std::to_string(seconds).length(), '0');
     } else {
-        timeStr = std::to_string(minutes) + ":" + 
-                  std::to_string(seconds).insert(0, 2 - std::to_string(seconds).length(), '0');
+      timeStr = std::to_string(minutes) + ":" +
+                std::to_string(seconds).insert(
+                    0, 2 - std::to_string(seconds).length(), '0');
+    }
+
+    DrawText(timeStr.c_str(), state.position.x, state.position.y,
+             state.size.height, color);
+  }
+};
+
+struct Slider : Element {
+  Slider(Position position, Size size) : Element(position, size) {
+    
+  }
+  float min = 0, max = 1;
+  float value = 0;
+  
+  int fontSize = 12;
+  
+  std::string *label = nullptr;
+  
+  enum struct Orientation {
+    Horizontal,
+    Vertical,
+  } orientation = Orientation::Horizontal;
+  
+  float handleRadius = 5;
+  float barWidth = 3, barHeight = 5;
+  bool isDragging = false;
+  
+  void handleDragging(LayoutState &state, Vector2 &currentMousePos,
+                 Vector2 &handlePosition) {
+    static Vector2 lastMousePos = {};
+    
+    
+    DrawCircleLines(currentMousePos.x, currentMousePos.y, 25.f, WHITE);
+    DrawCircleLines(handlePosition.x, handlePosition.y, 1.5f, ORANGE);
+    
+    if (CheckCollisionCircles(handlePosition, handleRadius * 1.5f, currentMousePos,
+                              handleRadius * 25.0f)) {
+      if (!isDragging && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+        lastMousePos = currentMousePos;
+        isDragging = true;
+      } else if (isDragging && !IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+        isDragging = false;
+      }
     }
     
-    DrawText(timeStr.c_str(), state.position.x, state.position.y, state.size.height, color);
+    if (isDragging) {
+      Vector2 mouseDelta = {currentMousePos.x - lastMousePos.x,
+                            currentMousePos.y - lastMousePos.y};
+      if (orientation == Orientation::Horizontal) {
+        float deltaNormalized =
+            mouseDelta.x / (state.size.width * barWidth - 2 * handleRadius);
+        value += deltaNormalized * (max - min);
+      } else {
+        float deltaNormalized =
+            mouseDelta.y / (state.size.height * barHeight - 2 * handleRadius);
+        value += deltaNormalized * (max - min);
+      }
+      value = std::max(min, std::min(value, max));
+      lastMousePos = currentMousePos;
+    }
+    
+    if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
+      isDragging = false;
+    }
+  }
+  void draw(LayoutState &state) override {
+    Vector2 currentMousePos = GetMousePosition();
+    float normalizedValue = (value - min) / (max - min);
+    
+    Vector2 handlePosition = Vector2();
+    
+    if (orientation == Orientation::Horizontal) {
+        float effectiveWidth = state.size.width * barWidth - 2 * handleRadius;
+        handlePosition = {
+            state.position.x + normalizedValue * effectiveWidth + handleRadius,
+            state.position.y + barHeight / 2
+        };
+        DrawRectangle(state.position.x, state.position.y, state.size.width * barWidth, barHeight, style.background);
+    } else {
+        float effectiveHeight = state.size.height * barHeight - 2 * handleRadius;
+        handlePosition = {
+            state.position.x + barWidth / 2,
+            state.position.y + normalizedValue * effectiveHeight + handleRadius
+        };
+        DrawRectangle(state.position.x, state.position.y, barWidth, state.size.height * barHeight, style.background);
+    }
+    
+    DrawCircle(handlePosition.x, handlePosition.y, handleRadius, style.foreground);
+    
+    handleDragging(state, currentMousePos, handlePosition);
+    
+    if (label) {
+        auto label = *this->label;
+        auto size = MeasureText(label.c_str(), fontSize);
+        
+        if (orientation == Orientation::Horizontal) {
+            DrawText(label.c_str(), state.position.x, state.position.y - fontSize, fontSize, style.foreground);
+        } else {
+            float currentY = state.position.y;
+            for (char c : label) {
+                std::string charStr(1, c);
+                DrawText(charStr.c_str(), state.position.x + barWidth + 5, currentY, fontSize, style.foreground); // Adjusted for spacing
+                currentY += fontSize;
+            }
+        }
+    }
   }
 };
 
