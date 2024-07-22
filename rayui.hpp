@@ -292,20 +292,24 @@ struct Button : Element {
       }
     }
     DrawRectangle(state.position.x, state.position.y, state.size.width,
-                    state.size.height, style.background);
-                    
+                  state.size.height, style.background);
+
     if (isMouseOver) {
-       DrawRectangleLinesEx({state.position.x, state.position.y, state.size.width,
-                         state.size.height}, style.borderSize, style.foreground);
+      DrawRectangleLinesEx({state.position.x, state.position.y,
+                            state.size.width, state.size.height},
+                           style.borderSize, style.foreground);
     } else {
-      DrawRectangleLinesEx({state.position.x, state.position.y, state.size.width,
-                         state.size.height}, style.borderSize, style.borderColor);
+      DrawRectangleLinesEx({state.position.x, state.position.y,
+                            state.size.width, state.size.height},
+                           style.borderSize, style.borderColor);
     }
     int textWidth = MeasureText(text.c_str(), fontSize);
-    
-    auto pos_x = state.position.x + (0.5 * state.size.width) - (textWidth / 2.0f);
-    auto pos_y = state.position.y + (0.5 * state.size.height) - (fontSize / 2.0f);
-    
+
+    auto pos_x =
+        state.position.x + (0.5 * state.size.width) - (textWidth / 2.0f);
+    auto pos_y =
+        state.position.y + (0.5 * state.size.height) - (fontSize / 2.0f);
+
     DrawText(text.c_str(), pos_x, pos_y, fontSize, style.foreground);
   }
 };
@@ -446,7 +450,7 @@ struct Slider : Element {
     }
 
     if (isDragging) {
-      
+
       float newValue = value;
       Vector2 mouseDelta = {currentMousePos.x - lastMousePos.x,
                             currentMousePos.y - lastMousePos.y};
@@ -460,11 +464,11 @@ struct Slider : Element {
         newValue += deltaNormalized * (max - min);
       }
       value = std::max(min, std::min(newValue, max));
-      
+
       if (onValueChanged) {
         onValueChanged(value);
       }
-      
+
       lastMousePos = currentMousePos;
     }
 
@@ -516,6 +520,45 @@ struct Slider : Element {
         }
       }
     }
+  }
+};
+struct AnimatedImage : Element {
+  AnimatedImage(Position pos, Size size, std::vector<std::string> paths)
+      : Element(pos, size) {
+    for (const auto &path : paths) {
+      frames.push_back(LoadTexture(path.c_str()));
+    }
+    std::reverse(frames.begin(), frames.end());
+    loadedFromPaths = true;
+  };
+
+  ~AnimatedImage() {
+    if (loadedFromPaths) {
+      for (auto &tex : frames) {
+        UnloadTexture(tex);
+      }
+    }
+  }
+
+  bool loadedFromPaths;
+  int frame = 0;
+  float framerateScale = 1.0f;
+  std::vector<Texture2D> frames = {};
+
+  void draw(LayoutState &state) override {
+    static double lastTime = 0;
+    double currentTime = GetTime();
+    double elapsedTime = currentTime - lastTime;
+    
+    double frameDuration = 1.0 / framerateScale;
+    
+    if (elapsedTime >= frameDuration) {
+      frame = (frame + 1) % frames.size();
+      lastTime = currentTime;
+    }
+
+    auto image = rayui::Image{position, size, frames[frame]};
+    image.draw(state);
   }
 };
 

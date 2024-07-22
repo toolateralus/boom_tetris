@@ -110,11 +110,19 @@ struct UI {
   void setupMainMenu(Game &game) {
     auto pos = Position{1, 21};
     auto size = Size{2, 2};
+    
+    auto paths = std::vector<std::string>{"res/block.png", "res/block2.png"};
+    auto anim = mainMenuGrid.emplace_element<AnimatedImage>(Position{0,0}, mainMenuGrid.subdivisions, paths);
+    
+    anim->framerateScale = 2.0f;
+    
     auto image = mainMenuGrid.emplace_element<rayui::Image>(
         Position{0, 0}, mainMenuGrid.subdivisions,
         std::string("res/title.png"));
+        
     image->fillType = rayui::FillType::FillVertical;
     image->hAlignment = HAlignment::Center;
+    image->style.foreground= {0,0,0,0};
     
     mainMenuGrid.emplace_element<Rect>(Position{0, 19}, Size{1, 4},
                                        Style{GetColor(0x1b1b1bcc), WHITE},
