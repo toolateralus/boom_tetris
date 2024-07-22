@@ -14,6 +14,9 @@ struct UI {
   Grid settingsGrid = {{23, 23}};
   Style buttonStyle = Style{BLACK, WHITE, BLACK, 3};
   
+  Texture2D titleImage = LoadTexture("res/title.png");
+  std::vector<Texture2D> titleAnimationFrames = {};
+  
   enum struct Menu {
     Title,
     Main,
@@ -51,16 +54,29 @@ struct UI {
     setupGameOver(game);
     setupTitleMenu();
     setupSettingsMenu(game);
+    
+    // these have to be backwards.
+    // todo: setup this animtaion
+    auto paths = std::vector<std::string>{};
+    for (const auto &path: paths) {
+      titleAnimationFrames.push_back(LoadTexture(path.c_str()));
+    }
   }
   
+  void addTitleImageAnimation(rayui::Grid &grid) {
+    // auto anim = grid.emplace_element<AnimatedImage>(Position{0,0}, mainMenuGrid.subdivisions, titleAnimationFrames);
+    // anim->framerateScale = 2.0f;
+    
+    auto image = grid.emplace_element<rayui::Image>(
+        Position{0, 0}, grid.subdivisions,
+        titleImage);
+    image->fillType = rayui::FillType::FillVertical;
+    image->hAlignment = HAlignment::Center;
+  }
   
   void setupSettingsMenu(Game &game) {
     
-    auto image = settingsGrid.emplace_element<rayui::Image>(
-        Position{0, 0}, settingsGrid.subdivisions,
-        std::string("res/title.png"));
-    image->fillType = rayui::FillType::FillVertical;
-    image->hAlignment = HAlignment::Center;
+    addTitleImageAnimation(settingsGrid);
     
     
     settingsGrid.emplace_element<Rect>(Position{6, 15}, Size{11, 6},
@@ -87,11 +103,7 @@ struct UI {
     
   }
   void setupTitleMenu() {
-    auto image = titleGrid.emplace_element<rayui::Image>(
-        Position{0, 0}, titleGrid.subdivisions,
-        std::string("res/title.png"));
-    image->fillType = rayui::FillType::FillVertical;
-    image->hAlignment = HAlignment::Center;
+    addTitleImageAnimation(titleGrid);
     
     auto pos = Position{9, 18};
     auto btn= titleGrid.emplace_element<Button>(pos, Size{5,2}, "Play", [this](){
@@ -111,17 +123,7 @@ struct UI {
     auto pos = Position{1, 21};
     auto size = Size{2, 2};
     
-    auto paths = std::vector<std::string>{"res/block.png", "res/block2.png"};
-    auto anim = mainMenuGrid.emplace_element<AnimatedImage>(Position{0,0}, mainMenuGrid.subdivisions, paths);
-    
-    anim->framerateScale = 2.0f;
-    
-    auto image = mainMenuGrid.emplace_element<rayui::Image>(
-        Position{0, 0}, mainMenuGrid.subdivisions,
-        std::string("res/title.png"));
-        
-    image->fillType = rayui::FillType::FillVertical;
-    image->hAlignment = HAlignment::Center;
+    addTitleImageAnimation(mainMenuGrid);
     
     mainMenuGrid.emplace_element<Rect>(Position{0, 19}, Size{1, 4},
                                        Style{GetColor(0x1b1b1bcc), WHITE},
