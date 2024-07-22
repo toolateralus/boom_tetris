@@ -174,9 +174,7 @@ void Game::processGameLogic() {
       applySoftDropScore(tetromino->softDropHeight);
     }
     tetromino.reset(nullptr);
-    if (mode == Mode::FortyLines && totalLinesCleared >= 40) {
-      scene = Scene::GameOver;
-    }
+    
     downLocked = true;
   }
 
@@ -636,6 +634,9 @@ bool CellDissolveAnimation::invoke() {
       for (int j = line; j >= 1; j--) {
         game->board.rows[j] = game->board.rows[j - 1];
       }
+    }
+    if (game->mode == Game::Mode::FortyLines && game->totalLinesCleared >= 40) {
+      game->scene = Game::Scene::GameOver;
     }
     game->applyLineClearScoreAndLevel(lines.size());
     return true;
