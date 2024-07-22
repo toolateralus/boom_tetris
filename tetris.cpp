@@ -36,6 +36,7 @@ Game::Game() {
     LoadSound("res/clips/bagel_0.wav"),
     LoadSound("res/clips/bagel_1.wav")
   };
+  
   tetrisSounds = {
     LoadSound("res/clips/tetris_0.wav"),
     LoadSound("res/clips/tetris_1.wav"),
@@ -50,6 +51,7 @@ Game::Game() {
   };
   
   dependencySounds = {
+    LoadSound("res/clips/dependency_3.wav"),
     LoadSound("res/clips/dependency_0.wav"),
     LoadSound("res/clips/dependency_1.wav"),
     LoadSound("res/clips/dependency_2.wav"),
@@ -57,9 +59,6 @@ Game::Game() {
     LoadSound("res/clips/dependency_5.wav"),
     LoadSound("res/clips/dependency_6.wav"),
   };
-  
-  johnnyDependencySound = LoadSound("res/clips/dependency_3.wav");
-  
   
   gameGrid = createGrid();
   scene = Scene::MainMenu;
@@ -679,7 +678,7 @@ bool CellDissolveAnimation::invoke() {
       }
       game->scene = Game::Scene::GameOver;
     }
-
+    
     return true;
   }
   if (game->frameCount % 4 == 0) {
@@ -698,11 +697,7 @@ bool LockInAnimation::invoke() {
     game->dependencies = game->findLongBarDependencies();
     if (game->dependencies > 1 && game->dependencies > prev) {
       
-      if (game->dependencies >= 3 + 1) {
-        PlaySound(game->johnnyDependencySound);
-      } else {
-        game->playBoomDependency();
-      }
+      game->playBoomDependency();
       std::time_t now = std::time(nullptr);
       std::cout << "\033[1;32mDependency created\033[0m at " << std::asctime(std::localtime(&now));
     }

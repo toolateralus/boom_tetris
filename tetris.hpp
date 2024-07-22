@@ -213,16 +213,22 @@ struct Game {
   void saveTetromino();
   
   void playBoomDependency() const {
-    auto i = randInt(dependencySounds.size());
-    PlaySound(dependencySounds[i]);
+    auto i = randInt(dependencySounds.size() - 1);
+    auto sound = dependencySounds[i];
+    SetSoundVolume(sound, GetMasterVolume() + 0.25f);
+    PlaySound(sound);
   }
   void playBoomTetris() const {
-    auto i = randInt(tetrisSounds.size());
-    PlaySound(tetrisSounds[i]);
+    auto i = randInt(tetrisSounds.size() - 1);
+    auto sound = tetrisSounds[i];
+    SetSoundVolume(sound, GetMasterVolume() + 0.25f);
+    PlaySound(sound);
   }
   void playBoomBagel() const {
-    auto i = randInt(bagelSounds.size());
-    PlaySound(bagelSounds[i]);
+    auto i = randInt(bagelSounds.size() - 1);
+    auto sound = bagelSounds[i];
+    SetSoundVolume(sound, GetMasterVolume() + 0.25f);
+    PlaySound(sound);
   }
   
   HorizontalInput delayedAutoShift();
