@@ -330,12 +330,11 @@ Game::~Game() {
 }
 
 void Game::reset() {
-
+  gameGrid = createGrid();
   downLocked = false;
   score = 0;
   animation_queue.clear();
   frameCount = 0;
-  mode = Mode::Normal;
   level = startLevel;
   gravity = gravityLevels[level];
   linesClearedThisLevel = 0;
@@ -343,9 +342,7 @@ void Game::reset() {
   board = {}; // reset the grid state.
   elapsed = {};
   tetromino = nullptr;
-
   setNextShape();
-  gameGrid = createGrid();
 }
 
 HorizontalInput Game::delayedAutoShift() {

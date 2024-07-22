@@ -54,6 +54,7 @@ void setupMenuButtons(Game &game) {
   }
   auto _40LineTxt =
       mainMenuGrid.emplace_element<Button>(pos, size, "40 lines", [&]() {
+        game.mode = Game::Mode::FortyLines;
         game.reset();
         game.mode = Game::Mode::FortyLines;
         game.level = 5;
