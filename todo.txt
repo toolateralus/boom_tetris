@@ -6,8 +6,3 @@ better ui:
 	- background
 - main menu:
 	- select mode, the options
-	
-	- a better picture for the background,
-		maybe make an image that's a full tetris board with a bunch of holes and dependencies,
-		where the holes and dependencies spell out 'Begal Tetris'
-		also use a much lower resolution than currently, because it takes a second for it to load that massive bagel image.
