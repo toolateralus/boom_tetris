@@ -434,9 +434,6 @@ struct Slider : Element {
                       Vector2 &handlePosition) {
     static Vector2 lastMousePos = {};
 
-    DrawCircleLines(currentMousePos.x, currentMousePos.y, 25.f, WHITE);
-    DrawCircleLines(handlePosition.x, handlePosition.y, 1.5f, ORANGE);
-
     if (CheckCollisionCircles(handlePosition, handleRadius * 1.5f,
                               currentMousePos, handleRadius * 25.0f)) {
       if (!isDragging && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
@@ -448,23 +445,25 @@ struct Slider : Element {
     }
 
     if (isDragging) {
+      
+      float newValue = value;
       Vector2 mouseDelta = {currentMousePos.x - lastMousePos.x,
                             currentMousePos.y - lastMousePos.y};
       if (orientation == Orientation::Horizontal) {
         float deltaNormalized =
             mouseDelta.x / (state.size.width * barWidth - 2 * handleRadius);
-        value += deltaNormalized * (max - min);
+        newValue += deltaNormalized * (max - min);
       } else {
         float deltaNormalized =
             mouseDelta.y / (state.size.height * barHeight - 2 * handleRadius);
-        value += deltaNormalized * (max - min);
+        newValue += deltaNormalized * (max - min);
       }
-
+      value = std::max(min, std::min(newValue, max));
+      
       if (onValueChanged) {
         onValueChanged(value);
       }
-
-      value = std::max(min, std::min(value, max));
+      
       lastMousePos = currentMousePos;
     }
 
