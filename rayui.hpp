@@ -531,7 +531,11 @@ struct AnimatedImage : Element {
     std::reverse(frames.begin(), frames.end());
     loadedFromPaths = true;
   };
-
+  AnimatedImage(Position pos, Size size, std::vector<Texture2D> images)
+      : Element(pos, size), frames(images) {
+  };
+  
+  
   ~AnimatedImage() {
     if (loadedFromPaths) {
       for (auto &tex : frames) {
