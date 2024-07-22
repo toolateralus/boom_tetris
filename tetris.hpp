@@ -2,7 +2,9 @@
 #include "raylib.h"
 
 #include "rayui.hpp"
+#include <array>
 #include <chrono>
+#include <cstddef>
 #include <cstdlib>
 #include <ctime>
 #include <deque>
@@ -10,12 +12,8 @@
 #include <stdio.h>
 #include <unordered_map>
 #include <vector>
-#include <array>
-#include <cstddef>
 
 #include "score.hpp"
-
-
 
 constexpr int boardWidth = 10;
 constexpr int boardHeight = 20;
@@ -24,9 +22,7 @@ constexpr int boardHeight = 20;
 
 using namespace rayui;
 
-
 namespace boom_tetris {
-  
 
 // the direction of user input.
 enum struct Direction { None, Left, Right, Down };
@@ -60,7 +56,7 @@ struct Cell {
 };
 struct Board {
   std::array<std::array<Cell, boardWidth>, boardHeight> rows = {};
-  Cell &operator[](int x, int y) ;
+  Cell &operator[](int x, int y);
   Cell &get_cell(int x, int y) noexcept { return (*this)[x, y]; }
   auto begin() noexcept { return rows.begin(); }
   auto end() noexcept { return rows.end(); }
@@ -69,7 +65,6 @@ struct Board {
   // know what side we hit so we can depenetrate in the opposite direction.
   bool collides(Vec2 pos) noexcept;
 };
-
 
 // a group of cells the user is currently in control of.
 struct Tetromino {
@@ -95,17 +90,17 @@ struct Tetromino {
 struct Game;
 
 struct PieceViewer : Element {
-  Game& game;
+  Game &game;
   virtual void draw(rayui::LayoutState &state) override;
-  PieceViewer(Position position, Size size, Game& game)
+  PieceViewer(Position position, Size size, Game &game)
       : Element(position, size), game(game) {}
 };
 struct BoardCell : Element {
-  Game& game;
-  Cell& cell;
+  Game &game;
+  Cell &cell;
   virtual void draw(rayui::LayoutState &state) override;
-  BoardCell(Position position, Game& game, Cell& cell)
-      : Element(position, {1,1}), game(game), cell(cell) {}
+  BoardCell(Position position, Game &game, Cell &cell)
+      : Element(position, {1, 1}), game(game), cell(cell) {}
 };
 
 struct Animation {
@@ -114,45 +109,46 @@ struct Animation {
   virtual ~Animation() {}
   virtual bool invoke() = 0;
 };
-struct CellDissolveAnimation: Animation {
-  explicit CellDissolveAnimation(Game *game, std::vector<size_t> lines, size_t softDropHeight)
-      : Animation(game), lines(std::move(lines)), softDropHeight(softDropHeight) {}
+struct CellDissolveAnimation : Animation {
+  explicit CellDissolveAnimation(Game *game, std::vector<size_t> lines,
+                                 size_t softDropHeight)
+      : Animation(game), lines(std::move(lines)),
+        softDropHeight(softDropHeight) {}
   size_t softDropHeight;
   std::vector<size_t> lines;
   int cellIdx = 0;
   bool invoke() override;
 };
-struct LockInAnimation: Animation {
+struct LockInAnimation : Animation {
   explicit LockInAnimation(Game *game, int pieceHeight)
-    : Animation(game), pieceHeight(pieceHeight) {}
+      : Animation(game), pieceHeight(pieceHeight) {}
   size_t softDropHeight;
   int frameCount = 0;
   int pieceHeight = 0;
   bool invoke() override;
 };
 
-
 struct Game {
   Sound shiftSound;
   Sound rotateSound;
   Sound lockInSound;
   Sound clearLineSound;
-  
+
   std::string *volumeLabel = new std::string();
-  
+
   bool downLocked = false;
-  
+
   ScoreFile scoreFile;
   size_t frameCount = 0;
   Grid gameGrid;
-  
+
   std::deque<std::unique_ptr<Animation>> animation_queue = {};
-  
+
   enum struct Mode {
-    Normal,// high score
+    Normal,     // high score
     FortyLines, // timed 40 line clear.
   } mode = Mode::Normal;
-    
+
   // the play grid.
   Board board;
   // the upcoming shape & color of the next tetromino.
@@ -179,17 +175,13 @@ struct Game {
   size_t score = 0;
   // the level this latest game started at.
   size_t startLevel = 0;
-  
+
   size_t linesClearedThisLevel = 0;
   size_t totalLinesCleared = 0;
-  
-  // used for swapping between menus and the game.  
-  enum struct Scene {
-    MainMenu,
-    GameOver,
-    InGame
-  } scene;
-  
+
+  // used for swapping between menus and the game.
+  enum struct Scene { MainMenu, GameOver, InGame } scene;
+
   Game();
   ~Game();
 
@@ -197,12 +189,12 @@ struct Game {
   Grid createGrid();
   void drawGame();
   int findGamepad() const;
-  
+
   void generateGravityLevels(int totalLevels);
 
   void setNextShape();
   void processGameLogic();
-  
+
   std::vector<size_t> checkLines();
   void applyLineClearScoreAndLevel(size_t linesCleared);
   void applySoftDropScore(size_t softDropHeight);
@@ -211,8 +203,9 @@ struct Game {
   HorizontalInput delayedAutoShift();
   void cleanTetromino(std::unique_ptr<Tetromino> &tetromino);
   bool resolveCollision(std::unique_ptr<Tetromino> &tetromino);
-  ShapeIndices getTransformedBlocks(std::unique_ptr<Tetromino> &tetromino) const;
+  ShapeIndices
+  getTransformedBlocks(std::unique_ptr<Tetromino> &tetromino) const;
   std::shared_ptr<rayui::Grid> createBoardGrid();
 };
 
-}
+} // namespace boom_tetris

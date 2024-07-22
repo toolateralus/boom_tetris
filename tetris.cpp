@@ -37,9 +37,11 @@ Game::Game() {
 }
 
 void Game::processGameLogic() {
-  
-  elapsed += std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::seconds(1)) / 60;
-  
+
+  elapsed += std::chrono::duration_cast<std::chrono::milliseconds>(
+                 std::chrono::seconds(1)) /
+             60;
+
   frameCount++;
   // if an animation is active, we pause the game.
   if (!animation_queue.empty()) {
@@ -63,11 +65,10 @@ void Game::processGameLogic() {
       return;
     }
   }
-  
+
   if (downLocked && IsKeyPressed(KEY_DOWN)) {
     downLocked = false;
   }
-  
 
   // used to increment until >= 1 so we can have sub-frame velocity for the
   // tetromino.
@@ -161,11 +162,13 @@ void Game::processGameLogic() {
   // if we landed, we leave the cells where they are and spawn a new piece.
   // also check for line clears and tetrises.
   if (landed) {
-    animation_queue.push_back(std::make_unique<LockInAnimation>(this, tetromino->position.y));
+    animation_queue.push_back(
+        std::make_unique<LockInAnimation>(this, tetromino->position.y));
     auto linesToClear = checkLines();
     if (linesToClear.size() > 0) {
       ::PlaySound(clearLineSound);
-      animation_queue.push_back(std::make_unique<CellDissolveAnimation>(this, linesToClear, tetromino->softDropHeight));
+      animation_queue.push_back(std::make_unique<CellDissolveAnimation>(
+          this, linesToClear, tetromino->softDropHeight));
     } else {
       ::PlaySound(lockInSound);
       applySoftDropScore(tetromino->softDropHeight);
@@ -222,28 +225,25 @@ Grid Game::createGrid() {
   Grid grid({26, 20});
   grid.style.background = BG_COLOR;
 
-  auto linesLabel =
-      grid.emplace_element<Label>(Position{1, 1}, Size{7, 1});
+  auto linesLabel = grid.emplace_element<Label>(Position{1, 1}, Size{7, 1});
   linesLabel->text = "Lines:";
   grid.emplace_element<NumberText>(Position{1, 2}, Size{7, 1},
                                    &totalLinesCleared, WHITE);
-  
+
   if (mode == Mode::FortyLines) {
     auto timer_label = grid.emplace_element<Label>(Position{1, 4}, Size{5, 1});
     timer_label->text = "Timer";
-    auto timer_text = grid.emplace_element<TimeText>(Position{1, 5}, Size{1, 1}, &elapsed, WHITE);
+    auto timer_text = grid.emplace_element<TimeText>(Position{1, 5}, Size{1, 1},
+                                                     &elapsed, WHITE);
   }
-  
-  
+
   auto playfield = createBoardGrid();
   playfield->position = {8, 0};
   playfield->size = {10, 20};
   grid.elements.push_back(playfield);
-  
+
   int yPos = 1, height = 1;
-  
-  
-  
+
   auto topLabel =
       grid.emplace_element<Label>(Position{19, yPos}, Size{7, height});
   yPos += height;
@@ -272,7 +272,7 @@ Grid Game::createGrid() {
   pieceViewer->style.background = BLACK;
   yPos += height;
   yPos += 1;
-  
+
   height = 1;
   auto levelLabel =
       grid.emplace_element<Label>(Position{19, yPos}, Size{7, height});
@@ -282,24 +282,24 @@ Grid Game::createGrid() {
                                    WHITE);
   yPos += height;
   yPos += 1;
-  
 
   auto mainMenuButton = grid.emplace_element<Button>(
       Position{19, yPos}, Size{5, height}, "Main Menu",
       std::function<void()>([&]() { scene = Scene::MainMenu; }));
   mainMenuButton->fontSize = 24;
   yPos += height;
-  
-  // somehow this causes a crash (pressing the reset button, not making it) and windows is impossible to debug so I can't even breakpoint or find where it happens.
-  // Somewhere in a windows api.
-  // pressing main menu and re-entering is easy enough.
-  #ifndef _WIN32
+
+// somehow this causes a crash (pressing the reset button, not making it) and
+// windows is impossible to debug so I can't even breakpoint or find where it
+// happens. Somewhere in a windows api. pressing main menu and re-entering is
+// easy enough.
+#ifndef _WIN32
   auto resetButton =
       grid.emplace_element<Button>(Position{19, yPos}, Size{5, height}, "Reset",
                                    std::function<void()>([&]() { reset(); }));
   resetButton->fontSize = 24;
   yPos += height;
-  #endif
+#endif
 
   return grid;
 }
@@ -307,12 +307,8 @@ Grid Game::createGrid() {
 bool Game::resolveCollision(std::unique_ptr<Tetromino> &tetromino) {
   for (const auto block : getTransformedBlocks(tetromino)) {
     auto pos = block.pos;
-    if (
-      pos.y >= boardHeight ||
-      pos.x < 0 ||
-      pos.x >= boardWidth ||
-      board.collides(pos)
-    ) {
+    if (pos.y >= boardHeight || pos.x < 0 || pos.x >= boardWidth ||
+        board.collides(pos)) {
       tetromino->position = tetromino->prev_position;
       tetromino->orientation = tetromino->prev_orientation;
       return true;
@@ -324,18 +320,17 @@ bool Game::resolveCollision(std::unique_ptr<Tetromino> &tetromino) {
 bool Board::collides(Vec2 pos) noexcept {
   int x = pos.x;
   int y = pos.y;
-  return
-    y < (int)rows.size() &&
-    y >= 0 &&
-    x < (int)rows[y].size() &&
-    x >= 0 &&
-    !get_cell(x, y).empty;
+  return y < (int)rows.size() && y >= 0 && x < (int)rows[y].size() && x >= 0 &&
+         !get_cell(x, y).empty;
 }
 
-Game::~Game() { UnloadTexture(blockTexture); delete volumeLabel; }
+Game::~Game() {
+  UnloadTexture(blockTexture);
+  delete volumeLabel;
+}
 
 void Game::reset() {
-  
+
   downLocked = false;
   score = 0;
   animation_queue.clear();
@@ -417,7 +412,7 @@ HorizontalInput Game::delayedAutoShift() {
   return HorizontalInput(moveLeft, moveRight);
 }
 
-Cell &Board::operator[](int x, int y)  {
+Cell &Board::operator[](int x, int y) {
   if (rows.size() > y) {
     auto &row = rows[y];
     if (row.size() > x) {
@@ -427,7 +422,8 @@ Cell &Board::operator[](int x, int y)  {
   throw std::runtime_error("board subscript out of range");
 }
 
-ShapeIndices Game::getTransformedBlocks(std::unique_ptr<Tetromino> &tetromino) const {
+ShapeIndices
+Game::getTransformedBlocks(std::unique_ptr<Tetromino> &tetromino) const {
   ShapeIndices indices;
   auto pattern = shapePatterns.at(tetromino->shape);
   for (const auto &block : pattern) {
@@ -528,7 +524,8 @@ void BoardCell::draw(rayui::LayoutState &state) {
   if (!cell.empty) {
     auto destRect = Rectangle{state.position.x, state.position.y,
                               state.size.width, state.size.height};
-    Rectangle srcRect = {(float)cell.imageIdx * 8, (float)(game.level % 10) * 8, 8, 8};
+    Rectangle srcRect = {(float)cell.imageIdx * 8, (float)(game.level % 10) * 8,
+                         8, 8};
     DrawTexturePro(game.blockTexture, srcRect, destRect, {0, 0}, 0, WHITE);
   }
 };
@@ -587,7 +584,8 @@ void PieceViewer::draw(rayui::LayoutState &state) {
     auto destY = nextBlockAreaCenterY + block.pos.y * blockSize;
     auto destRect = Rectangle{(float)destX, (float)destY, (float)blockSize,
                               (float)blockSize};
-    Rectangle srcRect = {(float)block.imageIdx * 8, (float)(game.level % 10) * 8, 8, 8};
+    Rectangle srcRect = {(float)block.imageIdx * 8,
+                         (float)(game.level % 10) * 8, 8, 8};
     DrawTexturePro(game.blockTexture, srcRect, destRect, {0, 0}, 0, WHITE);
   }
 };

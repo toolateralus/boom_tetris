@@ -20,29 +20,24 @@ struct Size {
   int width, height;
 };
 enum struct FillType {
-  // Makes the element as large as can be within it's rect while maintaining aspect ratio.
+  // Makes the element as large as can be within it's rect while maintaining
+  // aspect ratio.
   Fit,
-  // Makes the element as small as can be to fill it's entire rect while maintaining aspect ratio.
+  // Makes the element as small as can be to fill it's entire rect while
+  // maintaining aspect ratio.
   Fill,
   // Makes the element's width as large as it's rect and maintains aspect ratio.
   FillHorizontal,
-  // Makes the element's height as large as it's rect and maintains aspect ratio.
+  // Makes the element's height as large as it's rect and maintains aspect
+  // ratio.
   FillVertical,
   // Makes the element the same size as original, regardless of it's rect size.
   None,
   // Stretches elements width and height to fill it's entire rect.
   Stretch
 };
-enum struct VAlignment {
-  Top,
-  Bottom,
-  Center
-};
-enum struct HAlignment {
-  Left,
-  Right,
-  Center
-};
+enum struct VAlignment { Top, Bottom, Center };
+enum struct HAlignment { Left, Right, Center };
 
 // Color and border information to describe the appearance of an element.
 struct Style {
@@ -93,42 +88,48 @@ struct LayoutState {
     position.x += margin.left;
     position.y += margin.top;
   }
-  void applyFillToRect(FillType type, Rectangle sourceRect, Rectangle &destRect) {
-    switch(type) {
-      case FillType::Fit: {
-        auto scale = std::min(size.width / sourceRect.width,
-                              size.height / sourceRect.height); 
-        destRect.height = sourceRect.height * scale;
-        destRect.width = sourceRect.width * scale;
-        break;
-      } case FillType::Fill: {
-        auto scale = std::max(size.width / sourceRect.width,
-                              size.height / sourceRect.height); 
-        destRect.height = sourceRect.height * scale;
-        destRect.width = sourceRect.width * scale;
-        break;
-      } case FillType::FillHorizontal: {
-        auto scale = size.width / sourceRect.width; 
-        destRect.height = sourceRect.height * scale;
-        destRect.width = size.width;
-        break;
-      } case FillType::FillVertical: {
-        auto scale = size.height / sourceRect.height; 
-        destRect.height = size.height;
-        destRect.width = sourceRect.width * scale;
-        break;
-      } case FillType::None: {
-        destRect.height = sourceRect.height;
-        destRect.width = sourceRect.width;
-        break;
-      } case FillType::Stretch: {
-        destRect.height = size.height;
-        destRect.width = size.width;
-        break;
-      }
+  void applyFillToRect(FillType type, Rectangle sourceRect,
+                       Rectangle &destRect) {
+    switch (type) {
+    case FillType::Fit: {
+      auto scale = std::min(size.width / sourceRect.width,
+                            size.height / sourceRect.height);
+      destRect.height = sourceRect.height * scale;
+      destRect.width = sourceRect.width * scale;
+      break;
+    }
+    case FillType::Fill: {
+      auto scale = std::max(size.width / sourceRect.width,
+                            size.height / sourceRect.height);
+      destRect.height = sourceRect.height * scale;
+      destRect.width = sourceRect.width * scale;
+      break;
+    }
+    case FillType::FillHorizontal: {
+      auto scale = size.width / sourceRect.width;
+      destRect.height = sourceRect.height * scale;
+      destRect.width = size.width;
+      break;
+    }
+    case FillType::FillVertical: {
+      auto scale = size.height / sourceRect.height;
+      destRect.height = size.height;
+      destRect.width = sourceRect.width * scale;
+      break;
+    }
+    case FillType::None: {
+      destRect.height = sourceRect.height;
+      destRect.width = sourceRect.width;
+      break;
+    }
+    case FillType::Stretch: {
+      destRect.height = size.height;
+      destRect.width = size.width;
+      break;
+    }
     }
   }
-  void applyVAlignmentToRect(VAlignment type, Rectangle& destRect) {
+  void applyVAlignmentToRect(VAlignment type, Rectangle &destRect) {
     switch (type) {
     case VAlignment::Top:
       destRect.y = position.y;
@@ -137,11 +138,11 @@ struct LayoutState {
       destRect.y = position.y + size.height - destRect.height;
     case VAlignment::Center:
       break;
-      destRect.y =  position.y + (size.height - destRect.height) / 2;
+      destRect.y = position.y + (size.height - destRect.height) / 2;
       break;
     }
   }
-  void applyHAlignmentToRect(HAlignment type, Rectangle& destRect) {
+  void applyHAlignmentToRect(HAlignment type, Rectangle &destRect) {
     switch (type) {
     case HAlignment::Left:
       destRect.x = position.x;
@@ -150,7 +151,7 @@ struct LayoutState {
       destRect.x = position.x + size.width - destRect.width;
       break;
     case HAlignment::Center:
-      destRect.x =  position.x + (size.width - destRect.width) / 2;
+      destRect.x = position.x + (size.width - destRect.width) / 2;
       break;
     }
   }
@@ -347,8 +348,9 @@ struct Image : Element {
     state.applyFillToRect(fillType, imageSourceRect, destRect);
     state.applyVAlignmentToRect(vAlignment, destRect);
     state.applyHAlignmentToRect(hAlignment, destRect);
-    DrawTexturePro(texture, imageSourceRect, destRect, origin, rotation, style.foreground);
-  }    
+    DrawTexturePro(texture, imageSourceRect, destRect, origin, rotation,
+                   style.foreground);
+  }
   ~Image() {
     if (loadedFromPath)
       UnloadTexture(texture);
@@ -405,12 +407,12 @@ struct Slider : Element {
   using OnValueChangedCallback = std::function<void(float new_value)>;
 
   OnValueChangedCallback onValueChanged = nullptr;
-  
+
   Slider(Position pos, Size size, std::string *text, int min, float max,
          float init_value, OnValueChangedCallback onValueChanged)
       : Element(pos, size), max(max), min(min), value(init_value), label(text),
         onValueChanged(onValueChanged) {}
-        
+
   Slider(Position position, Size size) : Element(position, size) {}
   float min = 0, max = 1;
   float value = 0;

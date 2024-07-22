@@ -3,10 +3,9 @@
 #include <fstream>
 
 #ifdef _WIN32
-  #include "windows.h"
+#include "windows.h"
 #endif
 #include <iostream>
-
 
 void ScoreFile::read() {
   std::string filename = getScoreFilePath();
@@ -33,26 +32,27 @@ void ScoreFile::write() {
   }
 }
 std::string ScoreFile::getScoreFilePath() {
-    std::filesystem::path path;
+  std::filesystem::path path;
 
-    // Use std::filesystem to find the appropriate app data directory
-    #ifdef _WIN32
-    auto appDataPath = std::getenv("APPDATA");
-    if (appDataPath != nullptr) {
-        path = std::filesystem::path(appDataPath) / "boom_tetris" / "score";
-    }
-    #else
-    auto homePath = std::getenv("HOME");
-    if (homePath != nullptr) {
-        path = std::filesystem::path(homePath) / ".config" / "boom_tetris" / "score";
-    }
-    #endif
-    // Create the directory if it doesn't exist
-    if (!std::filesystem::exists(path.parent_path())) {
-        std::filesystem::create_directories(path.parent_path());
-    }
+// Use std::filesystem to find the appropriate app data directory
+#ifdef _WIN32
+  auto appDataPath = std::getenv("APPDATA");
+  if (appDataPath != nullptr) {
+    path = std::filesystem::path(appDataPath) / "boom_tetris" / "score";
+  }
+#else
+  auto homePath = std::getenv("HOME");
+  if (homePath != nullptr) {
+    path =
+        std::filesystem::path(homePath) / ".config" / "boom_tetris" / "score";
+  }
+#endif
+  // Create the directory if it doesn't exist
+  if (!std::filesystem::exists(path.parent_path())) {
+    std::filesystem::create_directories(path.parent_path());
+  }
 
-    return path.string();
+  return path.string();
 }
 
 void ScoreFile::createDirectoryAndFile(const std::string &path) {

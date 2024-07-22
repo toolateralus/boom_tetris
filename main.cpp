@@ -11,7 +11,8 @@ Grid gameOverGrid = {{24, 24}};
 
 int drawMenu(Game &game) {
   ClearBackground(BLACK);
-  LayoutState state = {{0, 0}, {(float)GetScreenWidth(), (float)GetScreenHeight()}};
+  LayoutState state = {{0, 0},
+                       {(float)GetScreenWidth(), (float)GetScreenHeight()}};
   mainMenuGrid.draw(state);
   return true;
 }
@@ -31,12 +32,11 @@ void gamepadLogger(Game &game) {
 void setupMenuButtons(Game &game) {
   auto pos = Position{1, 21};
   auto size = Size{2, 2};
-  auto image = mainMenuGrid.emplace_element<rayui::Image>(Position{0,0}, mainMenuGrid.subdivisions, std::string("res/title.png"));
+  auto image = mainMenuGrid.emplace_element<rayui::Image>(
+      Position{0, 0}, mainMenuGrid.subdivisions, std::string("res/title.png"));
   image->fillType = rayui::FillType::FillVertical;
   image->hAlignment = HAlignment::Center;
-  
 
-  
   mainMenuGrid.emplace_element<Rect>(Position{0, 23}, Size{1, 4},
                                      Style{GetColor(0x2b2b2baa), WHITE},
                                      LayoutKind::StretchHorizontal);
@@ -62,13 +62,14 @@ void setupMenuButtons(Game &game) {
         game.gravity = game.gravityLevels[game.level];
       });
   _40LineTxt->fontSize = 16;
-  
-  
-  *game.volumeLabel= "Volume: 100";
-  auto volumeSlider = mainMenuGrid.emplace_element<Slider>(Position{1, 1}, Size{2,2}, game.volumeLabel, 0, 100, 100, [&](float volume){
-    *game.volumeLabel = "Volume: " + std::to_string((int)volume);
-    SetMasterVolume(volume / 100.0f);
-  });
+
+  *game.volumeLabel = "Volume: 100";
+  auto volumeSlider = mainMenuGrid.emplace_element<Slider>(
+      Position{1, 1}, Size{2, 2}, game.volumeLabel, 0, 100, 100,
+      [&](float volume) {
+        *game.volumeLabel = "Volume: " + std::to_string((int)volume);
+        SetMasterVolume(volume / 100.0f);
+      });
   volumeSlider->style.background = MAGENTA;
   volumeSlider->style.foreground = RED;
   volumeSlider->fontSize = 24;
@@ -76,30 +77,36 @@ void setupMenuButtons(Game &game) {
 
 void setupGameOverMenu(Game &game) {
   auto size = Size{2, 2};
-  
-  gameOverGrid.emplace_element<Rect>(Position{3, 3}, Size{18, 18}, Style{GetColor(0x2b2b2bcc), WHITE});
-  
+
+  gameOverGrid.emplace_element<Rect>(Position{3, 3}, Size{18, 18},
+                                     Style{GetColor(0x2b2b2bcc), WHITE});
+
   auto label = gameOverGrid.emplace_element<Label>(Position(8, 5), Size(2, 2),
-                                                    "Game Over", RED);
-                                                   
-  gameOverGrid.emplace_element<Label>(Position{9, 8}, Size{1,1}, "Score:", WHITE);
-  gameOverGrid.emplace_element<NumberText>(Position{11, 9}, Size{1,1}, &game.score, MAGENTA);
-  
-  gameOverGrid.emplace_element<Label>(Position{9, 11}, Size{1,1}, "Time:", WHITE);
-  gameOverGrid.emplace_element<TimeText>(Position{11, 12}, Size{1,1}, &game.elapsed, GREEN);
-  
-  gameOverGrid.emplace_element<Label>(Position{9, 14}, Size{1,1}, "Lines:", WHITE);
-  gameOverGrid.emplace_element<NumberText>(Position{11, 15}, Size{1,1}, &game.totalLinesCleared, ORANGE);
-  
-  gameOverGrid.emplace_element<Button>(Position{7, 17}, Size{5,2}, "Main Menu", [&](){
-    game.scene = Game::Scene::MainMenu;
-  });
-  gameOverGrid.emplace_element<Button>(Position{13, 17}, Size{5,2}, "Retry", [&](){
-    game.reset();
-    game.scene = Game::Scene::InGame;
-  });
-  
-  
+                                                   "Game Over", RED);
+
+  gameOverGrid.emplace_element<Label>(Position{9, 8}, Size{1, 1},
+                                      "Score:", WHITE);
+  gameOverGrid.emplace_element<NumberText>(Position{11, 9}, Size{1, 1},
+                                           &game.score, MAGENTA);
+
+  gameOverGrid.emplace_element<Label>(Position{9, 11}, Size{1, 1},
+                                      "Time:", WHITE);
+  gameOverGrid.emplace_element<TimeText>(Position{11, 12}, Size{1, 1},
+                                         &game.elapsed, GREEN);
+
+  gameOverGrid.emplace_element<Label>(Position{9, 14}, Size{1, 1},
+                                      "Lines:", WHITE);
+  gameOverGrid.emplace_element<NumberText>(Position{11, 15}, Size{1, 1},
+                                           &game.totalLinesCleared, ORANGE);
+
+  gameOverGrid.emplace_element<Button>(
+      Position{7, 17}, Size{5, 2}, "Main Menu",
+      [&]() { game.scene = Game::Scene::MainMenu; });
+  gameOverGrid.emplace_element<Button>(Position{13, 17}, Size{5, 2}, "Retry",
+                                       [&]() {
+                                         game.reset();
+                                         game.scene = Game::Scene::InGame;
+                                       });
 }
 int main(int argc, char *argv[]) {
   srand(time(0));
@@ -107,12 +114,12 @@ int main(int argc, char *argv[]) {
   InitAudioDevice();
   SetWindowState(FLAG_WINDOW_RESIZABLE);
   SetTargetFPS(60);
-  
+
   BeginDrawing();
   ClearBackground(BG_COLOR);
   DrawText("Loading Bagles & Cream Cheese\n", 124, 276, 36, WHITE);
   DrawText("      please wait...", 124, 300, 36, GREEN);
-  
+
   EndDrawing();
   if (WindowShouldClose()) {
     return 0;
@@ -126,23 +133,23 @@ int main(int argc, char *argv[]) {
     BeginDrawing();
     ClearBackground(BG_COLOR);
     switch (game.scene) {
-      case Game::Scene::MainMenu: {
-        drawMenu(game);
-        break;
-      }
-      case Game::Scene::GameOver: {
-        game.drawGame();
-        auto state =
-            LayoutState{0, 0, (float)GetScreenWidth(), (float)GetScreenHeight()};
-        gameOverGrid.draw(state);
-        break;
-      }
-      case Game::Scene::InGame: {
-        // gamepadLogger(game);
-        game.processGameLogic();
-        game.drawGame();
-        break;
-      }
+    case Game::Scene::MainMenu: {
+      drawMenu(game);
+      break;
+    }
+    case Game::Scene::GameOver: {
+      game.drawGame();
+      auto state =
+          LayoutState{0, 0, (float)GetScreenWidth(), (float)GetScreenHeight()};
+      gameOverGrid.draw(state);
+      break;
+    }
+    case Game::Scene::InGame: {
+      // gamepadLogger(game);
+      game.processGameLogic();
+      game.drawGame();
+      break;
+    }
     }
     EndDrawing();
   }
