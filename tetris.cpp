@@ -5,6 +5,7 @@
 #include <functional>
 #include <iostream>
 #include <memory>
+#include <random>
 #include <raylib.h>
 #include <stdexcept>
 #include <string>
@@ -60,11 +61,16 @@ Game::Game() {
     LoadSound("res/clips/dependency_6.wav"),
   };
   
+  
+  unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+    
+  std::shuffle(dependencySounds.begin(), dependencySounds.end(), std::default_random_engine(seed));
+  std::shuffle(tetrisSounds.begin(), tetrisSounds.end(), std::default_random_engine(seed));
+  std::shuffle(bagelSounds.begin(), bagelSounds.end(), std::default_random_engine(seed));
+  
   gameGrid = createGrid();
   scene = Scene::MainMenu;
   scoreFile.read();
-  
-  
   
   generateGravityLevels(255);
 }

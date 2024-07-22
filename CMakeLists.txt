@@ -19,6 +19,7 @@ set(PROJECT_SOURCES
     main.cpp
 )
 
+
 # Add source to this project's executable using the globbed files
 add_executable (boom_tetris ${PROJECT_SOURCES})
 file(COPY ${CMAKE_SOURCE_DIR}/res DESTINATION ${CMAKE_BINARY_DIR})
@@ -44,5 +45,9 @@ if (NOT raylib_FOUND)
   endif()
 endif()
 
-target_link_libraries(boom_tetris PRIVATE raylib)
 target_compile_features(boom_tetris PRIVATE cxx_std_23)
+
+target_link_libraries(boom_tetris PRIVATE raylib)
+target_compile_options(boom_tetris PRIVATE -Os) 
+target_link_options(boom_tetris PRIVATE -s)
+target_link_options(boom_tetris PRIVATE -flto)
