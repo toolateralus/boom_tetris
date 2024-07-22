@@ -51,9 +51,9 @@ Game::Game() {
   };
   
   dependencySounds = {
-    LoadSound("res/clips/dependency_3.wav"),
     LoadSound("res/clips/dependency_0.wav"),
     LoadSound("res/clips/dependency_1.wav"),
+    LoadSound("res/clips/dependency_3.wav"),
     LoadSound("res/clips/dependency_2.wav"),
     LoadSound("res/clips/dependency_4.wav"),
     LoadSound("res/clips/dependency_5.wav"),
@@ -267,7 +267,7 @@ Grid Game::createGrid() {
     auto timer_text = grid.emplace_element<TimeText>(Position{1, 5}, Size{1, 1},
                                                      &elapsed, WHITE);
   }
-
+  
   auto playfield = createBoardGrid();
   playfield->position = {8, 0};
   playfield->size = {10, 20};
@@ -283,7 +283,7 @@ Grid Game::createGrid() {
                                    &scoreFile.high_score, WHITE);
   yPos += height;
   yPos += 1;
-
+  
   auto scoreLabel =
       grid.emplace_element<Label>(Position{19, yPos}, Size{7, height});
   yPos += height;
@@ -313,7 +313,7 @@ Grid Game::createGrid() {
                                    WHITE);
   yPos += height;
   yPos += 1;
-
+  
   auto mainMenuButton = grid.emplace_element<Button>(
       Position{19, yPos}, Size{5, height}, "Quit",
       std::function<void()>([&]() { scene = Scene::GameOver; }),

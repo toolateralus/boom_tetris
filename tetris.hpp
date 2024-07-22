@@ -213,20 +213,20 @@ struct Game {
   void saveTetromino();
   
   void playBoomDependency() const {
-    auto i = randInt(dependencySounds.size() - 1);
-    auto sound = dependencySounds[i];
+    static int i = 0;
+    auto sound = dependencySounds[i++ % (dependencySounds.size() - 1)];
     SetSoundVolume(sound, GetMasterVolume() + 0.25f);
     PlaySound(sound);
   }
   void playBoomTetris() const {
-    auto i = randInt(tetrisSounds.size() - 1);
-    auto sound = tetrisSounds[i];
+    static int i = 0;
+    auto sound = tetrisSounds[i++ % (tetrisSounds.size() - 1)];
     SetSoundVolume(sound, GetMasterVolume() + 0.25f);
     PlaySound(sound);
   }
   void playBoomBagel() const {
-    auto i = randInt(bagelSounds.size() - 1);
-    auto sound = bagelSounds[i];
+    static int i = 0;
+    auto sound = bagelSounds[i++ % (bagelSounds.size() - 1)];
     SetSoundVolume(sound, GetMasterVolume() + 0.25f);
     PlaySound(sound);
   }

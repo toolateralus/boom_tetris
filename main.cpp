@@ -79,14 +79,14 @@ struct UI {
     addTitleImageAnimation(settingsGrid);
     
     
-    settingsGrid.emplace_element<Rect>(Position{6, 15}, Size{11, 6},
+    settingsGrid.emplace_element<Rect>(Position{6, 13}, Size{11, 8},
                                        Style{GetColor(0x1b1b1bcc), WHITE},
                                        LayoutKind::None);
     
     
     *game.volumeLabel = "Volume: 100";
     auto volumeSlider = settingsGrid.emplace_element<Slider>(
-        Position{7, 17}, Size{3, 2}, game.volumeLabel, 0, 100, 100,
+        Position{7, 15}, Size{3, 2}, game.volumeLabel, 0, 100, 100,
         [&](float volume) {
           *game.volumeLabel = "Volume: " + std::to_string((int)volume);
           SetMasterVolume(volume / 100.0f);
@@ -95,6 +95,13 @@ struct UI {
     volumeSlider->style.background = MAGENTA;
     volumeSlider->style.foreground = WHITE;
     volumeSlider->fontSize = 24;
+    
+    auto bagelButton= settingsGrid.emplace_element<Button>(Position{8,16}, Size{7,2}, "Toggle Bagel Mode", [](){}, buttonStyle);
+    bagelButton->style.background = GREEN;
+    bagelButton->onClicked = [bagelButton, &game](){
+      game.bagelMode = !game.bagelMode;
+      bagelButton->style.background =  game.bagelMode ? GREEN : RED;
+    };
     
     auto pos = Position{9, 18};
     auto btn= settingsGrid.emplace_element<Button>(pos, Size{5,2}, "Back", [this](){
