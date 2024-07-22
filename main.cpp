@@ -198,13 +198,13 @@ struct UI {
 
     gameOverGrid.emplace_element<Button>(
         Position{7, 17}, Size{5, 2}, "Main Menu",
-        [&]() { game.scene = Game::Scene::MainMenu; });
-
+        [&]() { game.scene = Game::Scene::MainMenu; menu = Menu::Main; }, Style{BLACK, WHITE, BLACK, 3});
+    
     gameOverGrid.emplace_element<Button>(Position{13, 17}, Size{5, 2}, "Retry",
                                          [&]() {
                                            game.reset();
                                            game.scene = Game::Scene::InGame;
-                                         });
+                                         }, Style{BLACK, WHITE, BLACK, 3});
   }
 };
 
@@ -249,7 +249,8 @@ int main(int argc, char *argv[]) {
       break;
     }
     case Game::Scene::GameOver: {
-     
+      ui.menu = UI::Menu::GameOver;
+      ui.drawMenu(game);
       break;
     }
     case Game::Scene::InGame: {

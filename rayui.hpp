@@ -436,7 +436,7 @@ struct Slider : Element {
     static Vector2 lastMousePos = {};
 
     if (CheckCollisionCircles(handlePosition, handleRadius * 1.5f,
-                              currentMousePos, handleRadius * 25.0f)) {
+                              currentMousePos, handleRadius * 1.5f)) {
       if (!isDragging && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
         lastMousePos = currentMousePos;
         isDragging = true;

@@ -282,8 +282,9 @@ Grid Game::createGrid() {
   yPos += 1;
 
   auto mainMenuButton = grid.emplace_element<Button>(
-      Position{19, yPos}, Size{5, height}, "Main Menu",
-      std::function<void()>([&]() { scene = Scene::MainMenu; }));
+      Position{19, yPos}, Size{5, height}, "Quit",
+      std::function<void()>([&]() { scene = Scene::GameOver; }),
+      Style{BLACK, WHITE, BLACK, 3});
   mainMenuButton->fontSize = 24;
   yPos += height;
 
@@ -292,9 +293,9 @@ Grid Game::createGrid() {
 // happens. Somewhere in a windows api. pressing main menu and re-entering is
 // easy enough.
 #ifndef _WIN32
-  auto resetButton =
-      grid.emplace_element<Button>(Position{19, yPos}, Size{5, height}, "Reset",
-                                   std::function<void()>([&]() { reset(); }));
+  auto resetButton = grid.emplace_element<Button>(
+      Position{19, yPos}, Size{5, height}, "Reset",
+      std::function<void()>([&]() { reset(); }), Style{BLACK, WHITE, BLACK, 3});
   resetButton->fontSize = 24;
   yPos += height;
 #endif
