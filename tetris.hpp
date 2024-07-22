@@ -214,19 +214,19 @@ struct Game {
   
   void playBoomDependency() const {
     static int i = 0;
-    auto sound = dependencySounds[i++ % (dependencySounds.size() - 1)];
+    auto sound = dependencySounds[i++ % dependencySounds.size()];
     SetSoundVolume(sound, GetMasterVolume() + 0.25f);
     PlaySound(sound);
   }
   void playBoomTetris() const {
     static int i = 0;
-    auto sound = tetrisSounds[i++ % (tetrisSounds.size() - 1)];
+    auto sound = tetrisSounds[i++ % tetrisSounds.size()];
     SetSoundVolume(sound, GetMasterVolume() + 0.25f);
     PlaySound(sound);
   }
   void playBoomBagel() const {
     static int i = 0;
-    auto sound = bagelSounds[i++ % (bagelSounds.size() - 1)];
+    auto sound = bagelSounds[i++ % bagelSounds.size()];
     SetSoundVolume(sound, GetMasterVolume() + 0.25f);
     PlaySound(sound);
   }
