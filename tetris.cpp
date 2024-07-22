@@ -31,9 +31,16 @@ Game::Game() {
   rotateSound = LoadSound("res/rotate.wav");
   lockInSound = LoadSound("res/lock.wav");
   clearLineSound = LoadSound("res/clear.wav");
+  
+  
+  
+  
   gameGrid = createGrid();
   scene = Scene::MainMenu;
   scoreFile.read();
+  
+  
+  
   generateGravityLevels(255);
 }
 
