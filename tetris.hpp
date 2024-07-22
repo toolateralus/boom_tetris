@@ -141,6 +141,7 @@ struct Game {
   std::string *volumeLabel = new std::string();
   
   std::vector<Sound> dependencySounds = {};
+  Sound johnnyDependencySound;
   std::vector<Sound> tetrisSounds = {};
   std::vector<Sound> bagelSounds = {};
   
@@ -154,18 +155,6 @@ struct Game {
   
   std::deque<std::unique_ptr<Animation>> animation_queue = {};
   
-  void playBoomDependency() const {
-    auto i = randInt(dependencySounds.size());
-    PlaySound(dependencySounds[i]);
-  }
-  void playBoomTetris() const {
-    auto i = randInt(tetrisSounds.size());
-    PlaySound(tetrisSounds[i]);
-  }
-  void playBoomBagel() const {
-    auto i = randInt(bagelSounds.size());
-    PlaySound(bagelSounds[i]);
-  }
   
   enum struct Mode {
     Normal,     // high score
@@ -217,12 +206,25 @@ struct Game {
 
   void setNextShape();
   void processGameLogic();
-
+  
   std::vector<size_t> checkLines();
   void applyLineClearScoreAndLevel(size_t linesCleared);
   void applySoftDropScore(size_t softDropHeight);
   void saveTetromino();
-
+  
+  void playBoomDependency() const {
+    auto i = randInt(dependencySounds.size());
+    PlaySound(dependencySounds[i]);
+  }
+  void playBoomTetris() const {
+    auto i = randInt(tetrisSounds.size());
+    PlaySound(tetrisSounds[i]);
+  }
+  void playBoomBagel() const {
+    auto i = randInt(bagelSounds.size());
+    PlaySound(bagelSounds[i]);
+  }
+  
   HorizontalInput delayedAutoShift();
   void cleanTetromino(std::unique_ptr<Tetromino> &tetromino);
   bool resolveCollision(std::unique_ptr<Tetromino> &tetromino);

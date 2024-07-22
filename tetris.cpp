@@ -32,7 +32,33 @@ Game::Game() {
   lockInSound = LoadSound("res/lock.wav");
   clearLineSound = LoadSound("res/clear.wav");
   
+  bagelSounds =  {
+    LoadSound("res/clips/bagel_0.wav"),
+    LoadSound("res/clips/bagel_1.wav")
+  };
+  tetrisSounds = {
+    LoadSound("res/clips/tetris_0.wav"),
+    LoadSound("res/clips/tetris_1.wav"),
+    LoadSound("res/clips/tetris_2.wav"),
+    LoadSound("res/clips/tetris_3.wav"),
+    LoadSound("res/clips/tetris_4.wav"),
+    LoadSound("res/clips/tetris_5.wav"),
+    LoadSound("res/clips/tetris_6.wav"),
+    LoadSound("res/clips/tetris_7.wav"),
+    LoadSound("res/clips/boom_0.wav"),
+    LoadSound("res/clips/boom_1.wav"),
+  };
   
+  dependencySounds = {
+    LoadSound("res/clips/dependency_0.wav"),
+    LoadSound("res/clips/dependency_1.wav"),
+    LoadSound("res/clips/dependency_2.wav"),
+    LoadSound("res/clips/dependency_4.wav"),
+    LoadSound("res/clips/dependency_5.wav"),
+    LoadSound("res/clips/dependency_6.wav"),
+  };
+  
+  johnnyDependencySound = LoadSound("res/clips/dependency_3.wav");
   
   
   gameGrid = createGrid();
@@ -509,6 +535,7 @@ void Game::applyLineClearScoreAndLevel(size_t linesCleared) {
     score += 300 * score_level;
   } else if (linesCleared == 4) {
     score += 1200 * score_level;
+    playBoomTetris();
   }
 
   totalLinesCleared += linesCleared;
@@ -670,7 +697,12 @@ bool LockInAnimation::invoke() {
     auto prev = game->dependencies;
     game->dependencies = game->findLongBarDependencies();
     if (game->dependencies > 1 && game->dependencies > prev) {
-      game->playBoomDependency();
+      
+      if (game->dependencies >= 3 + 1) {
+        PlaySound(game->johnnyDependencySound);
+      } else {
+        game->playBoomDependency();
+      }
       std::time_t now = std::time(nullptr);
       std::cout << "\033[1;32mDependency created\033[0m at " << std::asctime(std::localtime(&now));
     }
