@@ -122,7 +122,6 @@ struct UI {
         
     image->fillType = rayui::FillType::FillVertical;
     image->hAlignment = HAlignment::Center;
-    image->style.foreground= {0,0,0,0};
     
     mainMenuGrid.emplace_element<Rect>(Position{0, 19}, Size{1, 4},
                                        Style{GetColor(0x1b1b1bcc), WHITE},
