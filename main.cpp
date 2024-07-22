@@ -11,23 +11,7 @@ Grid gameOverGrid = {{24, 24}};
 
 int drawMenu(Game &game) {
   ClearBackground(BLACK);
-  static Texture2D texture = LoadTexture("res/title.png");
-  // get full image
-  auto imageWidth = (float)texture.width;
-  auto imageHeight = (float)texture.height;
-  auto source = Rectangle{0, 0, imageWidth, imageHeight};
-  // scale image to height
-  auto screenWidth = (float)GetScreenWidth();
-  auto screenHeight = (float)GetScreenHeight();
-  auto scale = screenHeight / imageHeight;
-  auto destWidth = imageWidth * scale;
-  // center image
-  auto destX = (screenWidth - destWidth) / 2;
-  auto dest = Rectangle{destX, 0, destWidth, screenHeight};
-  DrawTexturePro(texture, source, dest, {0, 0}, 0, WHITE);
-  auto state =
-      LayoutState{PixelPosition{0, 0},
-                  PixelSize{screenWidth, screenHeight}};
+  LayoutState state = {{0, 0}, {(float)GetScreenWidth(), (float)GetScreenHeight()}};
   mainMenuGrid.draw(state);
   return true;
 }
@@ -47,6 +31,9 @@ void gamepadLogger(Game &game) {
 void setupMenuButtons(Game &game) {
   auto pos = Position{1, 21};
   auto size = Size{2, 2};
+  auto image = mainMenuGrid.emplace_element<rayui::Image>(Position{0,0}, mainMenuGrid.subdivisions, std::string("res/title.png"));
+  image->fillType = rayui::FillType::FillVertical;
+  image->hAlignment = HAlignment::Center;
   
 
   

@@ -1,8 +1,14 @@
 cmake_minimum_required (VERSION 3.8)
-
 set(CMAKE_CXX_COMPILER clang++)
-
 project ("boom_tetris")
+
+# Set default build type to Debug if not specified
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Debug)
+endif()
+
+# Set compiler flags for different build types
+set(CMAKE_CXX_FLAGS_DEBUG "-g -O0")  # Add debug flags for Clang
 
 set(PROJECT_SOURCES
     rayui.hpp
@@ -15,7 +21,6 @@ set(PROJECT_SOURCES
 
 # Add source to this project's executable using the globbed files
 add_executable (boom_tetris ${PROJECT_SOURCES})
-
 file(COPY ${CMAKE_SOURCE_DIR}/res DESTINATION ${CMAKE_BINARY_DIR})
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
@@ -40,5 +45,4 @@ if (NOT raylib_FOUND)
 endif()
 
 target_link_libraries(boom_tetris PRIVATE raylib)
-
 target_compile_features(boom_tetris PRIVATE cxx_std_23)

@@ -7,7 +7,16 @@
     {
       "type": "cppdbg",
       "request": "launch",
-      "name": "Debug",
+      "name": "Launch CPPDBG",
+      "program": "${workspaceFolder}/build/boom_tetris",
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "preLaunchTask": "make",
+      "type": "lldb",
+      "request": "launch",
+      "name": "Launch LLDB",
       "program": "${workspaceFolder}/build/boom_tetris",
       "args": [],
       "cwd": "${workspaceFolder}"
