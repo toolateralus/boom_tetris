@@ -33,7 +33,7 @@ Game::Game() {
   gameGrid = createGrid();
   scene = Scene::MainMenu;
   scoreFile.read();
-  generateGravityLevels(100);
+  generateGravityLevels(255);
 }
 
 void Game::processGameLogic() {
@@ -174,7 +174,7 @@ void Game::processGameLogic() {
       applySoftDropScore(tetromino->softDropHeight);
     }
     tetromino.reset(nullptr);
-    
+
     downLocked = true;
   }
 
@@ -635,10 +635,14 @@ bool CellDissolveAnimation::invoke() {
         game->board.rows[j] = game->board.rows[j - 1];
       }
     }
+    game->applyLineClearScoreAndLevel(lines.size());
     if (game->mode == Game::Mode::FortyLines && game->totalLinesCleared >= 40) {
+      if (game->elapsed.count() < game->scoreFile.fortyLinesPb.count() ||
+          game->scoreFile.fortyLinesPb.count() == 0) {
+        game->scoreFile.fortyLinesPb = game->elapsed;
+      }
       game->scene = Game::Scene::GameOver;
     }
-    game->applyLineClearScoreAndLevel(lines.size());
     return true;
   }
   if (game->frameCount % 4 == 0) {
@@ -648,6 +652,7 @@ bool CellDissolveAnimation::invoke() {
     }
     cellIdx++;
   }
+
   return false;
 }
 bool LockInAnimation::invoke() {

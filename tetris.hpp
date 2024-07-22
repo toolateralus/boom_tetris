@@ -175,7 +175,7 @@ struct Game {
   size_t score = 0;
   // the level this latest game started at.
   size_t startLevel = 0;
-
+  
   size_t linesClearedThisLevel = 0;
   size_t totalLinesCleared = 0;
 

@@ -1,11 +1,14 @@
 #include "score.hpp"
+#include <chrono>
 #include <filesystem>
 #include <fstream>
+#include <string>
 
 #ifdef _WIN32
 #include "windows.h"
 #endif
 #include <iostream>
+
 
 void ScoreFile::read() {
   std::string filename = getScoreFilePath();
@@ -17,6 +20,9 @@ void ScoreFile::read() {
     std::string s;
     file >> s;
     high_score = std::atoi(s.c_str());
+    s.clear();
+    file >> s;
+    fortyLinesPb = std::chrono::milliseconds(std::atoi(s.c_str()));
     file.close();
   }
 }
@@ -28,6 +34,8 @@ void ScoreFile::write() {
   std::ofstream file(filename);
   if (file.is_open()) {
     file << std::to_string(high_score);
+    file << " ";
+    file << std::to_string(fortyLinesPb.count());
     file.close();
   }
 }

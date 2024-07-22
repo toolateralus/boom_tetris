@@ -77,14 +77,13 @@ void setupMenuButtons(Game &game) {
 }
 
 void setupGameOverMenu(Game &game) {
-  auto size = Size{2, 2};
 
   gameOverGrid.emplace_element<Rect>(Position{3, 3}, Size{18, 18},
                                      Style{GetColor(0x2b2b2bcc), WHITE});
 
   auto label = gameOverGrid.emplace_element<Label>(Position(8, 5), Size(2, 2),
                                                    "Game Over", RED);
-
+  
   gameOverGrid.emplace_element<Label>(Position{9, 8}, Size{1, 1},
                                       "Score:", WHITE);
   gameOverGrid.emplace_element<NumberText>(Position{11, 9}, Size{1, 1},
@@ -95,14 +94,20 @@ void setupGameOverMenu(Game &game) {
   gameOverGrid.emplace_element<TimeText>(Position{11, 12}, Size{1, 1},
                                          &game.elapsed, GREEN);
 
+  gameOverGrid.emplace_element<Label>(Position{15, 11}, Size{1,1}, "40 Line Best", WHITE);
+  
+  gameOverGrid.emplace_element<TimeText>(Position{16, 12}, Size{1,1}, &game.scoreFile.fortyLinesPb, GREEN);
+  
   gameOverGrid.emplace_element<Label>(Position{9, 14}, Size{1, 1},
                                       "Lines:", WHITE);
+                                      
   gameOverGrid.emplace_element<NumberText>(Position{11, 15}, Size{1, 1},
                                            &game.totalLinesCleared, ORANGE);
-
+  
   gameOverGrid.emplace_element<Button>(
       Position{7, 17}, Size{5, 2}, "Main Menu",
       [&]() { game.scene = Game::Scene::MainMenu; });
+      
   gameOverGrid.emplace_element<Button>(Position{13, 17}, Size{5, 2}, "Retry",
                                        [&]() {
                                          game.reset();
