@@ -49,8 +49,8 @@ struct Style {
   virtual ~Style() {}
   Color background = {0, 0, 0, 0};
   Color foreground = WHITE;
-  Color borderColor = {0, 0, 0, 0};
-  int borderSize = 0;
+  Color borderColor = WHITE;
+  int borderSize = 5;
 };
 
 enum struct LayoutKind {
@@ -277,7 +277,7 @@ struct Button : Element {
 
   Button(Position position, Size size, std::string text = "",
          ClickCallback onClicked = nullptr,
-         Style style = {BLACK, WHITE, WHITE, 0},
+         Style style = {BLACK, WHITE, WHITE, 1},
          LayoutKind layoutKind = LayoutKind::None)
       : Element(position, size, layoutKind, style), text(text),
         onClicked(onClicked) {}
@@ -291,20 +291,21 @@ struct Button : Element {
         onClicked();
       }
     }
-
-    if (isMouseOver) {
-      DrawRectangle(state.position.x, state.position.y, state.size.width,
+    DrawRectangle(state.position.x, state.position.y, state.size.width,
                     state.size.height, style.background);
+                    
+    if (isMouseOver) {
+       DrawRectangleLinesEx({state.position.x, state.position.y, state.size.width,
+                         state.size.height}, style.borderSize, style.foreground);
     } else {
-      DrawRectangleLines(state.position.x, state.position.y, state.size.width,
-                         state.size.height, style.borderColor);
+      DrawRectangleLinesEx({state.position.x, state.position.y, state.size.width,
+                         state.size.height}, style.borderSize, style.borderColor);
     }
-    auto len = std::strlen(text.c_str());
-    float size = ((float)fontSize / 2) * len;
-    auto pos_x = state.position.x + (0.5 * state.size.width) - (size / 2);
-    auto pos_y =
-        state.position.y + (0.5 * state.size.height) - (fontSize / 2.0);
-
+    int textWidth = MeasureText(text.c_str(), fontSize);
+    
+    auto pos_x = state.position.x + (0.5 * state.size.width) - (textWidth / 2.0f);
+    auto pos_y = state.position.y + (0.5 * state.size.height) - (fontSize / 2.0f);
+    
     DrawText(text.c_str(), pos_x, pos_y, fontSize, style.foreground);
   }
 };
