@@ -3,6 +3,7 @@
 #include <chrono>
 #include <cmath>
 #include <functional>
+#include <iostream>
 #include <memory>
 #include <raylib.h>
 #include <stdexcept>
@@ -644,6 +645,7 @@ bool CellDissolveAnimation::invoke() {
       }
       game->scene = Game::Scene::GameOver;
     }
+
     return true;
   }
   if (game->frameCount % 4 == 0) {
@@ -657,6 +659,16 @@ bool CellDissolveAnimation::invoke() {
   return false;
 }
 bool LockInAnimation::invoke() {
+  if (game->bagelMode) {
+    auto prev = game->dependencies;
+    game->dependencies = game->findLongBarDependencies();
+    if (game->dependencies > 1 && game->dependencies > prev) {
+      game->playBoomDependency();
+      std::time_t now = std::time(nullptr);
+      std::cout << "\033[1;32mDependency created\033[0m at " << std::asctime(std::localtime(&now));
+    }
+  }
+
   if (frameCount == 10 + ((20 - pieceHeight) / 4) * 2) {
     return true;
   }
@@ -668,3 +680,34 @@ void Game::applySoftDropScore(size_t softDropHeight) {
   softDropScore += (softDropHeight / 16) % 16 * 10;
   score += softDropScore;
 };
+
+bool checkDependency(const Board &board, int x, int y) {
+  bool left = false, right = false;
+  left = x - 1 < 0 || !board.rows[y][x - 1].empty;
+  right = x + 1 >= boardHeight || !board.rows[y][x + 1].empty;
+  if (!left || !right) {
+    return false;
+  }
+  for (int dy = y + 2; dy > y; --dy) {
+    if (!board.rows[dy][x].empty) {
+      return false;
+    }
+  }
+  return true;
+}
+
+int boom_tetris::Game::findLongBarDependencies() const {
+  int count = 0;
+  for (int x = 0; x < boardWidth; ++x) {
+    for (int y = 0; y < boardHeight - 2; ++y) {
+      if (!board.rows[y][x].empty) {
+        break;
+      }
+      if (checkDependency(board, x, y)) {
+        count++;
+        break;
+      }
+    }
+  }
+  return count;
+}

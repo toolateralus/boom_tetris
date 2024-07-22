@@ -57,7 +57,7 @@ struct Cell {
 struct Board {
   std::array<std::array<Cell, boardWidth>, boardHeight> rows = {};
   Cell &operator[](int x, int y);
-  Cell &get_cell(int x, int y) noexcept { return (*this)[x, y]; }
+  Cell &get_cell(int x, int y) { return (*this)[x, y]; }
   auto begin() noexcept { return rows.begin(); }
   auto end() noexcept { return rows.end(); }
 
@@ -128,22 +128,45 @@ struct LockInAnimation : Animation {
   bool invoke() override;
 };
 
+static int randInt(int maxInclusive = 1) {
+  return rand() % (maxInclusive + 1);
+}
+
 struct Game {
   Sound shiftSound;
   Sound rotateSound;
   Sound lockInSound;
   Sound clearLineSound;
-
+  
   std::string *volumeLabel = new std::string();
-
+  
+  std::vector<Sound> dependencySounds = {};
+  std::vector<Sound> tetrisSounds = {};
+  std::vector<Sound> bagelSounds = {};
+  
+  bool bagelMode = true;
   bool downLocked = false;
-
+  
   ScoreFile scoreFile;
   size_t frameCount = 0;
+  size_t dependencies;
   Grid gameGrid;
-
+  
   std::deque<std::unique_ptr<Animation>> animation_queue = {};
-
+  
+  void playBoomDependency() const {
+    auto i = randInt(dependencySounds.size());
+    PlaySound(dependencySounds[i]);
+  }
+  void playBoomTetris() const {
+    auto i = randInt(tetrisSounds.size());
+    PlaySound(tetrisSounds[i]);
+  }
+  void playBoomBagel() const {
+    auto i = randInt(bagelSounds.size());
+    PlaySound(bagelSounds[i]);
+  }
+  
   enum struct Mode {
     Normal,     // high score
     FortyLines, // timed 40 line clear.
@@ -175,7 +198,7 @@ struct Game {
   size_t score = 0;
   // the level this latest game started at.
   size_t startLevel = 0;
-  
+
   size_t linesClearedThisLevel = 0;
   size_t totalLinesCleared = 0;
 
@@ -206,6 +229,8 @@ struct Game {
   ShapeIndices
   getTransformedBlocks(std::unique_ptr<Tetromino> &tetromino) const;
   std::shared_ptr<rayui::Grid> createBoardGrid();
+
+  int findLongBarDependencies() const;
 };
 
 } // namespace boom_tetris
