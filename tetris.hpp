@@ -138,6 +138,8 @@ struct Game {
   Sound lockInSound;
   Sound clearLineSound;
   
+  bool paused = false;
+  
   std::string *volumeLabel = new std::string();
   
   std::vector<Sound> dependencySounds = {};
