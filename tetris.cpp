@@ -562,8 +562,12 @@ void BoardCell::draw(rayui::LayoutState &state) {
   if (!cell.empty) {
     auto destRect = Rectangle{state.position.x, state.position.y,
                               state.size.width, state.size.height};
-    Rectangle srcRect = {(float)cell.imageIdx * 8, (float)(game.level % 10) * 8,
-                         8, 8};
+    float size = 8.0f;
+    float idx = (float(cell.imageIdx)) * size;
+    float level = ((float)(game.level % 10)) * size;
+
+    Rectangle srcRect = {idx, level, size, size};
+
     DrawTexturePro(game.blockTexture, srcRect, destRect, {0, 0}, 0, WHITE);
   }
 };
