@@ -16,6 +16,11 @@ struct UI {
   Grid settingsGrid = {{23, 23}};
   Style buttonStyle = Style{BLACK, WHITE, BLACK, 3};
 
+  std::vector<std::shared_ptr<Button>> levelButtons;
+
+  bool shiftModifier = false;
+
+
   Texture2D titleImage = LoadTexture("res/title.png");
   std::vector<Texture2D> titleAnimationFrames = {};
 
@@ -27,6 +32,23 @@ struct UI {
   } menu = Menu::Title;
 
   int drawMenu(Game &game) {
+
+    bool lastModifier = shiftModifier;
+
+    shiftModifier = IsKeyDown(KEY_LEFT_SHIFT);
+
+    if (shiftModifier && !lastModifier) {
+      for (auto &btn: levelButtons) {
+        btn->text = std::to_string(std::stoi(btn->text) + 10);
+      }
+    } else if (!shiftModifier && lastModifier) {
+      for (auto &btn: levelButtons) {
+        btn->text = std::to_string(std::stoi(btn->text) - 10);
+      }
+    }
+    
+
+
     ClearBackground(BLACK);
     LayoutState state = {{0, 0},
                          {(float)GetScreenWidth(), (float)GetScreenHeight()}};
@@ -47,6 +69,8 @@ struct UI {
       gameOverGrid.draw(state);
     } break;
     }
+
+
 
     return true;
   }
@@ -145,23 +169,26 @@ struct UI {
     auto j = 0;
     for (int i = 0; i <= 9; ++i) {
       auto btnPos = Position{24 / 3 - 2 + i * size.width, pos.y - 2};
-      auto callback = std::function<void()>([&game, i]() {
+      auto callback = std::function<void()>([&, i = int(i)]() {
         game.reset();
-        game.startLevel = i;
-        game.level = i;
+        const int level = shiftModifier ? i + 10 : i;
+        game.startLevel = level;
+        game.level = level;
         game.scene = Game::Scene::InGame;
-        game.gravity = game.gravityLevels[i];
+        game.gravity = game.gravityLevels[level];
       });
+
       if (i > 4) {
         btnPos.y += 2;
         btnPos.x = 24 / 3 - 2 + j;
         j += size.width;
-        ;
       }
+
       auto button = mainMenuGrid.emplace_element<Button>(
           btnPos, size, std::to_string(i), callback, buttonStyle);
       pos.x += size.width;
       button->margin = {3, 3, 3, 3};
+      levelButtons.push_back(button);
     }
 
     auto backButton = mainMenuGrid.emplace_element<Button>(
@@ -188,7 +215,7 @@ struct UI {
     gameOverGrid.emplace_element<Rect>(Position{3, 3}, Size{18, 18},
                                        Style{GetColor(0x2b2b2bcc), WHITE});
 
-    auto label = gameOverGrid.emplace_element<Label>(Position(8, 5), Size(2, 2),
+    gameOverGrid.emplace_element<Label>(Position(8, 5), Size(2, 2),
                                                      "Game Over", RED);
 
     gameOverGrid.emplace_element<Label>(Position{9, 8}, Size{1, 1},
