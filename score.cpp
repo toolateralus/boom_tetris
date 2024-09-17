@@ -45,9 +45,14 @@ std::string ScoreFile::getScoreFilePath() {
 // Use std::filesystem to find the appropriate app data directory
 #ifdef _WIN32
   auto appDataPath = std::getenv("APPDATA");
+
+  std::cout << "appDataPath: " << appDataPath << std::endl;
+
   if (appDataPath != nullptr) {
     path = std::filesystem::path(appDataPath) / "boom_tetris" / "score";
   }
+  std::cout << "configPath: " << path << std::endl;
+
 #else
   auto homePath = std::getenv("HOME");
   if (homePath != nullptr) {
