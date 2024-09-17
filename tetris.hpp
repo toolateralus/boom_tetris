@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "score.hpp"
+#include <optional>
 
 constexpr int boardWidth = 10;
 constexpr int boardHeight = 20;
@@ -168,7 +169,7 @@ struct Game {
   // the upcoming shape & color of the next tetromino.
   Shape nextShape;
   // the piece the player is in control of.
-  std::unique_ptr<Tetromino> tetromino;
+  std::optional<Tetromino> tetromino;
   // time since game start.
   std::chrono::milliseconds elapsed = std::chrono::milliseconds(0);
   // TODO: make this more like classic tetris.
@@ -234,10 +235,10 @@ struct Game {
   }
   
   HorizontalInput delayedAutoShift();
-  void cleanTetromino(std::unique_ptr<Tetromino> &tetromino);
-  bool resolveCollision(std::unique_ptr<Tetromino> &tetromino);
+  void cleanTetromino(std::optional<Tetromino> &tetromino);
+  bool resolveCollision(std::optional<Tetromino> &tetromino);
   ShapeIndices
-  getTransformedBlocks(std::unique_ptr<Tetromino> &tetromino) const;
+  getTransformedBlocks(std::optional<Tetromino> &tetromino) const;
   std::shared_ptr<rayui::Grid> createBoardGrid();
 
   int findLongBarDependencies() const;

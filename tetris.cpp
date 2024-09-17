@@ -92,7 +92,7 @@ void Game::processGameLogic() {
   if (!tetromino) {
     // spawn a new tetromino, cause the last one landed.
     auto shape = nextShape;
-    tetromino = std::make_unique<Tetromino>(shape);
+    tetromino = Tetromino(shape);
     setNextShape();
 
     tetromino->saveState();
@@ -214,7 +214,7 @@ void Game::processGameLogic() {
       ::PlaySound(lockInSound);
       applySoftDropScore(tetromino->softDropHeight);
     }
-    tetromino.reset(nullptr);
+    tetromino.reset();
 
     downLocked = true;
   }
@@ -228,7 +228,7 @@ void Game::setNextShape() {
   nextShape = shape;
 }
 
-void Game::cleanTetromino(std::unique_ptr<Tetromino> &tetromino) {
+void Game::cleanTetromino(std::optional<Tetromino> &tetromino) {
   auto indices = getTransformedBlocks(tetromino);
   for (const auto &block : indices) {
     auto pos = block.pos;
@@ -344,7 +344,7 @@ Grid Game::createGrid() {
   return grid;
 }
 
-bool Game::resolveCollision(std::unique_ptr<Tetromino> &tetromino) {
+bool Game::resolveCollision(std::optional<Tetromino> &tetromino) {
   for (const auto block : getTransformedBlocks(tetromino)) {
     auto pos = block.pos;
     if (pos.y >= boardHeight || pos.x < 0 || pos.x >= boardWidth ||
@@ -381,7 +381,7 @@ void Game::reset() {
   totalLinesCleared = 0;
   board = {}; // reset the grid state.
   elapsed = {};
-  tetromino = nullptr;
+  tetromino = std::nullopt;
   setNextShape();
 }
 
@@ -460,7 +460,7 @@ Cell &Board::operator[](int x, int y) {
 }
 
 ShapeIndices
-Game::getTransformedBlocks(std::unique_ptr<Tetromino> &tetromino) const {
+Game::getTransformedBlocks(std::optional<Tetromino> &tetromino) const {
   ShapeIndices indices;
   auto pattern = shapePatterns.at(tetromino->shape);
   for (const auto &block : pattern) {
