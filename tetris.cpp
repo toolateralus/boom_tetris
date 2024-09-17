@@ -662,13 +662,13 @@ void Game::generateGravityLevels(int totalLevels) {
     } else if (level < 10) {
       divisor = 6;
     } else if (level < 13) {
-      divisor = 5;
+      divisor = 5.5;
     } else if (level < 16) {
-      divisor = 4;
+      divisor = 5;
     } else if (level < 19) {
-      divisor = 3;
+      divisor = 4;
     } else if (level < 29) {
-      divisor = 2;
+      divisor = 3;
     } else {
       divisor = 1;
     }
