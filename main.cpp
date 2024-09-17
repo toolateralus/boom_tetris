@@ -9,98 +9,113 @@
 using namespace rayui;
 using namespace boom_tetris;
 
-struct UI {
+struct UI
+{
   Grid titleGrid = {{23, 23}};
   Grid mainMenuGrid = {{23, 23}};
   Grid gameOverGrid = {{24, 24}};
   Grid settingsGrid = {{23, 23}};
   Style buttonStyle = Style{BLACK, WHITE, BLACK, 3};
+  Grid controlsGrid = {{23, 23}};
 
   std::vector<std::shared_ptr<Button>> levelButtons;
 
   bool shiftModifier = false;
 
-
   Texture2D titleImage = LoadTexture("res/title.png");
   std::vector<Texture2D> titleAnimationFrames = {};
 
-  enum struct Menu {
+  enum struct Menu
+  {
     Title,
     Main,
     Settings,
     GameOver,
-  } menu = Menu::Title;
+    Controls,
+  } menu = Menu::Controls;
 
-  int drawMenu(Game &game) {
+  int drawMenu(Game &game)
+  {
 
     bool lastModifier = shiftModifier;
 
     shiftModifier = IsKeyDown(KEY_LEFT_SHIFT);
 
-    if (shiftModifier && !lastModifier) {
-      for (auto &btn: levelButtons) {
+    if (shiftModifier && !lastModifier)
+    {
+      for (auto &btn : levelButtons)
+      {
         btn->text = std::to_string(std::stoi(btn->text) + 10);
       }
-    } else if (!shiftModifier && lastModifier) {
-      for (auto &btn: levelButtons) {
+    }
+    else if (!shiftModifier && lastModifier)
+    {
+      for (auto &btn : levelButtons)
+      {
         btn->text = std::to_string(std::stoi(btn->text) - 10);
       }
     }
-    
-
 
     ClearBackground(BLACK);
     LayoutState state = {{0, 0},
                          {(float)GetScreenWidth(), (float)GetScreenHeight()}};
-    switch (menu) {
-    case Menu::Title: {
+    switch (menu)
+    {
+    case Menu::Title:
+    {
       titleGrid.draw(state);
-    } break;
-    case Menu::Main: {
-      mainMenuGrid.draw(state);
-    } break;
-    case Menu::Settings: {
-      settingsGrid.draw(state);
-    } break;
-    case Menu::GameOver: {
-      game.drawGame();
-      auto state =
-          LayoutState{0, 0, (float)GetScreenWidth(), (float)GetScreenHeight()};
-      gameOverGrid.draw(state);
-    } break;
     }
-
-
+    break;
+    case Menu::Main:
+    {
+      mainMenuGrid.draw(state);
+    }
+    break;
+    case Menu::Settings:
+    {
+      settingsGrid.draw(state);
+    }
+    break;
+    case Menu::GameOver:
+    {
+      game.drawGame();
+      gameOverGrid.draw(state);
+    }
+    break;
+    case Menu::Controls:
+      controlsGrid.draw(state);
+      break;
+    }
 
     return true;
   }
 
-  UI(Game &game) {
+  UI(Game &game)
+  {
     setupMainMenu(game);
     setupGameOver(game);
     setupTitleMenu();
     setupSettingsMenu(game);
-
+    setupControlsGrid();
     // these have to be backwards.
     // todo: setup this animtaion
     auto paths = std::vector<std::string>{};
-    for (const auto &path : paths) {
+    for (const auto &path : paths)
+    {
       titleAnimationFrames.push_back(LoadTexture(path.c_str()));
     }
   }
 
-  void addTitleImageAnimation(rayui::Grid &grid) {
-    // auto anim = grid.emplace_element<AnimatedImage>(Position{0,0},
-    // mainMenuGrid.subdivisions, titleAnimationFrames); anim->framerateScale
-    // = 2.0f;
-
+  void addTitleImageAnimation(rayui::Grid &grid)
+  {
     auto image = grid.emplace_element<rayui::Image>(
         Position{0, 0}, grid.subdivisions, titleImage);
     image->fillType = rayui::FillType::FillVertical;
     image->hAlignment = HAlignment::Center;
   }
 
-  void setupSettingsMenu(Game &game) {
+  void setupSettingsMenu(Game &game)
+  {
 
     addTitleImageAnimation(settingsGrid);
 
@@ -111,7 +126,8 @@ struct UI {
     *game.volumeLabel = "Volume: 100";
     auto volumeSlider = settingsGrid.emplace_element<Slider>(
         Position{7, 15}, Size{3, 2}, game.volumeLabel, 0, 100, 100,
-        [&](float volume) {
+        [&](float volume)
+        {
           *game.volumeLabel = "Volume: " + std::to_string((int)volume);
           SetMasterVolume(volume / 100.0f);
         });
@@ -123,34 +139,46 @@ struct UI {
     auto bagelButton = settingsGrid.emplace_element<Button>(
         Position{8, 16}, Size{7, 2}, "Toggle Bagel Mode", []() {}, buttonStyle);
     bagelButton->style.background = GREEN;
-    bagelButton->onClicked = [bagelButton, &game]() {
+    bagelButton->onClicked = [bagelButton, &game]()
+    {
       game.bagelMode = !game.bagelMode;
       bagelButton->style.background = game.bagelMode ? GREEN : RED;
     };
 
     auto pos = Position{9, 18};
     auto btn = settingsGrid.emplace_element<Button>(
-        pos, Size{5, 2}, "Back", [this]() { this->menu = Menu::Title; },
+        pos, Size{5, 2}, "Back", [this]()
+        { this->menu = Menu::Title; },
         buttonStyle);
   }
-  void setupTitleMenu() {
+  void setupTitleMenu()
+  {
     addTitleImageAnimation(titleGrid);
 
-    auto pos = Position{9, 18};
+    auto pos = Position{9, 16};
     auto btn = titleGrid.emplace_element<Button>(
-        pos, Size{5, 2}, "Play", [this]() { this->menu = Menu::Main; },
+        pos, Size{5, 2}, "Play", [this]()
+        { this->menu = Menu::Main; },
         buttonStyle);
 
     btn->margin = {3, 3, 3, 3};
 
     pos.y += 2;
     auto btn1 = titleGrid.emplace_element<Button>(
-        pos, Size{5, 2}, "Settings", [this]() { this->menu = Menu::Settings; },
+        pos, Size{5, 2}, "Settings", [this]()
+        { this->menu = Menu::Settings; },
         buttonStyle);
 
     btn1->margin = {3, 3, 3, 3};
+    pos.y += 2;
+    auto btn2 = titleGrid.emplace_element<Button>(
+        pos, Size{5, 2}, "Controls", [this]()
+        { this->menu = Menu::Controls; },
+        buttonStyle);
+    btn2->margin = {3, 3, 3, 3};
   }
-  void setupMainMenu(Game &game) {
+  void setupMainMenu(Game &game)
+  {
     auto pos = Position{1, 21};
     auto size = Size{2, 2};
 
@@ -167,18 +195,20 @@ struct UI {
                                         "Other Modes:", WHITE);
 
     auto j = 0;
-    for (int i = 0; i <= 9; ++i) {
+    for (int i = 0; i <= 9; ++i)
+    {
       auto btnPos = Position{24 / 3 - 2 + i * size.width, pos.y - 2};
-      auto callback = std::function<void()>([&, i = int(i)]() {
+      auto callback = std::function<void()>([&, i = int(i)]()
+                                            {
         game.reset();
         const int level = shiftModifier ? i + 10 : i;
         game.startLevel = level;
         game.level = level;
         game.scene = Game::Scene::InGame;
-        game.gravity = game.gravityLevels[level];
-      });
+        game.gravity = game.gravityLevels[level]; });
 
-      if (i > 4) {
+      if (i > 4)
+      {
         btnPos.y += 2;
         btnPos.x = 24 / 3 - 2 + j;
         j += size.width;
@@ -192,12 +222,14 @@ struct UI {
     }
 
     auto backButton = mainMenuGrid.emplace_element<Button>(
-        Position{0, 20}, Size{2, 2}, "Back", [&]() { menu = Menu::Title; },
+        Position{0, 20}, Size{2, 2}, "Back", [&]()
+        { menu = Menu::Title; },
         buttonStyle);
 
     auto fortyLineBtn = mainMenuGrid.emplace_element<Button>(
         Position{20, 20}, Size{2, 2}, "40 lines",
-        [&]() {
+        [&]()
+        {
           game.mode = Game::Mode::FortyLines;
           game.reset();
           game.mode = Game::Mode::FortyLines;
@@ -209,14 +241,37 @@ struct UI {
         buttonStyle);
     fortyLineBtn->fontSize = 18;
   }
+  void setupControlsGrid()
+  {
+    addTitleImageAnimation(controlsGrid);
 
-  void setupGameOver(Game &game) {
+    auto image = std::dynamic_pointer_cast<rayui::Image>(controlsGrid.elements.back());
+    image->style.foreground = Color{100, 100, 100, 255};
+
+    controlsGrid.emplace_element<Label>(
+        Position{6, 8}, Size{5, 1}, "[Esc]: pause game", WHITE);
+    controlsGrid.emplace_element<Label>(
+        Position{6, 10}, Size{5, 1}, "[Arrow left / right]: move piece", WHITE);
+    controlsGrid.emplace_element<Label>(
+        Position{6, 12}, Size{5, 1}, "[Arrow up / Z / X]: rotate piece", WHITE);
+    controlsGrid.emplace_element<Label>(
+        Position{6, 14}, Size{7, 1}, "[Arrow down]: Soft drop", WHITE);
+    controlsGrid.emplace_element<Label>(
+        Position{2, 16}, Size{7, 1}, "[Shift + click level button]: in menu, enter 'level + 10'", WHITE);
+
+
+    auto button = controlsGrid.emplace_element<Button>(
+        Position{10, 18}, Size{3, 2}, "enter", [&]
+        { menu = Menu::Title; }, buttonStyle);
+  }
+  void setupGameOver(Game &game)
+  {
 
     gameOverGrid.emplace_element<Rect>(Position{3, 3}, Size{18, 18},
                                        Style{GetColor(0x2b2b2bcc), WHITE});
 
     gameOverGrid.emplace_element<Label>(Position(8, 5), Size(2, 2),
-                                                     "Game Over", RED);
+                                        "Game Over", RED);
 
     gameOverGrid.emplace_element<Label>(Position{9, 8}, Size{1, 1},
                                         "Score:", WHITE);
@@ -242,7 +297,8 @@ struct UI {
 
     gameOverGrid.emplace_element<Button>(
         Position{7, 17}, Size{5, 2}, "Main Menu",
-        [&]() {
+        [&]()
+        {
           game.scene = Game::Scene::MainMenu;
           menu = Menu::Main;
         },
@@ -250,7 +306,8 @@ struct UI {
 
     gameOverGrid.emplace_element<Button>(
         Position{13, 17}, Size{5, 2}, "Retry",
-        [&]() {
+        [&]()
+        {
           game.reset();
           game.scene = Game::Scene::InGame;
         },
@@ -260,17 +317,20 @@ struct UI {
 
 // TODO: figure out why, even though we get a valid gamepad 0, we never can
 // query buttons properly.
-void gamepadLogger(Game &game) {
+void gamepadLogger(Game &game)
+{
   auto gamepad = game.findGamepad();
   system("clear");
   printf("gamepad: %d:\n", gamepad);
   for (int i = GAMEPAD_BUTTON_LEFT_FACE_UP; i <= GAMEPAD_BUTTON_RIGHT_THUMB;
-       ++i) {
+       ++i)
+  {
     printf("is_down: %d\n", IsGamepadButtonDown(gamepad, i));
   }
 }
 
-Color RandomColor() {
+Color RandomColor()
+{
   uint8_t r = GetRandomValue(0, 255);
   uint8_t g = GetRandomValue(0, 255);
   uint8_t b = GetRandomValue(0, 255);
@@ -278,67 +338,72 @@ Color RandomColor() {
   return Color{r, g, b, a};
 }
 
-struct FallingRect {
+struct FallingRect
+{
   Rectangle rect;
   Color color;
   float speed;
 };
 
-
-void pauseMenu() {
+void pauseMenu()
+{
   static auto color = WHITE;
-        static int ctr = 0;
-        static std::vector<FallingRect> fallingRects;
-        static bool initialized = false;
-        
-        if (!initialized) {
-          for (int i = 0; i < 100; i++) {
-            FallingRect newRect;
-            newRect.rect.x = GetRandomValue(0, GetScreenWidth() - 20);
-            newRect.rect.y = GetRandomValue(-200, -50);
-            newRect.rect.width = GetRandomValue(20, 100);
-            newRect.rect.height = GetRandomValue(20, 100);
-            newRect.color = RandomColor();
-            newRect.speed = GetRandomValue(2, 5);
-            fallingRects.push_back(newRect);
-          }
-          initialized = true;
-        }
+  static int ctr = 0;
+  static std::vector<FallingRect> fallingRects;
+  static bool initialized = false;
 
-        
+  if (!initialized)
+  {
+    for (int i = 0; i < 100; i++)
+    {
+      FallingRect newRect;
+      newRect.rect.x = GetRandomValue(0, GetScreenWidth() - 20);
+      newRect.rect.y = GetRandomValue(-200, -50);
+      newRect.rect.width = GetRandomValue(20, 100);
+      newRect.rect.height = GetRandomValue(20, 100);
+      newRect.color = RandomColor();
+      newRect.speed = GetRandomValue(2, 5);
+      fallingRects.push_back(newRect);
+    }
+    initialized = true;
+  }
 
-        // Update and draw falling rectangles
-        for (auto &rect : fallingRects) {
-          // Update position
-          rect.rect.y += rect.speed;
+  // Update and draw falling rectangles
+  for (auto &rect : fallingRects)
+  {
+    // Update position
+    rect.rect.y += rect.speed;
 
-          // Draw rectangle
-          DrawRectangleRec(rect.rect, rect.color);
+    // Draw rectangle
+    DrawRectangleRec(rect.rect, rect.color);
 
-          // Reset if it goes off screen
-          if (rect.rect.y > GetScreenHeight()) {
-            rect.rect.x = GetRandomValue(0, GetScreenWidth() - 20);
-            rect.rect.y =
-                GetRandomValue(-200, -50); // Reset to start above the screen
-            rect.rect.width = GetRandomValue(20, 100);
-            rect.rect.height = GetRandomValue(20, 100);
-            rect.color = RandomColor();
-            rect.speed = GetRandomValue(2, 5);
-          }
-        }
-        auto size = MeasureText("Paused", 48);
-        auto screenH = GetScreenHeight() / 2 - (size / 2),
-             screenW = GetScreenWidth() / 2 - (size / 2);
-        ClearBackground(BLACK);
-        DrawText("Paused", screenW, screenH, 48, color);
-        ctr++;
-        if (ctr > 60) {
-          color = RandomColor();
-          color.a = 255;
-          ctr = 0;
-        }
+    // Reset if it goes off screen
+    if (rect.rect.y > GetScreenHeight())
+    {
+      rect.rect.x = GetRandomValue(0, GetScreenWidth() - 20);
+      rect.rect.y =
+          GetRandomValue(-200, -50); // Reset to start above the screen
+      rect.rect.width = GetRandomValue(20, 100);
+      rect.rect.height = GetRandomValue(20, 100);
+      rect.color = RandomColor();
+      rect.speed = GetRandomValue(2, 5);
+    }
+  }
+  auto size = MeasureText("Paused", 48);
+  auto screenH = GetScreenHeight() / 2 - (size / 2),
+       screenW = GetScreenWidth() / 2 - (size / 2);
+  ClearBackground(BLACK);
+  DrawText("Paused", screenW, screenH, 48, color);
+  ctr++;
+  if (ctr > 60)
+  {
+    color = RandomColor();
+    color.a = 255;
+    ctr = 0;
+  }
 }
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   srand(time(0));
   InitWindow(800, 600, "boom taetris");
   InitAudioDevice();
@@ -353,33 +418,43 @@ int main(int argc, char *argv[]) {
   DrawText("      please wait...", 124, 300, 36, GREEN);
 
   EndDrawing();
-  if (WindowShouldClose()) {
+  if (WindowShouldClose())
+  {
     return 0;
   }
 
   Game game = Game();
   UI ui = UI(game);
-  
-  while (!WindowShouldClose()) {
+
+  while (!WindowShouldClose())
+  {
     BeginDrawing();
     ClearBackground(BG_COLOR);
-    switch (game.scene) {
-    case Game::Scene::MainMenu: {
+    switch (game.scene)
+    {
+    case Game::Scene::MainMenu:
+    {
       ui.drawMenu(game);
       break;
     }
-    case Game::Scene::GameOver: {
+    case Game::Scene::GameOver:
+    {
       ui.menu = UI::Menu::GameOver;
       ui.drawMenu(game);
       break;
     }
-    case Game::Scene::InGame: {
-      if (IsKeyPressed(KEY_ESCAPE)) {
+    case Game::Scene::InGame:
+    {
+      if (IsKeyPressed(KEY_ESCAPE))
+      {
         game.paused = !game.paused;
       }
-      if (game.paused) {
+      if (game.paused)
+      {
         pauseMenu();
-      } else {
+      }
+      else
+      {
         game.processGameLogic();
         game.drawGame();
       }
