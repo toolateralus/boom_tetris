@@ -4,7 +4,9 @@
 # Playing the game: 
   The easiest way to play the game is to grab one of the releases. Currently pre-built for linux and windows.
 
-# Building  
+# Building 
+
+> Note: Building on windows can be a massive pain. On one machine, it was easy for me, on another, it was nearly impossible.
 ## Installing dependencies:
 ### raylib
   raylib is fetched with cmake automatically.
